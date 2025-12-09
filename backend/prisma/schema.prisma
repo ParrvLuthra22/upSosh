@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Host {
+  id       String  @id @default(cuid())
+  name     String
+  verified Boolean @default(false)
+  avatar   String
+  events   Event[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  type        String
+  date        String
+  time        String
+  venue       String
+  price       Float
+  description String
+  image       String
+  tags        String   @default("[]")
+  isSuperhost Boolean  @default(false)
+  
+  hostId      String
+  host        Host     @relation(fields: [hostId], references: [id])
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  userId      String
+  items       String // JSON
+  totalAmount Float
+  status      String
+  paymentId   String?
+  customer    String? // JSON
+  createdAt   DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user") // "user" | "host" | "admin"
+  createdAt DateTime @default(now())
+}

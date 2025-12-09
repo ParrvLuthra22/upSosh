@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #FFFFFF;
+    --surface: #F0F7FF;
+    --surface-highlight: #DBEAFE;
+    --primary: #2563EB;
+    --secondary: #475569;
+    --text-primary: #0F172A;
+    --text-secondary: #334155;
+    --text-muted: #64748B;
+    --border: #E2E8F0;
+    --radius: 1rem;
+
+    /* Legacy variables mapping for compatibility */
+    --color-light-pure: #FFFFFF;
+    --color-light-blue: #E7F1FF;
+    --color-primary: #3B82F6;
+    --color-indigo: #6366F1;
+    --color-text-dark: #0F172A;
+    --color-secondary: #475569;
+  }
+
+  .dark {
+    --background: #000000;
+    --surface: #0B1121;
+    --surface-highlight: #1E293B;
+    --primary: #3B82F6;
+    --secondary: #94A3B8;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+    --border: #3B82F6;
+    /* Light blue border for dark mode */
+
+    /* Legacy variables mapping */
+    --color-dark-navy: #0B1020;
+    --color-dark-black: #000000;
+    --color-neon: #3B82F6;
+    --color-purple: #3B82F6;
+    /* Map purple to blue to remove tint */
+    --color-text-light: #F9FAFB;
+    --color-slate: #94A3B8;
+  }
+
+  * {
+    border-color: inherit;
+  }
+
+  body {
+    @apply bg-background text-text-primary transition-colors duration-300;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20;
+  }
+
+  .glass-card {
+    @apply glass-effect rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-blue-400 to-cyan-300 bg-clip-text text-transparent;
+  }
+
+  .glow-effect {
+    @apply shadow-lg shadow-light-primary/50 dark:shadow-dark-neon/50;
+  }
+
+  .btn-primary {
+    @apply px-8 py-4 rounded-full bg-gradient-blue-indigo text-white font-semibold hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply px-8 py-4 rounded-full border-2 border-light-primary dark:border-dark-neon text-light-primary dark:text-dark-neon font-semibold hover:bg-light-primary dark:hover:bg-dark-neon hover:text-white transform transition-all duration-300;
+  }
+
+  .section-padding {
+    @apply py-20 md:py-32 px-6 md:px-12 lg:px-20;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-light-blue dark:bg-dark-navy;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-light-primary dark:bg-dark-neon rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-light-indigo dark:bg-dark-purple;
+}
+
+/* Smooth Scroll */
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}

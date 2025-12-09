@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light Mode */
+  --background: #F8FAFC;
+  --surface: 231 241 255;
+  /* #E7F1FF converted to RGB */
+  --surface-highlight: #FFFFFF;
+  --primary: #6366F1;
+  --secondary: #22D3EE;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+
+  /* Fonts */
+  --font-heading: 'Poppins', 'Satoshi', sans-serif;
+  --font-body: 'Inter', 'Roboto', sans-serif;
+
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+[data-theme='dark'] {
+  /* Dark Mode */
+  --background: #0B0E12;
+  --surface: 30 41 59;
+  /* #1E293B converted to RGB */
+  --surface-highlight: #151B25;
+  --primary: #3B82F6;
+  --secondary: #A855F7;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --border: #334155;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-body antialiased transition-colors duration-300;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold text-text-primary;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background-color: rgb(var(--surface) / 0.8);
+    @apply backdrop-blur-md border border-white/20 shadow-lg;
+  }
+
+  .glass-panel-dark {
+    background-color: rgb(var(--surface) / 0.3);
+    @apply backdrop-blur-md border border-white/10 shadow-lg;
+  }
+}
