@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export interface Event {
     id: string;
@@ -42,32 +42,56 @@ export interface Booking {
 }
 
 export const api = {
+    login: async (credentials: any) => {
+        const res = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials),
+            credentials: 'include',
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        return data;
+    },
+
+    signup: async (data: any) => {
+        const res = await fetch(`${API_URL}/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            credentials: 'include',
+        });
+        const responseData = await res.json();
+        if (!res.ok) throw new Error(responseData.message || 'Signup failed');
+        return responseData;
+    },
+
     getEvents: async (): Promise<Event[]> => {
-        const res = await fetch(`${API_URL}/events`);
+        const res = await fetch(`${API_URL}/events`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch events');
         return res.json();
     },
 
     getEventById: async (id: string): Promise<Event> => {
-        const res = await fetch(`${API_URL}/events/${id}`);
+        const res = await fetch(`${API_URL}/events/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch event');
         return res.json();
     },
 
     getHosts: async (): Promise<Host[]> => {
-        const res = await fetch(`${API_URL}/hosts`);
+        const res = await fetch(`${API_URL}/hosts`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch hosts');
         return res.json();
     },
 
     getHostById: async (id: string): Promise<Host> => {
-        const res = await fetch(`${API_URL}/hosts/${id}`);
+        const res = await fetch(`${API_URL}/hosts/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch host');
         return res.json();
     },
 
     getBookings: async (): Promise<Booking[]> => {
-        const res = await fetch(`${API_URL}/bookings`);
+        const res = await fetch(`${API_URL}/bookings`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch bookings');
         return res.json();
     },
@@ -78,6 +102,7 @@ export const api = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(booking),
+            credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to create booking');
         return res.json();
@@ -90,19 +115,20 @@ export const api = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(event),
+            credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to create event');
         return res.json();
     },
 
     getMe: async () => {
-        const res = await fetch(`${API_URL}/auth/me`);
+        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
         if (!res.ok) return null;
         return res.json();
     },
 
     logout: async () => {
-        await fetch(`${API_URL}/auth/logout`, { method: 'POST' });
+        await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
     }
 };
 
