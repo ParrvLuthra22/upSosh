@@ -55,9 +55,14 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
             token, // Returning token in body for debugging visibility
             message: 'User created successfully'
         });
-    } catch (error) {
-        console.error('Signup error:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+    } catch (error: any) {
+        console.error('Signup error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code // Log Prisma error codes if available
+        });
+        return res.status(500).json({ message: 'Internal server error', details: error.message });
+
     }
 });
 
