@@ -1,7 +1,7 @@
 {
-    "name": "switchup-backend",
+    "name": "upsosh-backend",
     "version": "1.0.0",
-    "description": "Backend api for SwitchUp",
+    "description": "Backend api for upSosh",
     "main": "dist/src/index.js",
     "scripts": {
         "start": "node dist/src/index.js",

@@ -8,7 +8,7 @@ import Footer from '@/src/components/Footer';
 
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://upsosh.vercel.app'), // Placeholder URL
+  metadataBase: new URL('https://www.upsosh.app'), 
   title: {
     template: '%s | UpSosh',
     default: 'UpSosh - Discover & Book Exclusive Events',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'UpSosh - Switch Up Your Experiences',
     description: 'Discover formal + informal events around you — all in one place.',
-    url: 'https://upsosh.vercel.app',
+    url: 'https://www.upsosh.app/',
     siteName: 'UpSosh',
     locale: 'en_US',
     type: 'website',

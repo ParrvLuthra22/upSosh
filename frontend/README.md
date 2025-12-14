@@ -33,8 +33,8 @@ A premium, modern, and visually stunning website for UpSosh - an official + unof
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/switchup.git
-    cd switchup
+    git clone https://github.com/yourusername/upsosh.git
+    cd upsosh
     ```
 
 2.  **Install dependencies**:
@@ -94,7 +94,7 @@ MIT
 ## 📁 Project Structure
 
 ```
-switchUpWebsite/
+upSoshWebsite/
 ├── app/                      # Next.js app directory
 │   ├── about/               # About page
 │   ├── blog/                # Blog page
@@ -121,7 +121,7 @@ switchUpWebsite/
 │   ├── SmoothScrollProvider.tsx
 │   ├── TestimonialsSection.tsx
 │   ├── ToggleDemoSection.tsx
-│   └── WhatIsSwitchUpSection.tsx
+│   └── WhatIsUpSoshSection.tsx
 ├── contexts/                # React contexts
 │   └── ThemeContext.tsx     # Theme provider
 ├── public/                  # Static assets
@@ -200,4 +200,4 @@ This is a proprietary project. Please contact the team for contribution guidelin
 
 ## 📞 Support
 
-For support, email support@switchup.com or visit our help center.
+For support, email support@upsosh.com or visit our help center.

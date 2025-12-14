@@ -44,7 +44,7 @@ export default function WhatIsUpSoshSection() {
   ];
 
   return (
-    <Section id="what-is-switchup" className="relative overflow-hidden bg-white dark:bg-dark-black">
+    <Section id="what-is-upsosh" className="relative overflow-hidden bg-white dark:bg-dark-black">
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-light-blue/30 via-transparent to-light-blue/30 dark:from-dark-navy/50 dark:via-transparent dark:to-dark-purple/20" />
 

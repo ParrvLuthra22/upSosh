@@ -1,5 +1,5 @@
 {
-    "name": "switchup-monorepo",
+    "name": "upsosh-monorepo",
     "version": "1.0.0",
     "private": true,
     "workspaces": [
@@ -7,7 +7,7 @@
         "frontend"
     ],
     "scripts": {
-        "dev:backend": "npm run dev --workspace=switchup-backend",
+        "dev:backend": "npm run dev --workspace=upsosh-backend",
         "dev:frontend": "npm run dev --workspace=upsosh-website",
         "build": "npm run build --workspaces"
     }

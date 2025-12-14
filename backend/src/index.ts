@@ -31,7 +31,7 @@ app.use('/api/hosts', hostRoutes);
 app.use('/api/bookings', bookingRoutes);
 
 app.get('/', (req, res) => {
-    res.send('SwitchUp Backend API is running');
+    res.send('upSosh Backend API is running');
 });
 
 app.get('/api/debug', (req, res) => {

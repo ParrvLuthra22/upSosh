@@ -1,6 +1,6 @@
 # Integration Guide
 
-This document outlines how to transition SwitchUp from a mock environment to a fully integrated production application.
+This document outlines how to transition upSosh from a mock environment to a fully integrated production application.
 
 ## 1. Backend Integration
 

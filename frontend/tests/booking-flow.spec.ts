@@ -4,7 +4,7 @@ test.describe('Booking Flow', () => {
     test('should allow a user to search, filter, and book an event', async ({ page }) => {
         // 1. Navigate to booking page
         await page.goto('/booking');
-        await expect(page).toHaveTitle(/SwitchUp/);
+        await expect(page).toHaveTitle(/upSosh/);
 
         // 2. Search for an event
         const searchInput = page.getByPlaceholder('Search events, hosts, or tags...');

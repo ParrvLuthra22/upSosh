@@ -15,7 +15,7 @@ export default function AboutPage() {
 
             <div className="prose prose-lg dark:prose-invert mx-auto">
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                [This is where you can tell your story. How SwitchUp started, the mission behind it, and where you're going next.]
+                [This is where you can tell your story. How upSosh started, the mission behind it, and where you're going next.]
               </p>
 
               <div className="bg-surface/50 rounded-xl p-8 border border-border/50 mb-12">
