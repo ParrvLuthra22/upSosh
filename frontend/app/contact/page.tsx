@@ -34,10 +34,7 @@ export default function ContactPage() {
                                     <span className="text-primary">📧</span> support@upsosh.app
                                 </p>
                                 <p className="flex items-center gap-3">
-                                    <span className="text-primary">📞</span> +1 (555) 123-4567
-                                </p>
-                                <p className="flex items-center gap-3">
-                                    <span className="text-primary">📍</span> 123 Innovation Dr,<br />San Francisco, CA 94103
+                                    <span className="text-primary">📞</span> +91 96257 89901
                                 </p>
                             </div>
                         </div>

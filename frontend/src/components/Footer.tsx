@@ -1,9 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 
 const Footer = () => {
+    const [email, setEmail] = useState('');
+
+    const handleNewsletterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email) {
+            // Open user's email client with pre-filled information
+            const subject = encodeURIComponent('Newsletter Subscription Request');
+            const body = encodeURIComponent(`I would like to subscribe to the upSosh newsletter.\n\nEmail: ${email}`);
+            window.location.href = `mailto:support@upsosh.app?subject=${subject}&body=${body}`;
+            setEmail(''); // Clear the input
+        }
+    };
+
     return (
         <footer className="bg-surface border-t border-white/10 pt-16 pb-8 mt-20">
             <div className="container mx-auto px-4">
@@ -46,8 +59,6 @@ const Footer = () => {
                         <ul className="space-y-3 text-sm text-text-secondary">
                             <li><Link href="/booking" className="hover:text-primary transition-colors">Browse Events</Link></li>
                             <li><Link href="/features" className="hover:text-primary transition-colors">Features</Link></li>
-
-                            <li><Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link></li>
                         </ul>
                     </div>
 
@@ -56,9 +67,9 @@ const Footer = () => {
                         <h4 className="font-heading font-bold text-text-primary mb-6">Support</h4>
                         <ul className="space-y-3 text-sm text-text-secondary">
                             <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+                            <li><Link href="/safety" className="hover:text-primary transition-colors">Safety</Link></li>
                             <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
                             <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-                            <li><Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
                         </ul>
                     </div>
 
@@ -68,10 +79,13 @@ const Footer = () => {
                         <p className="text-text-secondary text-sm mb-4">
                             Subscribe to our newsletter for the latest events and offers.
                         </p>
-                        <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+                        <form className="flex gap-2" onSubmit={handleNewsletterSubmit}>
                             <input
                                 type="email"
                                 placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
                                 className="flex-1 bg-surface-highlight border border-white/10 rounded-lg px-4 py-2 text-sm text-text-primary focus:outline-none focus:border-primary transition-colors"
                             />
                             <button

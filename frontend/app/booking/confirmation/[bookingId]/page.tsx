@@ -19,7 +19,8 @@ export default function ConfirmationPage() {
                 // In a real app, we'd fetch by ID. Since our mock API might not have a direct "get by ID" 
                 // that is efficient if we didn't implement it, we'll fetch all and find (or implement getBookingById).
                 // Actually, json-server supports /bookings/:id automatically.
-                const res = await fetch(`http://localhost:3001/bookings/${params.bookingId}`);
+                const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://upsosh-production.up.railway.app';
+                const res = await fetch(`${API_URL}/api/bookings/${params.bookingId}`);
                 if (!res.ok) throw new Error('Booking not found');
                 const data = await res.json();
                 setBooking(data);

@@ -12,7 +12,7 @@ const HostEventForm = () => {
         venue: '',
         price: 0,
         description: '',
-        image: '',
+        image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', // Default event image
         menu: [] as string[],
     });
     const [menuItem, setMenuItem] = useState('');
@@ -38,18 +38,33 @@ const HostEventForm = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Mock hostId and tags for now
-            await api.createEvent({
+            // Mock hostId for now - TODO: Get from auth context
+            const eventData = {
                 ...formData,
                 hostId: 'user-123',
                 tags: ['new'],
                 isSuperhost: false,
-            } as any);
+            };
+            
+            console.log('Submitting event data:', eventData);
+            const response = await api.createEvent(eventData as any);
+            console.log('Event created successfully:', response);
             alert('Event created successfully!');
-            // Reset form or redirect
-        } catch (error) {
+            // Reset form
+            setFormData({
+                title: '',
+                type: 'formal',
+                date: '',
+                time: '',
+                venue: '',
+                price: 0,
+                description: '',
+                image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+                menu: [] as string[],
+            });
+        } catch (error: any) {
             console.error('Failed to create event:', error);
-            alert('Failed to create event. Please try again.');
+            alert(`Failed to create event: ${error.message || 'Please try again.'}`);
         } finally {
             setIsSubmitting(false);
         }

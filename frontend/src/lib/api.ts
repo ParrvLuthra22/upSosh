@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` : 'https://upsosh-production.up.railway.app/api';
 
 export interface Event {
     id: string;
@@ -117,8 +117,11 @@ export const api = {
             body: JSON.stringify(event),
             credentials: 'include',
         });
-        if (!res.ok) throw new Error('Failed to create event');
-        return res.json();
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || data.details || 'Failed to create event');
+        }
+        return data;
     },
 
     getMe: async () => {
