@@ -132,6 +132,32 @@ export const api = {
 
     logout: async () => {
         await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
+    },
+
+    resetPassword: async (email: string, newPassword: string, confirmPassword: string) => {
+        try {
+            const res = await fetch(`${API_URL}/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, newPassword, confirmPassword }),
+                credentials: 'include',
+            });
+            
+            // Check if response is JSON
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Backend server is not responding. Please make sure the backend is running on https://upsosh-production.up.railway.app/api');
+            }
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to reset password');
+            return data;
+        } catch (error: any) {
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                throw new Error('Cannot connect to server. Please check if the backend is running.');
+            }
+            throw error;
+        }
     }
 };
 

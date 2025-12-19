@@ -141,4 +141,52 @@ router.post('/logout', (req: Request, res: Response) => {
     res.json({ message: 'Logged out' });
 });
 
+router.post('/reset-password', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { email, newPassword, confirmPassword } = req.body;
+
+        // Validation
+        if (!email || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+
+        // Check if user exists
+        const user = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found with this email address' });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the password using Prisma
+        await prisma.user.update({
+            where: { email },
+            data: { password: hashedPassword },
+        });
+
+        return res.status(200).json({ 
+            message: 'Password reset successfully',
+            success: true 
+        });
+    } catch (error: any) {
+        console.error('Reset password error:', error);
+        return res.status(500).json({ 
+            message: 'Failed to reset password',
+            details: error.message 
+        });
+    }
+});
+
 export default router;
