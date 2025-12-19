@@ -434,7 +434,7 @@ export default function PrivacyPage() {
                   <div className="space-y-2 mb-4">
                     <p><strong>Grievance Officer:</strong> [Full Name]</p>
                     <p><strong>Email:</strong> <a href="mailto:grievance@upsosh.app" className="text-primary hover:underline">grievance@upsosh.app</a></p>
-                    <p><strong>Phone:</strong> +91 96257 89901</p>
+                    <p><strong>Phone:</strong> +91 8076524225</p>
                     <p><strong>Address:</strong> [Insert Business Address]</p>
                   </div>
                   <div className="bg-white dark:bg-dark-card p-4 rounded">
@@ -450,7 +450,7 @@ export default function PrivacyPage() {
                   <h3 className="text-xl font-bold mb-4">upSosh Technologies</h3>
                   <div className="space-y-2">
                     <p><strong>Email:</strong> <a href="mailto:privacy@upsosh.app" className="text-primary hover:underline">privacy@upsosh.app</a></p>
-                    <p><strong>Support Phone:</strong> <a href="tel:+919625789901" className="text-primary hover:underline">+91 96257 89901</a></p>
+                    <p><strong>Support Phone:</strong> <a href="tel:+918076524225" className="text-primary hover:underline">+91 8076524225</a></p>
                     <p><strong>Business Address:</strong> [Insert Business Address]</p>
                   </div>
                 </div>

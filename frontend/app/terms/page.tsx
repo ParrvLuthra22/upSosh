@@ -552,7 +552,7 @@ export default function TermsPage() {
                   <h3 className="text-2xl font-bold mb-4">upSosh Technologies</h3>
                   <div className="space-y-2">
                     <p><strong>Email:</strong> <a href="mailto:support@upsosh.app" className="underline hover:no-underline">support@upsosh.app</a></p>
-                    <p><strong>Phone:</strong> <a href="tel:+919625789901" className="underline hover:no-underline">+91 96257 89901</a></p>
+                    <p><strong>Phone:</strong> <a href="tel:+918076524225" className="underline hover:no-underline">+91 8076524225</a></p>
                     <p><strong>Address:</strong> [Insert Business Address]</p>
                     <p><strong>Grievance Officer:</strong> <a href="mailto:grievance@upsosh.app" className="underline hover:no-underline">grievance@upsosh.app</a></p>
                     <p><strong>Response Time:</strong> 7 days</p>

@@ -332,7 +332,7 @@ export default function SafetyPage() {
                     { label: 'Fire Emergency', number: '101' },
                     { label: 'Police Emergency', number: '100' },
                     { label: 'Ambulance', number: '102' },
-                    { label: 'upSosh Safety Team', number: '+91 96257 89901' }
+                    { label: 'upSosh Safety Team', number: '+91 8076524225' }
                   ].map((contact, index) => (
                     <div key={index} className="bg-white/20 backdrop-blur-sm p-4 rounded-lg">
                       <div className="text-sm opacity-90 mb-1">{contact.label}</div>
@@ -599,7 +599,7 @@ export default function SafetyPage() {
                   <div className="glass-card border-2 border-primary">
                     <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">upSosh Safety Team</h3>
                     <p className="mb-2"><strong>Email:</strong> <a href="mailto:safety@upsosh.app" className="text-primary hover:underline">safety@upsosh.app</a></p>
-                    <p className="mb-2"><strong>Phone:</strong> <a href="tel:+919625789901" className="text-primary hover:underline">+91 96257 89901</a></p>
+                    <p className="mb-2"><strong>Phone:</strong> <a href="tel:+918076524225" className="text-primary hover:underline">+91 8076524225</a></p>
                     <p><strong>Response Time:</strong> 24-48 hours</p>
                   </div>
                   

@@ -115,9 +115,15 @@ const Header = () => {
                                 <span className="text-sm font-medium text-text-primary hidden md:block">
                                     Hi, {user.name}
                                 </span>
+                                <Link
+                                    href="/profile"
+                                    className="px-5 py-2 rounded-full border border-primary text-primary text-sm font-medium hover:bg-primary/10 transition-colors"
+                                >
+                                    Profile
+                                </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="px-5 py-2 rounded-full border border-primary text-primary text-sm font-medium hover:bg-primary/10 transition-colors"
+                                    className="px-5 py-2 rounded-full bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
                                 >
                                     Logout
                                 </button>
