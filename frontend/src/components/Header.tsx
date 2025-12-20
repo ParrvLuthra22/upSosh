@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTheme } from '@/contexts/ThemeContext';
 import { usePathname } from 'next/navigation';
 import DarkModeToggle from './DarkModeToggle';
+import { api } from '@/src/lib/api';
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -51,14 +52,11 @@ const Header = () => {
         // Fetch user from API (optional fallback)
         const fetchUser = async () => {
             try {
-                const res = await fetch('/api/auth/me');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.user) {
-                        setUser(data.user);
-                        // Update localStorage with full user data
-                        localStorage.setItem('userData', JSON.stringify(data.user));
-                    }
+                const data = await api.getMe();
+                if (data && data.user) {
+                    setUser(data.user);
+                    // Update localStorage with full user data
+                    localStorage.setItem('userData', JSON.stringify(data.user));
                 }
             } catch (e) {
                 console.error('Failed to fetch user', e);
@@ -74,11 +72,13 @@ const Header = () => {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            await api.logout();
         } catch (e) {
             // Ignore api error
         }
         localStorage.removeItem('user');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('token');
 
         // Dispatch storage event to update UI in current tab
         window.dispatchEvent(new Event('storage'));

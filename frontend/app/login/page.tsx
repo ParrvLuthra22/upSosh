@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { api } from '@/src/lib/api';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -20,31 +21,21 @@ export default function LoginPage() {
         const password = formData.get('password') as string;
 
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                // Store user name for backward compatibility
-                localStorage.setItem('user', data.user.name);
-                // Store full user data including isHost
-                localStorage.setItem('userData', JSON.stringify(data.user));
-                // Store token for API calls
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                }
-                window.dispatchEvent(new Event('storage'));
-                router.push('/');
-            } else {
-                const errorData = await res.json();
-                alert(errorData.message || 'Login failed');
+            const data = await api.login({ email, password });
+            
+            // Store user name for backward compatibility
+            localStorage.setItem('user', data.user.name);
+            // Store full user data including isHost
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            // Store token for API calls
+            if (data.token) {
+                localStorage.setItem('token', data.token);
             }
-        } catch (error) {
+            window.dispatchEvent(new Event('storage'));
+            router.push('/');
+        } catch (error: any) {
             console.error('Login error:', error);
-            alert('An error occurred. Please try again.');
+            alert(error.message || 'An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
