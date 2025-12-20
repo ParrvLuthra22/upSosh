@@ -43,27 +43,63 @@ export interface Booking {
 
 export const api = {
     login: async (credentials: any) => {
-        const res = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(credentials),
-            credentials: 'include',
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Login failed');
-        return data;
+        try {
+            console.log('Attempting login to:', `${API_URL}/auth/login`);
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials),
+                credentials: 'include',
+            });
+            
+            console.log('Login response status:', res.status);
+            
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await res.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned invalid response. Please try again.');
+            }
+            
+            const data = await res.json();
+            console.log('Login response data:', data);
+            
+            if (!res.ok) throw new Error(data.message || 'Login failed');
+            return data;
+        } catch (error: any) {
+            console.error('Login error:', error);
+            throw error;
+        }
     },
 
     signup: async (data: any) => {
-        const res = await fetch(`${API_URL}/auth/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-            credentials: 'include',
-        });
-        const responseData = await res.json();
-        if (!res.ok) throw new Error(responseData.message || 'Signup failed');
-        return responseData;
+        try {
+            console.log('Attempting signup to:', `${API_URL}/auth/signup`);
+            const res = await fetch(`${API_URL}/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                credentials: 'include',
+            });
+            
+            console.log('Signup response status:', res.status);
+            
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await res.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned invalid response. Please try again.');
+            }
+            
+            const responseData = await res.json();
+            console.log('Signup response data:', responseData);
+            
+            if (!res.ok) throw new Error(responseData.message || 'Signup failed');
+            return responseData;
+        } catch (error: any) {
+            console.error('Signup error:', error);
+            throw error;
+        }
     },
 
     getEvents: async (): Promise<Event[]> => {
