@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "bio" TEXT,
+ADD COLUMN "avatar" TEXT,
+ADD COLUMN "isHost" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "hostName" TEXT,
+ADD COLUMN "hostBio" TEXT,
+ADD COLUMN "hostVerified" BOOLEAN NOT NULL DEFAULT false;
