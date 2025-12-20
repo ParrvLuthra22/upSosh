@@ -1,10 +1,21 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
-    const bookings = await prisma.booking.findMany();
+router.get('/', authenticate, async (req: Request, res: Response) => {
+    const userId = req.userId;
+
+    if (!userId) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const bookings = await prisma.booking.findMany({
+        where: {
+            userId: userId
+        }
+    });
     const parsedBookings = bookings.map(b => ({
         ...b,
         items: JSON.parse(b.items),
@@ -13,12 +24,18 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(parsedBookings);
 });
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
     try {
-        const { userId, items, totalAmount, status, paymentId, customer } = req.body;
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { items, totalAmount, status, paymentId, customer } = req.body;
         const booking = await prisma.booking.create({
             data: {
-                userId: userId || 'guest',
+                userId: userId, // Use authenticated userId instead of from body
                 items: JSON.stringify(items || []),
                 totalAmount: Number(totalAmount),
                 status,
