@@ -28,7 +28,10 @@ export default function LoginPage() {
 
             if (res.ok) {
                 const data = await res.json();
+                // Store user name for backward compatibility
                 localStorage.setItem('user', data.user.name);
+                // Store full user data including isHost
+                localStorage.setItem('userData', JSON.stringify(data.user));
                 window.dispatchEvent(new Event('storage'));
                 router.push('/');
             } else {

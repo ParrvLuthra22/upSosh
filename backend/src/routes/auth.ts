@@ -51,7 +51,17 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
         });
 
         return res.status(201).json({
-            user: { id: user.id, name: user.name, email: user.email },
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                bio: null,
+                avatar: null,
+                isHost: false,
+                hostName: null,
+                hostBio: null,
+                hostVerified: false
+            },
             token, // Returning token in body for debugging visibility
             message: 'User created successfully'
         });
@@ -98,7 +108,17 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
         });
 
         return res.status(200).json({
-            user: { id: user.id, name: user.name, email: user.email },
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                bio: null,
+                avatar: null,
+                isHost: false,
+                hostName: null,
+                hostBio: null,
+                hostVerified: false
+            },
             token, // Returning token in body for debugging visibility
             message: 'Login successful'
         });

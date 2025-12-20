@@ -25,7 +25,10 @@ export default function SignupPage() {
 
         try {
             const responseData = await api.signup(formData);
+            // Store user name for backward compatibility
             localStorage.setItem('user', responseData.user.name);
+            // Store full user data including isHost (defaults to false for new users)
+            localStorage.setItem('userData', JSON.stringify(responseData.user));
             window.dispatchEvent(new Event('storage'));
             alert('Account created successfully!');
             router.push('/');

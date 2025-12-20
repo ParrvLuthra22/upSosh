@@ -17,39 +17,61 @@ export default function HostPage() {
 
     const checkHostStatus = async () => {
         try {
-            // Check localStorage first
+            // First, check if user is logged in at all
+            const storedUser = localStorage.getItem('user');
             const storedUserData = localStorage.getItem('userData');
-            if (storedUserData) {
-                const userData = JSON.parse(storedUserData);
-                if (userData.isHost) {
-                    setIsHost(true);
-                    setIsLoading(false);
-                    return;
-                }
-            }
-
-            // Check with API
-            const result = await api.getMe();
-            if (result && result.user) {
-                if (result.user.isHost) {
-                    setIsHost(true);
-                    // Update localStorage
-                    localStorage.setItem('userData', JSON.stringify(result.user));
-                } else {
-                    setIsHost(false);
-                }
-            } else {
-                // Not logged in
+            
+            if (!storedUser && !storedUserData) {
+                // Not logged in at all
                 router.push('/login');
                 return;
             }
+
+            // Check localStorage first for host status
+            if (storedUserData) {
+                try {
+                    const userData = JSON.parse(storedUserData);
+                    if (userData.isHost) {
+                        setIsHost(true);
+                        setIsLoading(false);
+                        return;
+                    } else {
+                        // User is logged in but not a host
+                        setIsHost(false);
+                        setIsLoading(false);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error parsing userData:', e);
+                }
+            }
+
+            // Try to fetch from API
+            try {
+                const result = await api.getMe();
+                if (result && result.user) {
+                    // Update localStorage with fresh data
+                    localStorage.setItem('userData', JSON.stringify(result.user));
+                    setIsHost(result.user.isHost || false);
+                } else {
+                    // API call failed but user is logged in locally
+                    // Default to not host if we can't verify
+                    setIsHost(false);
+                }
+            } catch (apiError) {
+                console.error('API error:', apiError);
+                // API failed, but user exists in localStorage
+                // Default to not host for safety
+                setIsHost(false);
+            }
         } catch (error) {
             console.error('Failed to check host status:', error);
-            // Check localStorage as fallback
+            // If there's any error, check if user is at least logged in
             const storedUser = localStorage.getItem('user');
             if (!storedUser) {
                 router.push('/login');
             } else {
+                // User is logged in, but default to not host
                 setIsHost(false);
             }
         } finally {
