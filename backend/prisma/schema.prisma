@@ -44,10 +44,16 @@ model Booking {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("user") // "user" | "host" | "admin"
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         String   @default("user") // "user" | "host" | "admin"
+  bio          String?
+  avatar       String?
+  isHost       Boolean  @default(false)
+  hostName     String?
+  hostBio      String?
+  hostVerified Boolean  @default(false)
+  createdAt    DateTime @default(now())
 }

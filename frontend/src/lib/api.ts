@@ -158,6 +158,25 @@ export const api = {
             }
             throw error;
         }
+    },
+
+    updateProfile: async (profileData: {
+        name?: string;
+        bio?: string;
+        avatar?: string;
+        isHost?: boolean;
+        hostName?: string;
+        hostBio?: string;
+    }) => {
+        const res = await fetch(`${API_URL}/auth/me`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData),
+            credentials: 'include',
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+        return data;
     }
 };
 

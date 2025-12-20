@@ -136,11 +136,25 @@ export default function ProfilePage() {
         e.preventDefault();
         setIsSaving(true);
         try {
-            // In a real app, this would call an update API
+            const result = await api.updateProfile({
+                name: profileData.name,
+                bio: profileData.bio,
+                avatar: profileData.avatar,
+                isHost: profileData.isHost,
+                hostName: profileData.hostName,
+                hostBio: profileData.hostBio
+            });
+            
+            if (result && result.user) {
+                setUser(result.user);
+                localStorage.setItem('user', result.user.name);
+                // Also store the full user object with isHost
+                localStorage.setItem('userData', JSON.stringify(result.user));
+                window.dispatchEvent(new Event('storage'));
+            }
+            
             alert('Profile updated successfully!');
             setIsEditing(false);
-            localStorage.setItem('user', profileData.name);
-            window.dispatchEvent(new Event('storage'));
         } catch (error: any) {
             alert(error.message || 'Failed to update profile');
         } finally {

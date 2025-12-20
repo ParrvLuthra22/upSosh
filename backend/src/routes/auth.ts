@@ -123,7 +123,17 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
 
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId },
-            select: { id: true, name: true, email: true }
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                bio: true,
+                avatar: true,
+                isHost: true,
+                hostName: true,
+                hostBio: true,
+                hostVerified: true
+            }
         });
 
         if (!user) {
@@ -133,6 +143,52 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
         return res.json({ user });
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
+    }
+});
+
+router.put('/me', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.status(401).json({ message: 'Not authenticated' });
+        }
+
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is not defined');
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+
+        const { name, bio, avatar, isHost, hostName, hostBio } = req.body;
+
+        const user = await prisma.user.update({
+            where: { id: decoded.userId },
+            data: {
+                ...(name !== undefined && { name }),
+                ...(bio !== undefined && { bio }),
+                ...(avatar !== undefined && { avatar }),
+                ...(isHost !== undefined && { isHost }),
+                ...(hostName !== undefined && { hostName }),
+                ...(hostBio !== undefined && { hostBio }),
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                bio: true,
+                avatar: true,
+                isHost: true,
+                hostName: true,
+                hostBio: true,
+                hostVerified: true
+            }
+        });
+
+        return res.json({ user });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        return res.status(500).json({ message: 'Failed to update profile' });
     }
 });
 

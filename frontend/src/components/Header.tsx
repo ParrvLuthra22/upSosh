@@ -10,7 +10,7 @@ const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const { theme, toggleTheme } = useTheme();
 
-    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+    const [user, setUser] = useState<{ name: string; email: string; isHost?: boolean } | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -20,9 +20,23 @@ const Header = () => {
         window.addEventListener('scroll', handleScroll);
 
         const checkUser = () => {
+            const storedUserData = localStorage.getItem('userData');
             const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                setUser({ name: storedUser, email: '' });
+            
+            if (storedUserData) {
+                try {
+                    const userData = JSON.parse(storedUserData);
+                    setUser(userData);
+                } catch (e) {
+                    // Fallback to simple user name
+                    if (storedUser) {
+                        setUser({ name: storedUser, email: '', isHost: false });
+                    } else {
+                        setUser(null);
+                    }
+                }
+            } else if (storedUser) {
+                setUser({ name: storedUser, email: '', isHost: false });
             } else {
                 setUser(null);
             }
@@ -40,7 +54,11 @@ const Header = () => {
                 const res = await fetch('/api/auth/me');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.user) setUser(data.user);
+                    if (data.user) {
+                        setUser(data.user);
+                        // Update localStorage with full user data
+                        localStorage.setItem('userData', JSON.stringify(data.user));
+                    }
                 }
             } catch (e) {
                 console.error('Failed to fetch user', e);
@@ -115,6 +133,14 @@ const Header = () => {
                                 <span className="text-sm font-medium text-text-primary hidden md:block">
                                     Hi, {user.name}
                                 </span>
+                                {user.isHost && (
+                                    <Link
+                                        href="/host"
+                                        className="px-5 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg"
+                                    >
+                                        Host Event
+                                    </Link>
+                                )}
                                 <Link
                                     href="/profile"
                                     className="px-5 py-2 rounded-full border border-primary text-primary text-sm font-medium hover:bg-primary/10 transition-colors"
