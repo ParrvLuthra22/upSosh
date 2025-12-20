@@ -45,8 +45,8 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true, // Always true for production
+            sameSite: 'none', // Required for cross-origin cookies
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -78,35 +78,46 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
 
 router.post('/login', async (req: Request, res: Response): Promise<any> => {
     try {
+        console.log('Login attempt received');
         const { email, password } = req.body;
+        console.log('Email:', email);
 
         if (!email || !password) {
             return res.status(400).json({ message: 'Missing fields' });
         }
 
+        console.log('Finding user in database...');
         const user = await prisma.user.findUnique({
             where: { email },
         });
+        console.log('User found:', user ? 'Yes' : 'No');
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        console.log('Comparing password...');
         const isValid = await bcrypt.compare(password, user.password);
+        console.log('Password valid:', isValid);
 
         if (!isValid) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        console.log('Generating token...');
         const token = generateToken(user.id);
+        console.log('Token generated');
 
+        console.log('Setting cookie...');
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true, // Always true for production
+            sameSite: 'none', // Required for cross-origin cookies
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
+        console.log('Cookie set');
 
+        console.log('Preparing response...');
         return res.status(200).json({
             user: {
                 id: user.id,
@@ -122,9 +133,17 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
             token, // Returning token in body for debugging visibility
             message: 'Login successful'
         });
-    } catch (error) {
-        console.error('Login error:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+    } catch (error: any) {
+        console.error('Login error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        return res.status(500).json({ 
+            message: 'Internal server error',
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
