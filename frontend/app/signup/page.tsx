@@ -29,6 +29,10 @@ export default function SignupPage() {
             localStorage.setItem('user', responseData.user.name);
             // Store full user data including isHost (defaults to false for new users)
             localStorage.setItem('userData', JSON.stringify(responseData.user));
+            // Store token for API calls
+            if (responseData.token) {
+                localStorage.setItem('token', responseData.token);
+            }
             window.dispatchEvent(new Event('storage'));
             alert('Account created successfully!');
             router.push('/');

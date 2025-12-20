@@ -130,7 +130,16 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
 
 router.get('/me', async (req: Request, res: Response): Promise<any> => {
     try {
-        const token = req.cookies.token;
+        // Try to get token from cookie first
+        let token = req.cookies.token;
+        
+        // If no cookie, check Authorization header
+        if (!token && req.headers.authorization) {
+            const authHeader = req.headers.authorization;
+            if (authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
 
         if (!token) {
             return res.status(401).json({ message: 'Not authenticated' });
@@ -168,7 +177,16 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
 
 router.put('/me', async (req: Request, res: Response): Promise<any> => {
     try {
-        const token = req.cookies.token;
+        // Try to get token from cookie first
+        let token = req.cookies.token;
+        
+        // If no cookie, check Authorization header
+        if (!token && req.headers.authorization) {
+            const authHeader = req.headers.authorization;
+            if (authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
 
         if (!token) {
             return res.status(401).json({ message: 'Not authenticated' });

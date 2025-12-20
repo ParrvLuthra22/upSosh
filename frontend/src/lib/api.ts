@@ -125,7 +125,18 @@ export const api = {
     },
 
     getMe: async () => {
-        const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+        // Try to get token from localStorage
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const res = await fetch(`${API_URL}/auth/me`, {
+            credentials: 'include',
+            headers
+        });
         if (!res.ok) return null;
         return res.json();
     },
@@ -168,15 +179,44 @@ export const api = {
         hostName?: string;
         hostBio?: string;
     }) => {
-        const res = await fetch(`${API_URL}/auth/me`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(profileData),
-            credentials: 'include',
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Failed to update profile');
-        return data;
+        try {
+            // Try to get token from localStorage as fallback
+            const storedUserData = localStorage.getItem('userData');
+            let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            
+            if (storedUserData) {
+                try {
+                    const userData = JSON.parse(storedUserData);
+                    // If we have a token stored, use it
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                } catch (e) {
+                    console.error('Error parsing userData:', e);
+                }
+            }
+            
+            const res = await fetch(`${API_URL}/auth/me`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(profileData),
+                credentials: 'include',
+            });
+            
+            const data = await res.json();
+            if (!res.ok) {
+                console.error('Update profile failed:', data);
+                throw new Error(data.message || 'Failed to update profile');
+            }
+            return data;
+        } catch (error: any) {
+            console.error('Update profile error:', error);
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                throw new Error('Cannot connect to server. Please check if the backend is running.');
+            }
+            throw error;
+        }
     }
 };
 
