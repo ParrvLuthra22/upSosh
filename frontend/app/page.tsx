@@ -1,5 +1,10 @@
 import HeroSection from '@/components/HeroSection';
-import FeaturesSection from '@/src/components/FeaturesSection';
+import WhatIsUpSoshSection from '@/components/WhatIsUpSoshSection';
+import ToggleDemoSection from '@/components/ToggleDemoSection';
+import FeaturesSection from '@/components/FeaturesSection';
+import HowItWorksSection from '@/components/HowItWorksSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import DownloadCTASection from '@/components/DownloadCTASection';
 import { generateOrganizationSchema } from '@/src/lib/structuredData';
 
 export default function Home() {
@@ -10,7 +15,12 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }}
       />
       <HeroSection />
+      <WhatIsUpSoshSection />
+      <ToggleDemoSection />
       <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <DownloadCTASection />
     </main>
   );
 }
