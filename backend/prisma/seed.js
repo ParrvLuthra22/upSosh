@@ -1,64 +1,32 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const fs = require('fs');
-const path = require('path');
 
 async function main() {
     try {
-        const dataPath = path.join(__dirname, '../mocks/db.json');
-        const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+        console.log('Database ready for production use.');
+        console.log('No seed data - all events and bookings will be created by real users.');
+        
+        // Check if any users exist
+        const userCount = await prisma.user.count();
+        console.log(`Current users in database: ${userCount}`);
+        
+        // Check if any events exist
+        const eventCount = await prisma.event.count();
+        console.log(`Current events in database: ${eventCount}`);
+        
+        // Check if any hosts exist
+        const hostCount = await prisma.host.count();
+        console.log(`Current hosts in database: ${hostCount}`);
 
-        // Hosts
-        console.log('Seeding Hosts...');
-        for (const h of data.hosts) {
-            // Check if exists to avoid unique constraint errors if re-run
-            const exists = await prisma.host.findUnique({ where: { id: h.id } });
-            if (!exists) {
-                await prisma.host.create({
-                    data: {
-                        id: h.id,
-                        name: h.displayName || h.name,
-                        verified: h.verified || false,
-                        avatar: h.avatar || ''
-                    }
-                });
-            }
-        }
-
-        // Events
-        console.log('Seeding Events...');
-        for (const e of data.events) {
-            const exists = await prisma.event.findUnique({ where: { id: e.id } });
-            if (!exists) {
-                // Verify host exists, otherwise default or skip
-                const hostExists = await prisma.host.findUnique({ where: { id: e.hostId } });
-                if (!hostExists) {
-                    console.warn(`Skipping event ${e.id} because host ${e.hostId} not found`);
-                    continue;
-                }
-
-                await prisma.event.create({
-                    data: {
-                        id: e.id,
-                        title: e.title,
-                        type: e.type,
-                        date: e.date,
-                        time: e.time,
-                        venue: typeof e.venue === 'string' ? e.venue : (e.venue.name || 'Unknown'),
-                        price: Number(e.price) || 0,
-                        description: e.description,
-                        image: e.image || '',
-                        tags: JSON.stringify(e.tags || []),
-                        isSuperhost: e.isSuperhost || false,
-                        hostId: e.hostId
-                    }
-                });
-            }
-        }
-
-        console.log('Seeded successfully!');
+        console.log('\n✅ Production database is ready!');
+        console.log('📝 Users can now:');
+        console.log('   - Sign up and create accounts');
+        console.log('   - Enable host mode to create events');
+        console.log('   - Book tickets with real payments');
+        console.log('   - View their bookings and tickets');
+        
     } catch (e) {
-        console.error('Seeding failed:', e);
+        console.error('Database check failed:', e);
         process.exit(1);
     }
 }

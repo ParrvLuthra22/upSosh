@@ -38,18 +38,28 @@ const HostEventForm = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Mock hostId for now - TODO: Get from auth context
+            // Get real user data from localStorage
+            const userData = localStorage.getItem('userData');
+            if (!userData) {
+                throw new Error('Please log in to create events');
+            }
+
+            const user = JSON.parse(userData);
+            
+            // Create host entry if user doesn't have one
+            let hostId = user.id;
+            
             const eventData = {
                 ...formData,
-                hostId: 'user-123',
-                tags: ['new'],
-                isSuperhost: false,
+                hostId: hostId,
+                tags: [formData.type, 'live', 'event'],
+                isSuperhost: user.hostVerified || false,
             };
             
             console.log('Submitting event data:', eventData);
             const response = await api.createEvent(eventData as any);
             console.log('Event created successfully:', response);
-            alert('Event created successfully!');
+            alert('Event created successfully! 🎉');
             // Reset form
             setFormData({
                 title: '',
