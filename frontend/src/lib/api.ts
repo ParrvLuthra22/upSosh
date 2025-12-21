@@ -271,6 +271,13 @@ export const api = {
             credentials: 'include',
         });
 
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await res.text();
+            console.error('Non-JSON response from payment order:', text);
+            throw new Error('Server returned invalid response. Please ensure you are logged in.');
+        }
+
         if (!res.ok) {
             const error = await res.json();
             throw new Error(error.error || 'Failed to create payment order');
@@ -298,7 +305,20 @@ export const api = {
             credentials: 'include',
         });
 
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await res.text();
+            console.error('Non-JSON response from payment verify:', text);
+            throw new Error('Server returned invalid response. Please contact support.');
+        }
+
         if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to verify payment');
+        }
+
+        return res.json();
+    },        if (!res.ok) {
             const error = await res.json();
             throw new Error(error.error || 'Payment verification failed');
         }

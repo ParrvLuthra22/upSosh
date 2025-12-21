@@ -55,12 +55,16 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     const handleDirectCheckout = async () => {
+        const token = localStorage.getItem('token');
         const userData = localStorage.getItem('userData');
-        if (!userData) {
+        
+        if (!token || !userData) {
             setErrorMessage('Please login to complete your booking');
+            setStatus('error');
             setTimeout(() => window.location.href = '/login', 2000);
             return;
         }
+        
         const user = JSON.parse(userData);
         if (!razorpayLoaded) {
             setErrorMessage('Payment system is loading. Please try again.');
@@ -69,6 +73,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         setStatus('processing');
         setErrorMessage('');
         try {
+            console.log('Creating payment order for amount:', total);
             const orderData = await api.createPaymentOrder(total);
             const options = {
                 key: orderData.key,
