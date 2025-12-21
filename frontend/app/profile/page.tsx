@@ -135,12 +135,18 @@ export default function ProfilePage() {
 
     const loadTickets = async () => {
         try {
+            console.log('Loading tickets...');
             const bookings = await api.getBookings();
+            console.log('Bookings received:', bookings);
+            
             if (Array.isArray(bookings)) {
                 setTickets(bookings);
+                console.log('Set tickets:', bookings.length);
             } else if (bookings && (bookings as any).bookings && Array.isArray((bookings as any).bookings)) {
                 setTickets((bookings as any).bookings);
+                console.log('Set tickets from nested:', (bookings as any).bookings.length);
             } else {
+                console.warn('No bookings found or invalid format');
                 setTickets([]);
             }
         } catch (error) {

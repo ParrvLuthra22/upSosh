@@ -128,7 +128,17 @@ export const api = {
     },
 
     getBookings: async (): Promise<Booking[]> => {
-        const res = await fetch(`${API_URL}/bookings`, { credentials: 'include' });
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/bookings`, { 
+            credentials: 'include',
+            headers
+        });
         if (!res.ok) throw new Error('Failed to fetch bookings');
         return res.json();
     },
