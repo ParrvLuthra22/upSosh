@@ -188,12 +188,20 @@ export default function ProfilePage() {
     const handleLogout = async () => {
         try {
             await api.logout();
-            localStorage.removeItem('user');
-            window.dispatchEvent(new Event('storage'));
-            router.push('/');
         } catch (error) {
             console.error('Logout error:', error);
         }
+        
+        // Clear all authentication data
+        localStorage.removeItem('user');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('token');
+        
+        // Dispatch storage event to update UI
+        window.dispatchEvent(new Event('storage'));
+        
+        // Force full page reload to clear any cached state
+        window.location.replace('/');
     };
 
     if (isLoading || !user) {

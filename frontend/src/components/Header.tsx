@@ -74,8 +74,10 @@ const Header = () => {
         try {
             await api.logout();
         } catch (e) {
-            // Ignore api error
+            console.error('Logout error:', e);
         }
+        
+        // Clear all authentication data
         localStorage.removeItem('user');
         localStorage.removeItem('userData');
         localStorage.removeItem('token');
@@ -84,7 +86,9 @@ const Header = () => {
         window.dispatchEvent(new Event('storage'));
 
         setUser(null);
-        window.location.href = '/';
+        
+        // Force full page reload to clear any cached state
+        window.location.replace('/');
     };
 
     const navLinks = [
