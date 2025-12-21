@@ -179,6 +179,33 @@ export const api = {
         return data;
     },
 
+    updateEvent: async (eventId: string, event: Partial<Event>): Promise<Event> => {
+        const res = await fetch(`${API_URL}/events/${eventId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(event),
+            credentials: 'include',
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || data.details || 'Failed to update event');
+        }
+        return data;
+    },
+
+    deleteEvent: async (eventId: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/events/${eventId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete event');
+        }
+    },
+
     getMe: async () => {
         // Try to get token from localStorage
         const token = localStorage.getItem('token');

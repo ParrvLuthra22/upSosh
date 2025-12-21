@@ -96,4 +96,76 @@ router.post('/', async (req: Request, res: Response) => {
     }
 });
 
+router.put('/:id', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const { title, type, date, time, venue, price, description, image, tags, isSuperhost } = req.body;
+
+        // Check if event exists
+        const existingEvent = await prisma.event.findUnique({
+            where: { id },
+            include: { host: true }
+        });
+
+        if (!existingEvent) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Update event
+        const updatedEvent = await prisma.event.update({
+            where: { id },
+            data: {
+                ...(title && { title }),
+                ...(type && { type }),
+                ...(date && { date }),
+                ...(time && { time }),
+                ...(venue && { venue }),
+                ...(price !== undefined && { price: Number(price) }),
+                ...(description && { description }),
+                ...(image && { image }),
+                ...(tags && { tags: JSON.stringify(tags) }),
+                ...(isSuperhost !== undefined && { isSuperhost }),
+            },
+            include: { host: true }
+        });
+
+        console.log(`✅ Event updated: "${updatedEvent.title}"`);
+
+        res.json({
+            ...updatedEvent,
+            tags: JSON.parse(updatedEvent.tags)
+        });
+    } catch (error: any) {
+        console.error('Error updating event:', error);
+        res.status(500).json({ error: 'Failed to update event', details: error.message });
+    }
+});
+
+router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+
+        // Check if event exists
+        const existingEvent = await prisma.event.findUnique({
+            where: { id }
+        });
+
+        if (!existingEvent) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Delete event
+        await prisma.event.delete({
+            where: { id }
+        });
+
+        console.log(`✅ Event deleted: "${existingEvent.title}"`);
+
+        res.json({ message: 'Event deleted successfully' });
+    } catch (error: any) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ error: 'Failed to delete event', details: error.message });
+    }
+});
+
 export default router;

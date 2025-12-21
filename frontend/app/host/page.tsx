@@ -3,13 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import HostEventForm from '@/src/components/host/HostEventForm';
+import MyEventsList from '@/src/components/host/MyEventsList';
 import AIAssistant from '@/src/components/host/AIAssistant';
-import { api } from '@/src/lib/api';
+import { api, Event } from '@/src/lib/api';
 
 export default function HostPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [isHost, setIsHost] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         checkHostStatus();
@@ -148,16 +151,41 @@ export default function HostPage() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
                     {/* Left Column: Event Creation Form */}
                     <div className="w-full">
-                        <HostEventForm />
+                        <HostEventForm 
+                            eventToEdit={editingEvent} 
+                            onEventSaved={() => {
+                                setEditingEvent(null);
+                                setRefreshKey(prev => prev + 1);
+                            }}
+                        />
+                        {editingEvent && (
+                            <button
+                                onClick={() => setEditingEvent(null)}
+                                className="w-full mt-4 py-2 px-4 bg-surface-highlight text-text-primary rounded-xl hover:bg-primary hover:text-white transition-all"
+                            >
+                                Cancel Edit
+                            </button>
+                        )}
                     </div>
 
                     {/* Right Column: AI Assistant */}
                     <div className="w-full sticky top-24">
                         <AIAssistant />
                     </div>
+                </div>
+
+                {/* My Events List */}
+                <div className="mt-12">
+                    <MyEventsList 
+                        key={refreshKey}
+                        onEdit={(event) => {
+                            setEditingEvent(event);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} 
+                    />
                 </div>
             </div>
         </div>
