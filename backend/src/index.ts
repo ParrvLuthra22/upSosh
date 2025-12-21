@@ -39,7 +39,9 @@ app.use(cors({
 
 console.log('CORS Origins configured:', allowedOrigins);
 
-app.use(express.json());
+// Increase body size limit to handle Base64 image uploads (payment proofs)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
