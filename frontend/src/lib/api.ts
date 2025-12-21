@@ -133,15 +133,33 @@ export const api = {
         return res.json();
     },
     createBooking: async (booking: Omit<Booking, 'id'>): Promise<Booking> => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${API_URL}/bookings`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify(booking),
             credentials: 'include',
         });
-        if (!res.ok) throw new Error('Failed to create booking');
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await res.text();
+            console.error('Non-JSON response from create booking:', text);
+            throw new Error('Server returned invalid response. Please try again.');
+        }
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || error.error || 'Failed to create booking');
+        }
         return res.json();
     },
 
