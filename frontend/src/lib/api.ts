@@ -253,6 +253,77 @@ export const api = {
             }
             throw error;
         }
+    },
+
+    // Payment methods
+    createPaymentOrder: async (amount: number, currency = 'INR') => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/payments/create-order`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ amount, currency }),
+            credentials: 'include',
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to create payment order');
+        }
+
+        return res.json();
+    },
+
+    verifyPayment: async (paymentData: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+    }) => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/payments/verify-payment`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(paymentData),
+            credentials: 'include',
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Payment verification failed');
+        }
+
+        return res.json();
+    },
+
+    getPaymentDetails: async (paymentId: string) => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/payments/payment/${paymentId}`, {
+            headers,
+            credentials: 'include',
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to fetch payment details');
+        }
+
+        return res.json();
     }
 };
-

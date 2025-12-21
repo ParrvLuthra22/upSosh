@@ -4,9 +4,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useBookingStore } from '@/src/store/bookingStore';
 import CheckoutForm from './CheckoutForm';
-import { processPayment } from '@/src/lib/mockPayment';
 import { api } from '@/src/lib/api';
 import { useFocusTrap, useEscapeKey } from '@/src/lib/a11y';
+
+// Declare Razorpay type
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -21,10 +27,24 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const [bookingDetails, setBookingDetails] = useState<any>(null);
+    const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
     // Accessibility hooks
     useFocusTrap(contentRef, isOpen);
     useEscapeKey(onClose, isOpen);
+
+    // Load Razorpay script
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => setRazorpayLoaded(true);
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -42,38 +62,83 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     }, [isOpen]);
 
     const handleCheckout = async (formData: any) => {
+        if (!razorpayLoaded) {
+            setErrorMessage('Payment system is loading. Please try again in a moment.');
+            return;
+        }
+
         setStatus('processing');
         setErrorMessage('');
 
         try {
-            // 1. Process Payment
-            const paymentResult = await processPayment(formData.total, formData.paymentMethod);
+            // 1. Create Razorpay order
+            const orderData = await api.createPaymentOrder(formData.total);
 
-            if (!paymentResult.success) {
-                throw new Error(paymentResult.error || 'Payment failed');
-            }
-
-            // 2. Create Booking
-            const bookingData = {
-                userId: 'guest_user', // Mock user ID
-                items: cart,
-                totalAmount: formData.total,
-                status: 'confirmed',
-                paymentId: paymentResult.transactionId,
-                customer: {
+            // 2. Initialize Razorpay payment
+            const options = {
+                key: orderData.key,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                order_id: orderData.orderId,
+                name: 'UpSosh',
+                description: 'Event Tickets Purchase',
+                image: '/logo.png', // Add your logo
+                prefill: {
                     name: formData.name,
                     email: formData.email,
-                    phone: formData.phone,
+                    contact: formData.phone,
                 },
-                createdAt: new Date().toISOString(),
+                theme: {
+                    color: '#6366f1', // Your primary color
+                },
+                handler: async (response: any) => {
+                    try {
+                        // 3. Verify payment
+                        const verification = await api.verifyPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        });
+
+                        if (verification.success) {
+                            // 4. Create booking
+                            const bookingData = {
+                                userId: 'guest_user', // Will be replaced by backend with authenticated userId
+                                items: cart,
+                                totalAmount: formData.total,
+                                status: 'confirmed' as const,
+                                paymentId: verification.paymentId,
+                                customer: {
+                                    name: formData.name,
+                                    email: formData.email,
+                                    phone: formData.phone,
+                                },
+                                createdAt: new Date().toISOString(),
+                            };
+
+                            const booking = await api.createBooking(bookingData as any);
+                            setBookingDetails(booking);
+                            setStatus('success');
+                            clearCart();
+                        } else {
+                            throw new Error('Payment verification failed');
+                        }
+                    } catch (error: any) {
+                        console.error('Payment verification error:', error);
+                        setStatus('error');
+                        setErrorMessage(error.message || 'Payment verification failed. Please contact support.');
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        setStatus('idle');
+                        setErrorMessage('Payment cancelled. Please try again.');
+                    },
+                },
             };
 
-            const booking = await api.createBooking(bookingData as any);
-            setBookingDetails(booking);
-
-            // 3. Success
-            setStatus('success');
-            clearCart();
+            const razorpay = new window.Razorpay(options);
+            razorpay.open();
         } catch (error: any) {
             console.error('Checkout error:', error);
             setStatus('error');

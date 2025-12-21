@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
 import hostRoutes from './routes/hosts';
 import bookingRoutes from './routes/bookings';
+import paymentRoutes from './routes/payments';
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/hosts', hostRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
     res.send('upSosh Backend API is running');
