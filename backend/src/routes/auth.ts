@@ -178,6 +178,12 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
                 name: true,
                 email: true,
                 role: true,
+                bio: true,
+                avatar: true,
+                isHost: true,
+                hostName: true,
+                hostBio: true,
+                hostVerified: true,
                 createdAt: true
             }
         });
@@ -186,18 +192,8 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Return user with expected fields (add defaults for missing fields)
-        return res.json({ 
-            user: {
-                ...user,
-                bio: null,
-                avatar: null,
-                isHost: false,
-                hostName: null,
-                hostBio: null,
-                hostVerified: false
-            }
-        });
+        // Return user with all fields from database
+        return res.json({ user });
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
     }
@@ -228,11 +224,14 @@ router.put('/me', async (req: Request, res: Response): Promise<any> => {
 
         const { name, bio, avatar, isHost, hostName, hostBio } = req.body;
 
-        // Only update name for now (until migration runs)
+        // Build update data with all provided fields
         const updateData: any = {};
-        if (name !== undefined) {
-            updateData.name = name;
-        }
+        if (name !== undefined) updateData.name = name;
+        if (bio !== undefined) updateData.bio = bio;
+        if (avatar !== undefined) updateData.avatar = avatar;
+        if (isHost !== undefined) updateData.isHost = isHost;
+        if (hostName !== undefined) updateData.hostName = hostName;
+        if (hostBio !== undefined) updateData.hostBio = hostBio;
 
         const user = await prisma.user.update({
             where: { id: decoded.userId },
@@ -242,22 +241,18 @@ router.put('/me', async (req: Request, res: Response): Promise<any> => {
                 name: true,
                 email: true,
                 role: true,
+                bio: true,
+                avatar: true,
+                isHost: true,
+                hostName: true,
+                hostBio: true,
+                hostVerified: true,
                 createdAt: true
             }
         });
 
-        // Return user with expected fields
-        return res.json({ 
-            user: {
-                ...user,
-                bio: bio ?? null,
-                avatar: avatar ?? null,
-                isHost: isHost ?? false,
-                hostName: hostName ?? null,
-                hostBio: hostBio ?? null,
-                hostVerified: false
-            }
-        });
+        // Return the updated user from database
+        return res.json({ user });
     } catch (error) {
         console.error('Update profile error:', error);
         return res.status(500).json({ message: 'Failed to update profile' });

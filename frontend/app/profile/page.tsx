@@ -50,6 +50,11 @@ export default function ProfilePage() {
             if (userData && userData.user) {
                 const user = userData.user;
                 setUser(user);
+                
+                // Update localStorage with fresh data
+                localStorage.setItem('userData', JSON.stringify(user));
+                localStorage.setItem('user', user.name);
+                
                 setProfileData({
                     name: user.name || '',
                     email: user.email || '',
@@ -63,6 +68,11 @@ export default function ProfilePage() {
             } else if (userData) {
                 // Direct user object
                 setUser(userData);
+                
+                // Update localStorage
+                localStorage.setItem('userData', JSON.stringify(userData));
+                localStorage.setItem('user', userData.name);
+                
                 setProfileData({
                     name: userData.name || '',
                     email: userData.email || '',
@@ -75,18 +85,19 @@ export default function ProfilePage() {
                 });
             } else {
                 // Fallback to localStorage data
-                const storedUser = localStorage.getItem('user');
-                if (storedUser) {
-                    setUser({ name: storedUser });
+                const storedUserData = localStorage.getItem('userData');
+                if (storedUserData) {
+                    const storedUser = JSON.parse(storedUserData);
+                    setUser(storedUser);
                     setProfileData({
-                        name: storedUser,
-                        email: '',
-                        bio: '',
-                        avatar: '',
-                        isHost: false,
-                        hostName: storedUser,
-                        hostBio: '',
-                        hostVerified: false
+                        name: storedUser.name || '',
+                        email: storedUser.email || '',
+                        bio: storedUser.bio || '',
+                        avatar: storedUser.avatar || '',
+                        isHost: storedUser.isHost || false,
+                        hostName: storedUser.hostName || storedUser.name || '',
+                        hostBio: storedUser.hostBio || '',
+                        hostVerified: storedUser.hostVerified || false
                     });
                 } else {
                     router.push('/login');
@@ -95,19 +106,25 @@ export default function ProfilePage() {
         } catch (error) {
             console.error('Failed to load user data:', error);
             // Fallback to localStorage
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-                setUser({ name: storedUser });
-                setProfileData({
-                    name: storedUser,
-                    email: '',
-                    bio: '',
-                    avatar: '',
-                    isHost: false,
-                    hostName: storedUser,
-                    hostBio: '',
-                    hostVerified: false
-                });
+            const storedUserData = localStorage.getItem('userData');
+            if (storedUserData) {
+                try {
+                    const storedUser = JSON.parse(storedUserData);
+                    setUser(storedUser);
+                    setProfileData({
+                        name: storedUser.name || '',
+                        email: storedUser.email || '',
+                        bio: storedUser.bio || '',
+                        avatar: storedUser.avatar || '',
+                        isHost: storedUser.isHost || false,
+                        hostName: storedUser.hostName || storedUser.name || '',
+                        hostBio: storedUser.hostBio || '',
+                        hostVerified: storedUser.hostVerified || false
+                    });
+                } catch (e) {
+                    console.error('Error parsing stored user data:', e);
+                    router.push('/login');
+                }
             } else {
                 router.push('/login');
             }
@@ -147,16 +164,33 @@ export default function ProfilePage() {
             });
             
             if (result && result.user) {
+                // Update local state
                 setUser(result.user);
+                
+                // Update localStorage with all user data
                 localStorage.setItem('user', result.user.name);
-                // Also store the full user object with isHost
                 localStorage.setItem('userData', JSON.stringify(result.user));
+                
+                // Update profile data state with the saved values
+                setProfileData({
+                    name: result.user.name || '',
+                    email: result.user.email || '',
+                    bio: result.user.bio || '',
+                    avatar: result.user.avatar || '',
+                    isHost: result.user.isHost || false,
+                    hostName: result.user.hostName || result.user.name || '',
+                    hostBio: result.user.hostBio || '',
+                    hostVerified: result.user.hostVerified || false
+                });
+                
+                // Dispatch storage event to update UI components
                 window.dispatchEvent(new Event('storage'));
             }
             
             alert('Profile updated successfully!');
             setIsEditing(false);
         } catch (error: any) {
+            console.error('Profile update error:', error);
             alert(error.message || 'Failed to update profile');
         } finally {
             setIsSaving(false);
