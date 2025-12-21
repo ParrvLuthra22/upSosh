@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import HostEventForm from '@/src/components/host/HostEventForm';
 import MyEventsList from '@/src/components/host/MyEventsList';
 import AIAssistant from '@/src/components/host/AIAssistant';
@@ -9,6 +9,7 @@ import { api, Event } from '@/src/lib/api';
 
 export default function HostPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
     const [isHost, setIsHost] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -17,6 +18,27 @@ export default function HostPage() {
     useEffect(() => {
         checkHostStatus();
     }, []);
+
+    useEffect(() => {
+        // Check if there's an edit parameter in the URL
+        const editId = searchParams?.get('edit');
+        if (editId && isHost) {
+            loadEventForEdit(editId);
+        }
+    }, [searchParams, isHost]);
+
+    const loadEventForEdit = async (eventId: string) => {
+        try {
+            const events = await api.getEvents();
+            const eventToEdit = events.find((e: Event) => e.id === eventId);
+            if (eventToEdit) {
+                setEditingEvent(eventToEdit);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } catch (error) {
+            console.error('Failed to load event for editing:', error);
+        }
+    };
 
     const checkHostStatus = async () => {
         try {

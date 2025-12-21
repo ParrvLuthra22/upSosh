@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/src/lib/api';
 import { useRouter } from 'next/navigation';
+import MyEventsList from '@/src/components/host/MyEventsList';
 
 export default function ProfilePage() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'profile' | 'tickets' | 'security'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'tickets' | 'events' | 'security'>('profile');
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -263,6 +264,16 @@ export default function ProfilePage() {
                                     My Tickets
                                 </button>
                                 <button
+                                    onClick={() => setActiveTab('events')}
+                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                                        activeTab === 'events' 
+                                            ? 'bg-primary text-white' 
+                                            : 'hover:bg-surface-highlight'
+                                    }`}
+                                >
+                                    My Events
+                                </button>
+                                <button
                                     onClick={() => setActiveTab('security')}
                                     className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                                         activeTab === 'security' 
@@ -465,6 +476,43 @@ export default function ProfilePage() {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* My Events Tab */}
+                        {activeTab === 'events' && (
+                            <div className="bg-surface rounded-2xl p-8 border border-white/10">
+                                <h2 className="text-2xl font-bold mb-6">My Events</h2>
+                                {!user?.isHost ? (
+                                    <div className="text-center py-12">
+                                        <div className="text-6xl mb-4">🎪</div>
+                                        <h3 className="text-xl font-bold mb-2">Host Account Required</h3>
+                                        <p className="text-text-secondary mb-6">Enable host mode in your profile to create and manage events.</p>
+                                        <button
+                                            onClick={() => setActiveTab('profile')}
+                                            className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                                        >
+                                            Enable Host Mode
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="mb-6">
+                                            <button
+                                                onClick={() => router.push('/host')}
+                                                className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                                            >
+                                                Create New Event
+                                            </button>
+                                        </div>
+                                        <MyEventsList 
+                                            onEdit={(event: any) => {
+                                                // Navigate to host page with event data
+                                                router.push(`/host?edit=${event.id}`);
+                                            }}
+                                        />
                                     </div>
                                 )}
                             </div>
