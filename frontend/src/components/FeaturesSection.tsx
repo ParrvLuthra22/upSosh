@@ -3,9 +3,29 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import FeatureCard from './FeatureCard';
 
 gsap.registerPlugin(ScrollTrigger);
+
+interface FeatureCardProps {
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon }) => {
+    return (
+        <div className="group relative bg-surface border border-border/50 rounded-2xl p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-300" />
+            <div className="relative z-10">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
+                    {icon}
+                </div>
+                <h3 className="text-2xl font-heading font-bold text-text-primary mb-3">{title}</h3>
+                <p className="text-text-secondary leading-relaxed">{description}</p>
+            </div>
+        </div>
+    );
+};
 
 const features = [
     {

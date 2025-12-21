@@ -1,15 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { ReactNode, ButtonHTMLAttributes } from 'react';
 
-interface ButtonProps {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-  onClick?: () => void;
   href?: string;
-  className?: string;
 }
 
 export default function Button({
@@ -19,6 +17,7 @@ export default function Button({
   onClick,
   href,
   className = '',
+  ...props
 }: ButtonProps) {
   const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-300 transform hover:scale-105';
   
@@ -51,6 +50,8 @@ export default function Button({
 
   return (
     <motion.button
+      type={props.type}
+      disabled={props.disabled}
       onClick={onClick}
       className={classes}
       whileHover={{ scale: 1.05 }}

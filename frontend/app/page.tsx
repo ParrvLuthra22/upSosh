@@ -1,4 +1,4 @@
-import Hero from '@/src/components/Hero';
+import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/src/components/FeaturesSection';
 import { generateOrganizationSchema } from '@/src/lib/structuredData';
 
@@ -9,7 +9,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }}
       />
-      <Hero />
+      <HeroSection />
       <FeaturesSection />
     </main>
   );
