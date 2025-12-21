@@ -5,6 +5,7 @@ import SearchBar from '@/src/components/booking/SearchBar';
 import Filters from '@/src/components/booking/Filters';
 import EventGrid from '@/src/components/booking/EventGrid';
 import Pagination from '@/src/components/booking/Pagination';
+import FormalInformalToggle from '@/src/components/FormalInformalToggle';
 import { useBookingStore } from '@/src/store/bookingStore';
 import { useAppStore } from '@/src/store/useAppStore';
 import { api } from '@/src/lib/api';
@@ -65,6 +66,9 @@ export default function BookingPage() {
                 <h1 className="text-4xl font-heading font-bold mb-8 text-center">
                     Find Your Next Experience
                 </h1>
+
+                {/* Formal/Informal Toggle */}
+                <FormalInformalToggle />
 
                 <SearchBar />
 
