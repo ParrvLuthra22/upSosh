@@ -256,89 +256,91 @@ export const api = {
         }
     },
 
-    // Payment methods
-    createPaymentOrder: async (amount: number, currency = 'INR') => {
-        const token = localStorage.getItem('token');
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    // RAZORPAY PAYMENT METHODS COMMENTED OUT - Using manual payment verification
+    // Uncomment when Razorpay is approved
+    
+    // createPaymentOrder: async (amount: number, currency = 'INR') => {
+    //     const token = localStorage.getItem('token');
+    //     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    //     
+    //     if (token) {
+    //         headers['Authorization'] = `Bearer ${token}`;
+    //     }
 
-        const res = await fetch(`${API_URL}/payments/create-order`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ amount, currency }),
-            credentials: 'include',
-        });
+    //     const res = await fetch(`${API_URL}/payments/create-order`, {
+    //         method: 'POST',
+    //         headers,
+    //         body: JSON.stringify({ amount, currency }),
+    //         credentials: 'include',
+    //     });
 
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await res.text();
-            console.error('Non-JSON response from payment order:', text);
-            throw new Error('Server returned invalid response. Please ensure you are logged in.');
-        }
+    //     const contentType = res.headers.get('content-type');
+    //     if (!contentType || !contentType.includes('application/json')) {
+    //         const text = await res.text();
+    //         console.error('Non-JSON response from payment order:', text);
+    //         throw new Error('Server returned invalid response. Please ensure you are logged in.');
+    //     }
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.error || 'Failed to create payment order');
-        }
+    //     if (!res.ok) {
+    //         const error = await res.json();
+    //         throw new Error(error.error || 'Failed to create payment order');
+    //     }
 
-        return res.json();
-    },
+    //     return res.json();
+    // },
 
-    verifyPayment: async (paymentData: {
-        razorpay_order_id: string;
-        razorpay_payment_id: string;
-        razorpay_signature: string;
-    }) => {
-        const token = localStorage.getItem('token');
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    // verifyPayment: async (paymentData: {
+    //     razorpay_order_id: string;
+    //     razorpay_payment_id: string;
+    //     razorpay_signature: string;
+    // }) => {
+    //     const token = localStorage.getItem('token');
+    //     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    //     
+    //     if (token) {
+    //         headers['Authorization'] = `Bearer ${token}`;
+    //     }
 
-        const res = await fetch(`${API_URL}/payments/verify-payment`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(paymentData),
-            credentials: 'include',
-        });
+    //     const res = await fetch(`${API_URL}/payments/verify-payment`, {
+    //         method: 'POST',
+    //         headers,
+    //         body: JSON.stringify(paymentData),
+    //         credentials: 'include',
+    //     });
 
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await res.text();
-            console.error('Non-JSON response from payment verify:', text);
-            throw new Error('Server returned invalid response. Please contact support.');
-        }
+    //     const contentType = res.headers.get('content-type');
+    //     if (!contentType || !contentType.includes('application/json')) {
+    //         const text = await res.text();
+    //         console.error('Non-JSON response from payment verify:', text);
+    //         throw new Error('Server returned invalid response. Please contact support.');
+    //     }
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.error || 'Failed to verify payment');
-        }
+    //     if (!res.ok) {
+    //         const error = await res.json();
+    //         throw new Error(error.error || 'Failed to verify payment');
+    //     }
 
-        return res.json();
-    },
+    //     return res.json();
+    // },
 
-    getPaymentDetails: async (paymentId: string) => {
-        const token = localStorage.getItem('token');
-        const headers: Record<string, string> = {};
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    // getPaymentDetails: async (paymentId: string) => {
+    //     const token = localStorage.getItem('token');
+    //     const headers: Record<string, string> = {};
+    //     
+    //     if (token) {
+    //         headers['Authorization'] = `Bearer ${token}`;
+    //     }
 
-        const res = await fetch(`${API_URL}/payments/payment/${paymentId}`, {
-            headers,
-            credentials: 'include',
-        });
+    //     const res = await fetch(`${API_URL}/payments/payment/${paymentId}`, {
+    //         headers,
+    //         credentials: 'include',
+    //     });
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.error || 'Failed to fetch payment details');
-        }
+    //     if (!res.ok) {
+    //         const error = await res.json();
+    //         throw new Error(error.error || 'Failed to fetch payment details');
+    //     }
 
-        return res.json();
-    }
+    //     return res.json();
+    // }
 };
