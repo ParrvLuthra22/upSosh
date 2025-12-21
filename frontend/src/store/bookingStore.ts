@@ -5,7 +5,6 @@ import { Event } from '@/src/lib/api';
 interface Filters {
     type: 'all' | 'formal' | 'informal';
     dateRange: { start: string | null; end: string | null };
-    priceRange: { min: number; max: number };
     isSuperhost: boolean;
     sort: 'date' | 'price_asc' | 'price_desc';
 }
@@ -56,7 +55,6 @@ export const useBookingStore = create<BookingState>()(
             filters: {
                 type: 'all',
                 dateRange: { start: null, end: null },
-                priceRange: { min: 0, max: 1000 },
                 isSuperhost: false,
                 sort: 'date',
             },
@@ -150,11 +148,6 @@ export const useBookingStore = create<BookingState>()(
                 if (filters.isSuperhost) {
                     result = result.filter((e) => e.isSuperhost);
                 }
-
-                // Price Filter
-                result = result.filter(
-                    (e) => e.price >= filters.priceRange.min && e.price <= filters.priceRange.max
-                );
 
                 // Date Filter
                 if (filters.dateRange.start) {
