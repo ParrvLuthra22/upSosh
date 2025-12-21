@@ -78,7 +78,30 @@ router.get('/pending', authenticate, async (req: Request, res: Response) => {
             orderBy: { createdAt: 'desc' }
         });
 
-        res.json(bookings);
+        // Parse items and remove large Base64 images from event data to reduce payload size
+        const sanitizedBookings = bookings.map(booking => {
+            let items = [];
+            try {
+                items = JSON.parse(booking.items);
+                // Remove or truncate large Base64 images from items
+                items = items.map((item: any) => {
+                    if (item.image && item.image.startsWith('data:image')) {
+                        // Replace with placeholder or truncate
+                        return { ...item, image: '[Base64 Image Removed]' };
+                    }
+                    return item;
+                });
+            } catch (e) {
+                console.error('Error parsing booking items:', e);
+            }
+
+            return {
+                ...booking,
+                items: JSON.stringify(items)
+            };
+        });
+
+        res.json(sanitizedBookings);
     } catch (error: any) {
         console.error('Error fetching pending bookings:', error);
         res.status(500).json({ error: 'Failed to fetch bookings', message: error.message });
