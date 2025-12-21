@@ -19,14 +19,14 @@ const FormalInformalToggle = () => {
         if (isFormal) {
             // Animate to Formal state
             tl.to(knobRef.current, { x: '100%' }, 0)
-                .to(formalTextRef.current, { color: '#ffffff', fontWeight: 600 }, 0)
-                .to(informalTextRef.current, { color: '#94a3b8', fontWeight: 400 }, 0)
+                .to(formalTextRef.current, { color: '#1e293b', fontWeight: 600 }, 0) // Dark text on white knob
+                .to(informalTextRef.current, { color: '#e2e8f0', fontWeight: 400 }, 0) // Light text on blue bg
                 .to(toggleRef.current, { backgroundColor: '#3B82F6' }, 0); // Blue for formal
         } else {
             // Animate to Informal state
             tl.to(knobRef.current, { x: '0%' }, 0)
-                .to(formalTextRef.current, { color: '#94a3b8', fontWeight: 400 }, 0)
-                .to(informalTextRef.current, { color: '#ffffff', fontWeight: 600 }, 0)
+                .to(formalTextRef.current, { color: '#e2e8f0', fontWeight: 400 }, 0) // Light text on purple bg
+                .to(informalTextRef.current, { color: '#1e293b', fontWeight: 600 }, 0) // Dark text on white knob
                 .to(toggleRef.current, { backgroundColor: '#A855F7' }, 0); // Purple for informal
         }
     }, [isFormal]);
