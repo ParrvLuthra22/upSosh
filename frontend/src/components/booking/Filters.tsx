@@ -47,27 +47,6 @@ const Filters = () => {
                 </div>
             </div>
 
-            {/* Price Range */}
-            <div className="space-y-3">
-                <label className="text-sm font-medium text-text-secondary">
-                    Price Range: ₹{filters.priceRange.min} - ₹{filters.priceRange.max}
-                </label>
-                <input
-                    type="range"
-                    min="0"
-                    max="1000"
-                    step="10"
-                    value={filters.priceRange.max}
-                    onChange={(e) =>
-                        setFilters({
-                            priceRange: { ...filters.priceRange, max: Number(e.target.value) },
-                        })
-                    }
-                    className="w-full h-2 bg-surface-highlight rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                    aria-label="Maximum price"
-                />
-            </div>
-
             {/* Superhost Toggle */}
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-text-secondary">Superhost Only</label>
