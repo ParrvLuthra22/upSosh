@@ -88,18 +88,45 @@ export default function ConfirmationPage() {
             <div id="confetti-container" className="absolute inset-0 pointer-events-none" />
 
             <div className="container mx-auto max-w-2xl text-center space-y-8 relative z-10">
-                <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-green-500/30">
-                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                {/* Success Icon - Different for pending vs confirmed */}
+                <div className={`w-24 h-24 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-yellow-500'} rounded-full flex items-center justify-center mx-auto shadow-xl ${booking.status === 'confirmed' ? 'shadow-green-500/30' : 'shadow-yellow-500/30'}`}>
+                    {booking.status === 'confirmed' ? (
+                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                    ) : (
+                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    )}
                 </div>
 
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-heading font-bold text-text-primary">Booking Confirmed!</h1>
+                    <h1 className="text-4xl font-heading font-bold text-text-primary">
+                        {booking.status === 'confirmed' ? 'Booking Confirmed!' : 'Booking Received!'}
+                    </h1>
                     <p className="text-text-secondary text-lg">
-                        Your order <span className="font-mono font-bold text-primary">#{booking.id}</span> has been successfully processed.
+                        Your order <span className="font-mono font-bold text-primary">#{booking.id.slice(-8)}</span> has been successfully {booking.status === 'confirmed' ? 'confirmed' : 'received'}.
                     </p>
                 </div>
+
+                {/* Pending Approval Message */}
+                {booking.status === 'pending' && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 space-y-3">
+                        <div className="flex items-center justify-center gap-2 text-yellow-500">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 className="text-lg font-bold">Payment Under Review</h3>
+                        </div>
+                        <p className="text-text-secondary">
+                            Our team is reviewing your payment proof. This usually takes <span className="font-bold text-white">6-8 hours</span>.
+                        </p>
+                        <p className="text-text-muted text-sm">
+                            Once approved, your tickets will be available in <span className="font-semibold">My Profile → My Tickets</span>
+                        </p>
+                    </div>
+                )}
 
                 <div className="bg-surface/50 backdrop-blur-md border border-white/10 rounded-3xl p-8 space-y-6">
                     <h2 className="text-xl font-bold text-text-primary">Your Events</h2>
@@ -111,12 +138,18 @@ export default function ConfirmationPage() {
                                     <h3 className="font-bold text-text-primary">{item.title}</h3>
                                     <p className="text-sm text-text-muted">{item.date} • {item.time}</p>
                                 </div>
-                                <button
-                                    onClick={() => setShowTicket(true)}
-                                    className="px-4 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    View Ticket
-                                </button>
+                                {booking.status === 'confirmed' ? (
+                                    <button
+                                        onClick={() => setShowTicket(true)}
+                                        className="px-4 py-2 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        View Ticket
+                                    </button>
+                                ) : (
+                                    <span className="px-4 py-2 bg-yellow-500/20 text-yellow-500 text-sm font-bold rounded-lg">
+                                        Pending
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -129,20 +162,30 @@ export default function ConfirmationPage() {
                     >
                         Book Another
                     </button>
+                    {booking.status === 'confirmed' && (
+                        <button
+                            onClick={() => setShowTicket(true)}
+                            className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+                        >
+                            View All Tickets
+                        </button>
+                    )}
                     <button
-                        onClick={() => setShowTicket(true)}
+                        onClick={() => router.push('/profile')}
                         className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
                     >
-                        View All Tickets
+                        Go to Profile
                     </button>
                 </div>
             </div>
 
-            <QRTicketModal
-                booking={booking}
-                isOpen={showTicket}
-                onClose={() => setShowTicket(false)}
-            />
+            {booking.status === 'confirmed' && (
+                <QRTicketModal
+                    booking={booking}
+                    isOpen={showTicket}
+                    onClose={() => setShowTicket(false)}
+                />
+            )}
         </div>
     );
 }

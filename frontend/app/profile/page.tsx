@@ -502,6 +502,19 @@ export default function ProfilePage() {
                                                         {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
                                                     </span>
                                                 </div>
+                                                
+                                                {/* Pending approval message */}
+                                                {ticket.status === 'pending' && (
+                                                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                                                        <div className="flex items-center gap-2 text-yellow-500 text-sm">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            <span className="font-medium">Payment under review (6-8 hours)</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
                                                 <div className="space-y-2">
                                                     {ticket.items?.map((item: any, idx: number) => (
                                                         <div key={idx} className="flex justify-between text-sm">
@@ -514,6 +527,18 @@ export default function ProfilePage() {
                                                     <span className="font-bold">Total Amount:</span>
                                                     <span className="text-xl font-bold text-primary">₹{ticket.totalAmount}</span>
                                                 </div>
+                                                
+                                                {/* View Ticket button - only for confirmed */}
+                                                {ticket.status === 'confirmed' && (
+                                                    <div className="mt-4">
+                                                        <button
+                                                            onClick={() => router.push(`/booking/confirmation/${ticket.id}`)}
+                                                            className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                                                        >
+                                                            View Tickets
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
