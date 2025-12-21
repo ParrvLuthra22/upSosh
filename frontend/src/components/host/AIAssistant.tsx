@@ -54,7 +54,7 @@ const AIAssistant = () => {
 
             <div className="space-y-4 flex-grow">
                 <div>
-                    <label className="text-sm font-medium text-text-secondary">Total Budget ($)</label>
+                    <label className="text-sm font-medium text-text-secondary">Total Budget (₹)</label>
                     <input
                         type="number"
                         value={input.budget}
