@@ -318,12 +318,6 @@ export const api = {
         }
 
         return res.json();
-    },        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.error || 'Payment verification failed');
-        }
-
-        return res.json();
     },
 
     getPaymentDetails: async (paymentId: string) => {
