@@ -32,19 +32,30 @@ export default function AdminPaymentsPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, ''); // Remove trailing slash
-      const response = await fetch(`${apiUrl}/bookings/pending`, {
+      // Use the same API_URL logic as in api.ts
+      const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
+        : 'https://upsosh-production.up.railway.app/api';
+      
+      console.log('Fetching pending bookings from:', `${API_URL}/bookings/pending`);
+      
+      const response = await fetch(`${API_URL}/bookings/pending`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
       });
+
+      console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData);
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('Received bookings:', data);
       setBookings(data);
     } catch (error: any) {
       console.error('Error fetching bookings:', error);
@@ -57,15 +68,19 @@ export default function AdminPaymentsPage() {
   const approvePayment = async (bookingId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+      const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
+        : 'https://upsosh-production.up.railway.app/api';
+        
       const response = await fetch(
-        `${apiUrl}/bookings/${bookingId}/approve`,
+        `${API_URL}/bookings/${bookingId}/approve`,
         {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
         }
       );
 
@@ -86,15 +101,19 @@ export default function AdminPaymentsPage() {
     const reason = prompt('Reason for rejection (optional):');
     try {
       const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+      const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
+        : 'https://upsosh-production.up.railway.app/api';
+        
       const response = await fetch(
-        `${apiUrl}/bookings/${bookingId}/reject`,
+        `${API_URL}/bookings/${bookingId}/reject`,
         {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ reason }),
         }
       );
