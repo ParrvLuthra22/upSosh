@@ -64,6 +64,14 @@ const EventDetailsModal = () => {
         handleClose();
     };
 
+    const handleBuyNow = () => {
+        // Don't add to cart here, just open checkout with current quantity
+        // The checkout modal will use the qty from the modal state
+        addToCart(selectedEvent, qty);
+        handleClose();
+        setTimeout(() => toggleCheckout(true), 300); // Wait for modal close animation
+    };
+
     return (
         <div
             ref={modalRef}
@@ -211,10 +219,7 @@ const EventDetailsModal = () => {
                                 Add to Cart
                             </button>
                             <button
-                                onClick={() => {
-                                    handleAddToCart();
-                                    toggleCheckout(true);
-                                }}
+                                onClick={handleBuyNow}
                                 className="py-3 px-4 rounded-xl bg-primary text-white font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary"
                             >
                                 Buy Now

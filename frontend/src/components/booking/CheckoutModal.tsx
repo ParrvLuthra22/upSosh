@@ -258,8 +258,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 <div className="space-y-3">
                                     <div className="bg-surface border border-border/50 rounded-lg p-4">
                                         <p className="text-sm text-text-muted mb-1">UPI ID</p>
-                                        <p className="text-xl font-mono font-bold text-primary">upsosh@paytm</p>
-                                        <button onClick={() => navigator.clipboard.writeText('upsosh@paytm')} className="text-sm text-blue-400 hover:text-blue-300 mt-2">📋 Copy</button>
+                                        <p className="text-xl font-mono font-bold text-primary">upsosh@ptyes</p>
+                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-blue-400 hover:text-blue-300 mt-2">📋 Copy</button>
                                     </div>
                                     
                                     <div className="bg-surface border border-border/50 rounded-lg p-4">
