@@ -33,6 +33,7 @@ export interface Booking {
     totalAmount: number;
     status: 'confirmed' | 'pending' | 'cancelled';
     paymentId?: string;
+    paymentProof?: string; // Base64 image for manual payment
     customer?: {
         name: string;
         email: string;

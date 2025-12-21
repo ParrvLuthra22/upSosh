@@ -33,14 +33,15 @@ model Event {
 }
 
 model Booking {
-  id          String   @id @default(cuid())
-  userId      String
-  items       String // JSON
-  totalAmount Float
-  status      String
-  paymentId   String?
-  customer    String? // JSON
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  items        String // JSON
+  totalAmount  Float
+  status       String
+  paymentId    String?
+  paymentProof String? // Base64 image for manual payment verification
+  customer     String? // JSON
+  createdAt    DateTime @default(now())
 }
 
 model User {
