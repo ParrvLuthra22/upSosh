@@ -180,19 +180,43 @@ export const api = {
     },
 
     updateEvent: async (eventId: string, event: Partial<Event>): Promise<Event> => {
-        const res = await fetch(`${API_URL}/events/${eventId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(event),
-            credentials: 'include',
-        });
-        const data = await res.json();
-        if (!res.ok) {
-            throw new Error(data.error || data.details || 'Failed to update event');
+        try {
+            console.log(`Calling PUT ${API_URL}/events/${eventId}`);
+            console.log('Event data size:', JSON.stringify(event).length, 'bytes');
+            
+            // Create abort controller for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            
+            const res = await fetch(`${API_URL}/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(event),
+                credentials: 'include',
+                signal: controller.signal,
+            });
+            
+            clearTimeout(timeoutId);
+            console.log('Update response status:', res.status);
+            const data = await res.json();
+            console.log('Update response data:', data);
+            
+            if (!res.ok) {
+                throw new Error(data.error || data.details || 'Failed to update event');
+            }
+            return data;
+        } catch (error: any) {
+            console.error('Update event error:', error);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out. The server took too long to respond. This might be due to a large image size. Try using a smaller image or an image URL instead.');
+            }
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                throw new Error('Cannot connect to server. Please check if the backend is running.');
+            }
+            throw error;
         }
-        return data;
     },
 
     deleteEvent: async (eventId: string): Promise<void> => {

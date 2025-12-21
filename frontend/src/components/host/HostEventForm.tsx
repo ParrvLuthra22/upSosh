@@ -89,10 +89,15 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         try {
             if (eventToEdit) {
                 // Update existing event
-                await api.updateEvent(eventToEdit.id, {
+                console.log('Updating event:', eventToEdit.id, formData);
+                const updateData = {
                     ...formData,
                     tags: [formData.type, 'live', 'event'],
-                } as any);
+                };
+                console.log('Update payload:', updateData);
+                
+                const response = await api.updateEvent(eventToEdit.id, updateData as any);
+                console.log('Event updated successfully:', response);
                 alert('Event updated successfully! 🎉');
                 if (onEventSaved) onEventSaved();
             } else {
@@ -129,9 +134,9 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     menu: [] as string[],
                 });
                 setImagePreview('https://images.unsplash.com/photo-1492684223066-81342ee5ff30');
+                
+                if (onEventSaved) onEventSaved();
             }
-            
-            if (onEventSaved) onEventSaved();
         } catch (error: any) {
             console.error('Failed to save event:', error);
             alert(`Failed to save event: ${error.message || 'Please try again.'}`);
