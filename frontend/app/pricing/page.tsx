@@ -19,7 +19,7 @@ export default function PricingPage() {
                     <div className="bg-surface rounded-3xl p-8 border border-white/10 flex flex-col">
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-text-secondary mb-2">Starter</h3>
-                            <div className="text-4xl font-bold mb-2">$0<span className="text-lg text-text-muted font-normal">/mo</span></div>
+                            <div className="text-4xl font-bold mb-2">Free<span className="text-lg text-text-muted font-normal"></span></div>
                             <p className="text-sm text-text-muted">Perfect for hosting your first few events.</p>
                         </div>
                         <ul className="space-y-4 mb-8 flex-1">
@@ -41,7 +41,7 @@ export default function PricingPage() {
                         </div>
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-primary mb-2">Pro Host</h3>
-                            <div className="text-4xl font-bold mb-2">$29<span className="text-lg text-text-muted font-normal">/mo</span></div>
+                            <div className="text-4xl font-bold mb-2">₹2,499<span className="text-lg text-text-muted font-normal">/mo</span></div>
                             <p className="text-sm text-text-muted">For serious organizers scaling up.</p>
                         </div>
                         <ul className="space-y-4 mb-8 flex-1">

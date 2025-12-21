@@ -60,7 +60,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
 
                 {/* Price Badge */}
                 <div className="absolute top-4 right-4 z-20 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-text-primary shadow-sm">
-                    {event.price === 0 ? 'Free' : `$${event.price}`}
+                    {event.price === 0 ? 'Free' : `₹${event.price}`}
                 </div>
 
                 {/* Type Badge */}

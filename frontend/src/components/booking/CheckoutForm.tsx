@@ -146,7 +146,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onSubmit, isProcessing }) =
                                     <p className="text-sm font-medium text-text-primary line-clamp-1">{item.title}</p>
                                     <p className="text-xs text-text-muted">Qty: {item.qty}</p>
                                 </div>
-                                <p className="text-sm font-bold text-text-primary">${item.price * item.qty}</p>
+                                <p className="text-sm font-bold text-text-primary">₹{item.price * item.qty}</p>
                             </div>
                         ))}
                     </div>

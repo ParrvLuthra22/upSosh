@@ -179,8 +179,8 @@ const EventDetailsModal = () => {
                     <div className="mt-8 pt-6 border-t border-border/50 space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="text-2xl font-bold text-text-primary">
-                                ${selectedEvent.price * qty}
-                                {qty > 1 && <span className="text-sm font-normal text-text-muted ml-2">(${selectedEvent.price} x {qty})</span>}
+                                ₹{selectedEvent.price * qty}
+                                {qty > 1 && <span className="text-sm font-normal text-text-muted ml-2">(₹{selectedEvent.price} x {qty})</span>}
                             </div>
 
                             {/* Quantity Selector */}

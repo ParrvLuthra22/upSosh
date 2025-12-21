@@ -131,7 +131,7 @@ const CartDrawer = () => {
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="font-bold text-text-primary">${item.price * item.qty}</span>
+                                            <span className="font-bold text-text-primary">₹{item.price * item.qty}</span>
                                             <button
                                                 onClick={() => removeFromCart(item.id)}
                                                 className="text-text-muted hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded-full p-1"

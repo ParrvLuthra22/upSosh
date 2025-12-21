@@ -50,7 +50,7 @@ const Filters = () => {
             {/* Price Range */}
             <div className="space-y-3">
                 <label className="text-sm font-medium text-text-secondary">
-                    Price Range: ${filters.priceRange.min} - ${filters.priceRange.max}
+                    Price Range: ₹{filters.priceRange.min} - ₹{filters.priceRange.max}
                 </label>
                 <input
                     type="range"

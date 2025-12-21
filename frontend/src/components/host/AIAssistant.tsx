@@ -17,7 +17,7 @@ const AIAssistant = () => {
         setTimeout(() => {
             const budget = Number(input.budget);
             const guests = Number(input.guests);
-            const profit = (guests * 50) - budget; // Simple heuristic: $50 ticket price
+            const profit = (guests * 500) - budget; // Simple heuristic: ₹500 ticket price
 
             const suggestion = `
 ### 🤖 AI Event Plan
@@ -32,7 +32,7 @@ const AIAssistant = () => {
 -   Marketing & Staff: $${budget * 0.25}
 
 **📈 Profitability Analysis:**
--   Estimated Ticket Price: $50
+-   Estimated Ticket Price: ₹500
 -   Potential Revenue: $${guests * 50}
 -   **Estimated Profit: $${profit}** ${profit > 0 ? '✅ Profitable!' : '⚠️ Tight Budget'}
             `;
