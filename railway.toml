@@ -2,6 +2,8 @@
 builder = "NIXPACKS"
 
 [build.nixpacksPlan]
-phases.install = { cmd = "npm ci" }
-phases.build = { cmd = "npm run build --workspace=upsosh-backend" }
-phases.start = { cmd = "npm run start --workspace=upsosh-backend" }
+phases.install = { cmd = "npm ci --workspace=backend" }
+phases.build = { cmd = "cd backend && npm run build" }
+
+[deploy]
+startCommand = "cd backend && npm run start"
