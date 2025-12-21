@@ -11,7 +11,7 @@ const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const { theme, toggleTheme } = useTheme();
 
-    const [user, setUser] = useState<{ name: string; email: string; isHost?: boolean } | null>(null);
+    const [user, setUser] = useState<{ name: string; email: string; isHost?: boolean; role?: string } | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -137,6 +137,14 @@ const Header = () => {
                                 <span className="text-sm font-medium text-text-primary hidden md:block">
                                     Hi, {user.name}
                                 </span>
+                                {user.role === 'admin' && (
+                                    <Link
+                                        href="/admin/payments"
+                                        className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg"
+                                    >
+                                        🔐 Admin Panel
+                                    </Link>
+                                )}
                                 {user.isHost && (
                                     <Link
                                         href="/host"
