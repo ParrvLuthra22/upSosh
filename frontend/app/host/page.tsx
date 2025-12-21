@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import HostEventForm from '@/src/components/host/HostEventForm';
 import MyEventsList from '@/src/components/host/MyEventsList';
 import AIAssistant from '@/src/components/host/AIAssistant';
 import { api, Event } from '@/src/lib/api';
 
-export default function HostPage() {
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
+function HostPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
@@ -211,5 +214,20 @@ export default function HostPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function HostPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen pt-24 pb-12 px-4 md:px-8 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-text-secondary">Loading...</p>
+                </div>
+            </div>
+        }>
+            <HostPageContent />
+        </Suspense>
     );
 }
