@@ -32,18 +32,23 @@ export default function AdminPaymentsPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/pending`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, ''); // Remove trailing slash
+      const response = await fetch(`${apiUrl}/bookings/pending`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch bookings');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+      
       const data = await response.json();
       setBookings(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching bookings:', error);
-      alert('Failed to load pending bookings');
+      alert(`Failed to load pending bookings: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -52,8 +57,9 @@ export default function AdminPaymentsPage() {
   const approvePayment = async (bookingId: string) => {
     try {
       const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bookings/${bookingId}/approve`,
+        `${apiUrl}/bookings/${bookingId}/approve`,
         {
           method: 'PATCH',
           headers: {
@@ -63,13 +69,16 @@ export default function AdminPaymentsPage() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to approve payment');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to approve payment');
+      }
       
       alert('Payment approved! User can now access their tickets.');
       fetchPendingBookings(); // Refresh list
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving payment:', error);
-      alert('Failed to approve payment');
+      alert(`Failed to approve payment: ${error.message}`);
     }
   };
 
@@ -77,8 +86,9 @@ export default function AdminPaymentsPage() {
     const reason = prompt('Reason for rejection (optional):');
     try {
       const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bookings/${bookingId}/reject`,
+        `${apiUrl}/bookings/${bookingId}/reject`,
         {
           method: 'PATCH',
           headers: {
@@ -89,13 +99,16 @@ export default function AdminPaymentsPage() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to reject payment');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to reject payment');
+      }
       
       alert('Payment rejected.');
       fetchPendingBookings(); // Refresh list
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error rejecting payment:', error);
-      alert('Failed to reject payment');
+      alert(`Failed to reject payment: ${error.message}`);
     }
   };
 
