@@ -65,9 +65,17 @@ const EventDetailsModal = () => {
     };
 
     const handleBuyNow = () => {
-        // Don't add to cart here, just open checkout with current quantity
-        // The checkout modal will use the qty from the modal state
-        addToCart(selectedEvent, qty);
+        // Buy Now should skip cart and go directly to checkout
+        // We'll pass the event and quantity directly to checkout
+        const buyNowItem = {
+            event: selectedEvent,
+            qty: qty,
+            price: selectedEvent.price,
+        };
+        
+        // Store the buy now item temporarily
+        sessionStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
+        
         handleClose();
         setTimeout(() => toggleCheckout(true), 300); // Wait for modal close animation
     };

@@ -27,9 +27,25 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     const [bookingDetails, setBookingDetails] = useState<any>(null);
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
+    const [checkoutItems, setCheckoutItems] = useState<any[]>([]);
 
     useFocusTrap(contentRef, isOpen);
     useEscapeKey(onClose, isOpen);
+
+    // Check for Buy Now item or use cart
+    useEffect(() => {
+        if (isOpen) {
+            const buyNowItemStr = sessionStorage.getItem('buyNowItem');
+            if (buyNowItemStr) {
+                const buyNowItem = JSON.parse(buyNowItemStr);
+                setCheckoutItems([buyNowItem]);
+                // Clear the buy now item from session storage
+                sessionStorage.removeItem('buyNowItem');
+            } else {
+                setCheckoutItems(cart);
+            }
+        }
+    }, [isOpen, cart]);
 
     // RAZORPAY SCRIPT LOADING COMMENTED OUT
     // useEffect(() => {
@@ -55,7 +71,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const total = checkoutItems.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -112,9 +128,19 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             reader.onload = async () => {
                 const base64Image = reader.result as string;
                 
+                // Transform checkoutItems to match the expected format
+                const formattedItems = checkoutItems.map(item => ({
+                    id: item.event?.id || item.id,
+                    title: item.event?.title || item.title,
+                    price: item.price,
+                    qty: item.qty,
+                    // Include other necessary fields from the event
+                    ...(item.event || item)
+                }));
+                
                 const bookingData = {
                     userId: user.id,
-                    items: cart,
+                    items: formattedItems,
                     totalAmount: total,
                     status: 'pending' as const, // Pending until admin verifies
                     paymentProof: base64Image,
@@ -125,7 +151,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 const booking = await api.createBooking(bookingData as any);
                 setBookingDetails(booking);
                 setStatus('success');
-                clearCart();
+                
+                // Only clear cart if items came from cart (not buy now)
+                const buyNowItem = sessionStorage.getItem('buyNowItem');
+                if (!buyNowItem && cart.length > 0) {
+                    clearCart();
+                }
             };
         } catch (error: any) {
             console.error('Booking error:', error);
@@ -309,10 +340,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                             <div className="bg-surface-highlight rounded-xl p-6 space-y-4">
                                 <h3 className="text-lg font-bold text-text-primary mb-4">Order Summary</h3>
                                 <div className="space-y-3">
-                                    {cart.map((item) => (
-                                        <div key={item.id} className="flex justify-between items-center">
+                                    {checkoutItems.map((item) => (
+                                        <div key={item.event?.id || item.id} className="flex justify-between items-center">
                                             <div>
-                                                <p className="font-medium text-text-primary">{item.title}</p>
+                                                <p className="font-medium text-text-primary">{item.event?.title || item.title}</p>
                                                 <p className="text-sm text-text-muted">Qty: {item.qty}</p>
                                             </div>
                                             <p className="font-bold text-text-primary">₹{(item.price * item.qty).toFixed(2)}</p>
