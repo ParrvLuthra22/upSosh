@@ -15,21 +15,31 @@ function getDodoClient(): DodoPayments {
         if (!apiKey) {
             throw new Error('DODO_PAYMENTS_API_KEY is not configured');
         }
+        // Use test_mode for now - change to live_mode when ready for production
         dodo = new DodoPayments({
             bearerToken: apiKey,
-            environment: process.env.NODE_ENV === 'production' ? 'live_mode' : 'test_mode',
+            environment: 'test_mode',
         });
+        console.log('Dodo Payments client initialized in test_mode');
     }
     return dodo;
 }
 
 // Product ID for event tickets
-const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID || '';
+function getProductId(): string {
+    const productId = process.env.DODO_PRODUCT_ID;
+    if (!productId) {
+        throw new Error('DODO_PRODUCT_ID is not configured');
+    }
+    return productId;
+}
 
 // Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
     try {
         const { items, customer, returnUrl } = req.body;
+        
+        console.log('Create checkout request:', { items, customer: customer?.email, returnUrl });
         
         if (!items || items.length === 0) {
             return res.status(400).json({ error: 'No items provided' });
@@ -41,16 +51,15 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
 
         // Calculate total quantity
         const totalQuantity = items.reduce((sum: number, item: any) => sum + item.qty, 0);
+        
+        const productId = getProductId();
+        console.log('Using product ID:', productId, 'Quantity:', totalQuantity);
 
         // Create checkout session with Dodo Payments
         const client = getDodoClient();
         const session = await client.checkoutSessions.create({
             billing_address: {
                 country: 'IN', // India
-                city: customer.city || null,
-                state: customer.state || null,
-                street: customer.address || null,
-                zipcode: customer.zipcode || null,
             },
             customer: {
                 email: customer.email,
@@ -58,7 +67,7 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
             },
             return_url: returnUrl || `${process.env.FRONTEND_URL || 'https://www.upsosh.app'}/booking/confirmation`,
             product_cart: [{
-                product_id: DODO_PRODUCT_ID,
+                product_id: productId,
                 quantity: totalQuantity,
             }],
         });
@@ -71,7 +80,8 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
             sessionId: session.session_id,
         });
     } catch (error: any) {
-        console.error('Dodo Payments error:', error);
+        console.error('Dodo Payments error:', error.message);
+        console.error('Full error:', JSON.stringify(error, null, 2));
         res.status(500).json({ 
             error: 'Failed to create payment session', 
             details: error.message 
