@@ -15,12 +15,12 @@ function getDodoClient(): DodoPayments {
         if (!apiKey) {
             throw new Error('DODO_PAYMENTS_API_KEY is not configured');
         }
-        // Use test_mode for now - change to live_mode when ready for production
+        // Try live_mode - the API key might be for production
         dodo = new DodoPayments({
             bearerToken: apiKey,
-            environment: 'test_mode',
+            environment: 'live_mode',
         });
-        console.log('Dodo Payments client initialized in test_mode');
+        console.log('Dodo Payments client initialized in live_mode');
     }
     return dodo;
 }
