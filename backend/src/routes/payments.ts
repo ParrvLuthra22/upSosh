@@ -8,12 +8,12 @@ const router = Router();
 
 // Initialize Dodo Payments client
 const dodo = new DodoPayments({
-    bearerToken: process.env.DODO_PAYMENTS_API_KEY || 'c3Ndky6yX-8wKHDT.z2LpQOzGNXQnV69Ro1YbLczJq8DUL-n_TAz8jIN7POqqt7IF',
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
     environment: process.env.NODE_ENV === 'production' ? 'live_mode' : 'test_mode',
 });
 
 // Product ID for event tickets
-const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID || 'pdt_0NUdxvD4HSEVjE2BhaCTW';
+const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID!;
 
 // Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
