@@ -154,7 +154,7 @@ const CartDrawer = () => {
                     <div className="p-6 border-t border-border/50 bg-surface/50 backdrop-blur-md">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-text-secondary">Subtotal</span>
-                            <span className="text-2xl font-bold text-text-primary">${subtotal}</span>
+                            <span className="text-2xl font-bold text-text-primary">₹{subtotal}</span>
                         </div>
                         <button
                             onClick={() => {
