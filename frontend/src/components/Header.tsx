@@ -252,7 +252,7 @@ const Header = () => {
                         {user ? (
                             <div className="flex flex-col gap-3 border-t border-border pt-6">
                                 <div className="text-sm font-semibold text-text-primary mb-2 px-3">
-                                    Hi, {user.name} 👋
+                                    Hi, {user.name}
                                 </div>
                                 {user.role === 'admin' && (
                                     <Link
@@ -260,7 +260,7 @@ const Header = () => {
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg text-center"
                                     >
-                                        🔐 Admin Panel
+                                        Admin Panel
                                     </Link>
                                 )}
                                 {user.isHost && (
