@@ -8,9 +8,12 @@ const router = Router();
 
 // Initialize Dodo Payments client
 const dodo = new DodoPayments({
-    bearerToken: process.env.DODO_PAYMENTS_API_KEY || '',
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY || 'c3Ndky6yX-8wKHDT.z2LpQOzGNXQnV69Ro1YbLczJq8DUL-n_TAz8jIN7POqqt7IF',
     environment: process.env.NODE_ENV === 'production' ? 'live_mode' : 'test_mode',
 });
+
+// Product ID for event tickets
+const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID || 'pdt_0NUdxvD4HSEVjE2BhaCTW';
 
 // Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
@@ -29,6 +32,9 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
         const totalAmount = items.reduce((sum: number, item: any) => {
             return sum + (item.price * item.qty * 100); // Convert to cents
         }, 0);
+
+        // Calculate total quantity
+        const totalQuantity = items.reduce((sum: number, item: any) => sum + item.qty, 0);
 
         // Create checkout session with Dodo Payments
         const session = await dodo.checkoutSessions.create({
@@ -55,11 +61,10 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
                 }))),
                 ...metadata
             },
-            // For dynamic pricing, we'll use a flexible product
-            product_cart: items.map((item: any) => ({
-                product_id: process.env.DODO_PRODUCT_ID || 'prod_event_ticket', // Default product ID
-                quantity: item.qty,
-            })),
+            product_cart: [{
+                product_id: DODO_PRODUCT_ID,
+                quantity: totalQuantity,
+            }],
         });
 
         console.log('Dodo checkout session created:', session.checkout_url);
@@ -115,8 +120,12 @@ router.post('/webhook', async (req: Request, res: Response): Promise<any> => {
                 console.log('Payment failed:', payload.data.payment_id);
                 break;
                 
-            case 'payment.refunded':
-                console.log('Payment refunded:', payload.data.payment_id);
+            case 'refund.succeeded':
+                console.log('Refund succeeded:', payload.data);
+                break;
+                
+            case 'refund.failed':
+                console.log('Refund failed:', payload.data);
                 break;
                 
             default:
