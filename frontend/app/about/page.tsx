@@ -147,49 +147,47 @@ export default function AboutPage() {
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Parrv Luthra */}
-            <div className="p-8 rounded-2xl text-center bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800">
-              {/* Photo Placeholder */}
-              <div 
-                className="w-48 h-48 mx-auto mb-6 rounded-full flex items-center justify-center border-4 border-gray-200 dark:border-gray-800"
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                }}
-              >
-                <span className="text-6xl text-white">P</span>
-              </div>
-              
-              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
-                Parrv Luthra
-              </h3>
-              <p className="text-lg mb-4 text-purple-600 dark:text-purple-400">
-                Co-Founder
-              </p>
-              <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
-                Parrv comes from a business background and focuses on strategy, product direction, and the development of technology-led solutions. He brings a deep understanding of how communities interact and how digital platforms can improve real‑world experiences.
-              </p>
-            </div>
-
-            {/* Aadit */}
-            <div className="p-8 rounded-2xl text-center bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800">
-              {/* Photo Placeholder */}
-              <div 
-                className="w-48 h-48 mx-auto mb-6 rounded-full flex items-center justify-center border-4 border-gray-200 dark:border-gray-800"
-                style={{
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                }}
-              >
-                <span className="text-6xl text-white">A</span>
+            {/* Aadit Vachher */}
+            <div className="p-8 rounded-2xl text-center bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800 hover:shadow-xl transition-shadow">
+              {/* Photo */}
+              <div className="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-purple-500 dark:border-purple-600">
+                <img 
+                  src="/assets/aadit-vachher.jpg" 
+                  alt="Aadit Vachher - Co-Founder of upSosh"
+                  className="w-full h-full object-cover"
+                />
               </div>
               
               <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                 Aadit Vachher
               </h3>
-              <p className="text-lg mb-4 text-pink-600 dark:text-pink-400">
+              <p className="text-lg mb-4 text-purple-600 dark:text-purple-400 font-semibold">
                 Co-Founder
               </p>
               <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
-                Aadit also comes from a business background and is a driven entrepreneur with strong people skills. He excels at delegation, coordination, and execution, ensuring that ideas are translated into scalable systems and operations.
+                Aadit comes from a business background and is a driven entrepreneur with strong people skills. He excels at delegation, coordination, and execution, ensuring that ideas are translated into scalable systems and operations.
+              </p>
+            </div>
+
+            {/* Parrv Luthra */}
+            <div className="p-8 rounded-2xl text-center bg-gray-50 dark:bg-gray-900/50 border-2 border-gray-200 dark:border-gray-800 hover:shadow-xl transition-shadow">
+              {/* Photo */}
+              <div className="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-pink-500 dark:border-pink-600">
+                <img 
+                  src="/assets/parrv-luthra.jpg" 
+                  alt="Parrv Luthra - Co-Founder of upSosh"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
+                Parrv Luthra
+              </h3>
+              <p className="text-lg mb-4 text-pink-600 dark:text-pink-400 font-semibold">
+                Co-Founder
+              </p>
+              <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
+                Parrv comes from a business background and focuses on strategy, product direction, and the development of technology-led solutions. He brings a deep understanding of how communities interact and how digital platforms can improve real‑world experiences.
               </p>
             </div>
           </div>
