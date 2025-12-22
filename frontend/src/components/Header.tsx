@@ -189,15 +189,24 @@ const Header = () => {
                     </div>
 
                     {/* Mobile Menu Button and Dark Mode Toggle */}
-                    <div className="flex md:hidden items-center gap-3">
+                    <div className="flex md:hidden items-center gap-2">
                         <DarkModeToggle />
+                        {/* Show Login/Signup or Menu Button */}
+                        {!user && !isMobileMenuOpen && (
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary/10 transition-colors"
+                            >
+                                Log In
+                            </Link>
+                        )}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                            className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/30"
                             aria-label="Toggle mobile menu"
                         >
                             <svg
-                                className="w-6 h-6 text-text-primary"
+                                className="w-6 h-6 text-primary"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -224,7 +233,7 @@ const Header = () => {
 
                 {/* Mobile Menu */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden mt-4 glass-panel bg-surface/95 backdrop-blur-lg rounded-2xl p-6 shadow-xl">
+                    <div className="md:hidden mt-4 glass-panel bg-surface/98 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-primary/20">
                         {/* Mobile Navigation Links */}
                         <nav className="flex flex-col gap-4 mb-6">
                             {navLinks.map((link) => (
@@ -232,7 +241,7 @@ const Header = () => {
                                     key={link.name}
                                     href={link.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="text-base font-medium text-text-secondary hover:text-primary transition-colors py-2"
+                                    className="text-base font-semibold text-text-secondary hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-primary/5"
                                 >
                                     {link.name}
                                 </Link>
@@ -242,14 +251,14 @@ const Header = () => {
                         {/* Mobile User Section */}
                         {user ? (
                             <div className="flex flex-col gap-3 border-t border-border pt-6">
-                                <div className="text-sm font-medium text-text-primary mb-2">
-                                    Hi, {user.name}
+                                <div className="text-sm font-semibold text-text-primary mb-2 px-3">
+                                    Hi, {user.name} 👋
                                 </div>
                                 {user.role === 'admin' && (
                                     <Link
                                         href="/admin/payments"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg text-center"
                                     >
                                         🔐 Admin Panel
                                     </Link>
@@ -258,7 +267,7 @@ const Header = () => {
                                     <Link
                                         href="/host"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg text-center"
                                     >
                                         Host Event
                                     </Link>
@@ -266,13 +275,13 @@ const Header = () => {
                                 <Link
                                     href="/profile"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="w-full px-5 py-3 rounded-full border border-primary text-primary text-sm font-medium hover:bg-primary/10 transition-colors text-center"
+                                    className="w-full px-5 py-3 rounded-full border-2 border-primary text-primary text-sm font-semibold hover:bg-primary/10 transition-colors text-center"
                                 >
                                     Profile
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full px-5 py-3 rounded-full bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                                    className="w-full px-5 py-3 rounded-full bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-lg"
                                 >
                                     Logout
                                 </button>
@@ -282,14 +291,14 @@ const Header = () => {
                                 <Link
                                     href="/login"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="w-full px-6 py-3 rounded-full border-2 border-primary text-primary font-medium hover:bg-primary/10 transition-colors text-center"
+                                    className="w-full px-6 py-3.5 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary/10 transition-colors text-center text-base"
                                 >
                                     Log In
                                 </Link>
                                 <Link
                                     href="/signup"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                    className="w-full px-6 py-3.5 rounded-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity shadow-lg text-center text-base"
                                 >
                                     Sign Up
                                 </Link>
