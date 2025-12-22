@@ -105,6 +105,57 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         setErrorMessage('');
     };
 
+    // Handle Dodo Payments online checkout
+    const handleDodoPayment = async () => {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('userData');
+        
+        if (!token || !userData) {
+            setErrorMessage('Please login to complete your booking');
+            setStatus('error');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+        
+        const user = JSON.parse(userData);
+        setStatus('uploading'); // Reusing this status for "processing"
+        setErrorMessage('');
+        
+        try {
+            // Transform checkoutItems for Dodo API
+            const items = checkoutItems.map(item => ({
+                id: item.event?.id || item.id,
+                title: item.event?.title || item.title,
+                price: item.price,
+                qty: item.qty,
+            }));
+            
+            const response = await api.createDodoCheckout({
+                items,
+                customer: {
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone || '',
+                },
+                returnUrl: `${window.location.origin}/booking/confirmation`,
+                metadata: {
+                    userId: user.id,
+                },
+            });
+            
+            if (response.checkoutUrl) {
+                // Redirect to Dodo checkout page
+                window.location.href = response.checkoutUrl;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+        } catch (error: any) {
+            console.error('Dodo payment error:', error);
+            setStatus('error');
+            setErrorMessage(error.message || 'Payment initiation failed. Please try again.');
+        }
+    };
+
     const handleSubmitManualPayment = async () => {
         const userData = localStorage.getItem('userData');
         if (!userData) {
@@ -378,11 +429,37 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
 
-                            <button onClick={handleShowPaymentDetails} className="w-full py-4 px-6 rounded-xl bg-primary text-white font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                                Proceed to Payment
-                            </button>
-                            <p className="text-center text-sm text-text-muted">💳 Pay via UPI or Bank Transfer</p>
+                            {/* Payment Options */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold text-text-primary">Choose Payment Method</h3>
+                                
+                                {/* Online Payment - Dodo Payments */}
+                                <button 
+                                    onClick={handleDodoPayment} 
+                                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3 shadow-lg"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                                    Pay Online (Card/UPI/Wallet)
+                                </button>
+                                <p className="text-center text-xs text-text-muted">Secure payment powered by Dodo Payments</p>
+                                
+                                {/* Divider */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <div className="flex-1 h-px bg-border/50"></div>
+                                    <span className="text-sm text-text-muted">or</span>
+                                    <div className="flex-1 h-px bg-border/50"></div>
+                                </div>
+                                
+                                {/* Manual Payment */}
+                                <button 
+                                    onClick={handleShowPaymentDetails} 
+                                    className="w-full py-4 px-6 rounded-xl bg-surface-highlight border border-border/50 text-text-primary font-bold text-lg hover:bg-surface-highlight/80 transition-colors flex items-center justify-center gap-3"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                                    Pay via UPI/Bank Transfer
+                                </button>
+                                <p className="text-center text-xs text-text-muted">Manual verification (6-8 hours)</p>
+                            </div>
                         </div>
                     )}
                 </div>
