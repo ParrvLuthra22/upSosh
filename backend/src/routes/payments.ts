@@ -6,14 +6,25 @@ import DodoPayments from 'dodopayments';
 
 const router = Router();
 
-// Initialize Dodo Payments client
-const dodo = new DodoPayments({
-    bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
-    environment: process.env.NODE_ENV === 'production' ? 'live_mode' : 'test_mode',
-});
+// Lazy initialization of Dodo Payments client to prevent startup crashes
+let dodo: DodoPayments | null = null;
+
+function getDodoClient(): DodoPayments {
+    if (!dodo) {
+        const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+        if (!apiKey) {
+            throw new Error('DODO_PAYMENTS_API_KEY is not configured');
+        }
+        dodo = new DodoPayments({
+            bearerToken: apiKey,
+            environment: process.env.NODE_ENV === 'production' ? 'live_mode' : 'test_mode',
+        });
+    }
+    return dodo;
+}
 
 // Product ID for event tickets
-const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID!;
+const DODO_PRODUCT_ID = process.env.DODO_PRODUCT_ID || '';
 
 // Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
@@ -32,7 +43,8 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
         const totalQuantity = items.reduce((sum: number, item: any) => sum + item.qty, 0);
 
         // Create checkout session with Dodo Payments
-        const session = await dodo.checkoutSessions.create({
+        const client = getDodoClient();
+        const session = await client.checkoutSessions.create({
             billing_address: {
                 country: 'IN', // India
                 city: customer.city || null,
@@ -110,7 +122,8 @@ router.get('/status/:paymentId', async (req: Request, res: Response): Promise<an
     try {
         const { paymentId } = req.params;
         
-        const payment = await dodo.payments.retrieve(paymentId);
+        const client = getDodoClient();
+        const payment = await client.payments.retrieve(paymentId);
         
         res.json({
             success: true,
