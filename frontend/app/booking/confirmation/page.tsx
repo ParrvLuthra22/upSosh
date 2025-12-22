@@ -1,5 +1,11 @@
 import { Suspense } from 'react';
-import ConfirmationContent from './ConfirmationContent';
+import dynamic from 'next/dynamic';
+
+// Dynamically import client component with no SSR
+const ConfirmationContent = dynamic(() => import('./ConfirmationContent'), {
+    ssr: false,
+    loading: () => <LoadingFallback />
+});
 
 // Loading fallback for Suspense
 function LoadingFallback() {
@@ -18,9 +24,5 @@ function LoadingFallback() {
 }
 
 export default function BookingConfirmationPage() {
-    return (
-        <Suspense fallback={<LoadingFallback />}>
-            <ConfirmationContent />
-        </Suspense>
-    );
+    return <ConfirmationContent />;
 }
