@@ -59,6 +59,10 @@ app.get('/api/debug', (req, res) => {
         frontendUrl: process.env.FRONTEND_URL,
         nodeEnv: process.env.NODE_ENV,
         port: PORT,
+        dodoApiKey: process.env.DODO_PAYMENTS_API_KEY ? 'SET' : 'NOT SET',
+        dodoProductId: process.env.DODO_PRODUCT_ID ? 'SET' : 'NOT SET',
+        jwtSecret: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+        databaseUrl: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
         message: 'Debug info'
     });
 });
