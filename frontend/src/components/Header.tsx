@@ -9,6 +9,7 @@ import { api } from '@/src/lib/api';
 
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
 
     const [user, setUser] = useState<{ name: string; email: string; isHost?: boolean; role?: string } | null>(null);
@@ -87,6 +88,9 @@ const Header = () => {
 
         setUser(null);
         
+        // Close mobile menu if open
+        setIsMobileMenuOpen(false);
+        
         // Force full page reload to clear any cached state
         window.location.replace('/');
     };
@@ -105,13 +109,13 @@ const Header = () => {
         >
             <div className="container mx-auto px-4">
                 <div
-                    className={`flex items-center justify-between rounded-full px-6 py-3 transition-all duration-300 ${isScrolled
+                    className={`flex items-center justify-between rounded-full px-4 md:px-6 py-3 transition-all duration-300 ${isScrolled
                         ? 'glass-panel bg-surface/80 shadow-lg'
                         : 'bg-transparent'
                         }`}
                 >
                     {/* Logo */}
-                    <Link href="/" className="text-2xl font-heading font-bold text-primary">
+                    <Link href="/" className="text-xl md:text-2xl font-heading font-bold text-primary">
                         UpSosh
                     </Link>
 
@@ -128,13 +132,13 @@ const Header = () => {
                         ))}
                     </nav>
 
-                    {/* Right Actions */}
-                    <div className="flex items-center gap-4">
+                    {/* Right Actions - Desktop */}
+                    <div className="hidden md:flex items-center gap-4">
                         <DarkModeToggle />
 
                         {user ? (
                             <div className="flex items-center gap-4">
-                                <span className="text-sm font-medium text-text-primary hidden md:block">
+                                <span className="text-sm font-medium text-text-primary">
                                     Hi, {user.name}
                                 </span>
                                 {user.role === 'admin' && (
@@ -170,7 +174,7 @@ const Header = () => {
                             <>
                                 <Link
                                     href="/login"
-                                    className="hidden md:block px-6 py-2 rounded-full border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
+                                    className="px-6 py-2 rounded-full border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
                                 >
                                     Log In
                                 </Link>
@@ -183,7 +187,116 @@ const Header = () => {
                             </>
                         )}
                     </div>
+
+                    {/* Mobile Menu Button and Dark Mode Toggle */}
+                    <div className="flex md:hidden items-center gap-3">
+                        <DarkModeToggle />
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                            aria-label="Toggle mobile menu"
+                        >
+                            <svg
+                                className="w-6 h-6 text-text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                {isMobileMenuOpen ? (
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                ) : (
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 6h16M4 12h16M4 18h16"
+                                    />
+                                )}
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {isMobileMenuOpen && (
+                    <div className="md:hidden mt-4 glass-panel bg-surface/95 backdrop-blur-lg rounded-2xl p-6 shadow-xl">
+                        {/* Mobile Navigation Links */}
+                        <nav className="flex flex-col gap-4 mb-6">
+                            {navLinks.map((link) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-base font-medium text-text-secondary hover:text-primary transition-colors py-2"
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </nav>
+
+                        {/* Mobile User Section */}
+                        {user ? (
+                            <div className="flex flex-col gap-3 border-t border-border pt-6">
+                                <div className="text-sm font-medium text-text-primary mb-2">
+                                    Hi, {user.name}
+                                </div>
+                                {user.role === 'admin' && (
+                                    <Link
+                                        href="/admin/payments"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                    >
+                                        🔐 Admin Panel
+                                    </Link>
+                                )}
+                                {user.isHost && (
+                                    <Link
+                                        href="/host"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                    >
+                                        Host Event
+                                    </Link>
+                                )}
+                                <Link
+                                    href="/profile"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full px-5 py-3 rounded-full border border-primary text-primary text-sm font-medium hover:bg-primary/10 transition-colors text-center"
+                                >
+                                    Profile
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full px-5 py-3 rounded-full bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3 border-t border-border pt-6">
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full px-6 py-3 rounded-full border-2 border-primary text-primary font-medium hover:bg-primary/10 transition-colors text-center"
+                                >
+                                    Log In
+                                </Link>
+                                <Link
+                                    href="/signup"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full px-5 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-opacity shadow-lg text-center"
+                                >
+                                    Sign Up
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </header>
     );
