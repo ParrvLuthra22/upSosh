@@ -280,27 +280,47 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     How to Pay
                                 </h3>
-                                <p className="text-text-secondary text-sm">Send ₹{total.toFixed(2)} to our UPI ID or Bank Account, then upload your payment screenshot below.</p>
+                                <p className="text-text-secondary text-sm">Send ₹{total.toFixed(2)} using the QR code, UPI ID, or Bank Account details below, then upload your payment screenshot.</p>
+                            </div>
+
+                            {/* QR Code Section */}
+                            <div className="bg-surface-highlight rounded-xl p-6 flex flex-col items-center space-y-4">
+                                <h3 className="text-lg font-bold text-text-primary">Scan QR Code to Pay</h3>
+                                <div className="bg-white p-4 rounded-xl shadow-lg">
+                                    <img 
+                                        src="/payment-qr.png" 
+                                        alt="Payment QR Code" 
+                                        className="w-64 h-64 object-contain"
+                                    />
+                                </div>
+                                <p className="text-sm text-text-muted text-center">Scan with any UPI app (Google Pay, PhonePe, Paytm, etc.)</p>
+                                <p className="text-xs text-text-muted text-center">Amount: ₹{total.toFixed(2)}</p>
                             </div>
 
                             <div className="bg-surface-highlight rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary mb-4">💳 Payment Methods</h3>
+                                <h3 className="text-lg font-bold text-text-primary mb-4">Payment Methods</h3>
                                 
                                 <div className="space-y-3">
                                     <div className="bg-surface border border-border/50 rounded-lg p-4">
                                         <p className="text-sm text-text-muted mb-1">UPI ID</p>
                                         <p className="text-xl font-mono font-bold text-primary">upsosh@ptyes</p>
-                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-blue-400 hover:text-blue-300 mt-2">📋 Copy</button>
+                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-blue-400 hover:text-blue-300 mt-2">Copy UPI ID</button>
                                     </div>
                                     
                                     <div className="bg-surface border border-border/50 rounded-lg p-4">
                                         <p className="text-sm text-text-muted mb-2">Bank Transfer</p>
                                         <div className="space-y-1 text-sm">
+                                            <p className="text-text-secondary"><span className="text-text-muted">Account Holder:</span> Aadit Vachher</p>
                                             <p className="text-text-secondary"><span className="text-text-muted">Bank:</span> HDFC Bank</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">Account:</span> 1234567890</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">IFSC:</span> HDFC0001234</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">Name:</span> UpSosh Events</p>
+                                            <p className="text-text-secondary"><span className="text-text-muted">Account Number:</span> 50100828764622</p>
+                                            <p className="text-text-secondary"><span className="text-text-muted">IFSC Code:</span> HDFC0000027</p>
                                         </div>
+                                        <button 
+                                            onClick={() => navigator.clipboard.writeText('50100828764622')} 
+                                            className="text-sm text-blue-400 hover:text-blue-300 mt-2"
+                                        >
+                                            Copy Account Number
+                                        </button>
                                     </div>
                                 </div>
                             </div>
