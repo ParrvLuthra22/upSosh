@@ -162,10 +162,10 @@ const EventDetailsModal = () => {
 
                         {/* Host Info */}
                         {host && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-100 dark:bg-surface-highlight/50">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-100 dark:bg-white/10">
                                 <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full" />
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-text-primary flex items-center gap-1">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-1">
                                         Hosted by {host.name}
                                         {host.verified && (
                                             <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Host">
@@ -173,7 +173,7 @@ const EventDetailsModal = () => {
                                             </svg>
                                         )}
                                     </p>
-                                    <p className="text-xs text-gray-500 dark:text-text-muted">{host.rating} ★ ({host.reviews} reviews)</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{host.rating} ★ ({host.reviews} reviews)</p>
                                 </div>
                             </div>
                         )}
