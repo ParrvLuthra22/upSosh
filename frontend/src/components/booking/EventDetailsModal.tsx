@@ -98,12 +98,12 @@ const EventDetailsModal = () => {
             {/* Modal Content */}
             <div
                 ref={contentRef}
-                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-surface border border-white/10 rounded-3xl shadow-2xl flex flex-col md:flex-row"
+                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-surface border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl flex flex-col md:flex-row"
             >
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-black/20 hover:bg-gray-200 dark:hover:bg-black/40 text-gray-600 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                     aria-label="Close modal"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,10 +140,10 @@ const EventDetailsModal = () => {
                                     </span>
                                 )}
                             </div>
-                            <h2 id="modal-title" className="text-3xl font-heading font-bold text-text-primary mb-2">
+                            <h2 id="modal-title" className="text-3xl font-heading font-bold text-gray-900 dark:text-text-primary mb-2">
                                 {selectedEvent.title}
                             </h2>
-                            <div className="flex items-center gap-4 text-sm text-text-muted">
+                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-text-muted">
                                 <span className="flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -162,10 +162,10 @@ const EventDetailsModal = () => {
 
                         {/* Host Info */}
                         {host && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-highlight/50">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-100 dark:bg-surface-highlight/50">
                                 <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full" />
                                 <div>
-                                    <p className="text-sm font-medium text-text-primary flex items-center gap-1">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-text-primary flex items-center gap-1">
                                         Hosted by {host.name}
                                         {host.verified && (
                                             <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Host">
@@ -173,18 +173,18 @@ const EventDetailsModal = () => {
                                             </svg>
                                         )}
                                     </p>
-                                    <p className="text-xs text-text-muted">{host.rating} ★ ({host.reviews} reviews)</p>
+                                    <p className="text-xs text-gray-500 dark:text-text-muted">{host.rating} ★ ({host.reviews} reviews)</p>
                                 </div>
                             </div>
                         )}
 
-                        <div className="prose prose-invert prose-sm max-w-none text-text-secondary">
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-text-secondary">
                             <p>{selectedEvent.description}</p>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                             {selectedEvent.tags.map((tag) => (
-                                <span key={tag} className="px-2 py-1 rounded-md bg-surface-highlight text-xs text-text-muted">
+                                <span key={tag} className="px-2 py-1 rounded-md bg-gray-100 dark:bg-surface-highlight text-xs text-gray-600 dark:text-text-muted">
                                     #{tag}
                                 </span>
                             ))}
@@ -192,26 +192,26 @@ const EventDetailsModal = () => {
                     </div>
 
                     {/* Footer / Actions */}
-                    <div className="mt-8 pt-6 border-t border-border/50 space-y-4">
+                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-border/50 space-y-4">
                         <div className="flex items-center justify-between">
-                            <div className="text-2xl font-bold text-text-primary">
+                            <div className="text-2xl font-bold text-gray-900 dark:text-text-primary">
                                 ₹{selectedEvent.price * qty}
-                                {qty > 1 && <span className="text-sm font-normal text-text-muted ml-2">(₹{selectedEvent.price} x {qty})</span>}
+                                {qty > 1 && <span className="text-sm font-normal text-gray-500 dark:text-text-muted ml-2">(₹{selectedEvent.price} x {qty})</span>}
                             </div>
 
                             {/* Quantity Selector */}
-                            <div className="flex items-center gap-3 bg-surface-highlight rounded-lg p-1">
+                            <div className="flex items-center gap-3 bg-gray-100 dark:bg-surface-highlight rounded-lg p-1">
                                 <button
                                     onClick={() => setQty(Math.max(1, qty - 1))}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-surface text-gray-700 dark:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                                     aria-label="Decrease quantity"
                                 >
                                     -
                                 </button>
-                                <span className="font-medium w-4 text-center" aria-label="Current quantity">{qty}</span>
+                                <span className="font-medium w-4 text-center text-gray-900 dark:text-white" aria-label="Current quantity">{qty}</span>
                                 <button
                                     onClick={() => setQty(qty + 1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-surface text-gray-700 dark:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                                     aria-label="Increase quantity"
                                 >
                                     +
