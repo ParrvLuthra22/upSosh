@@ -104,7 +104,7 @@ export default function Navigation() {
             )}
 
             {/* Download Button */}
-            <Button variant="primary" size="sm" className="hidden md:inline-flex">
+            <Button variant="primary" size="sm" className="hidden md:inline-flex" onClick={() => alert('Coming Soon! 🚀')}>
               Download App
             </Button>
 
@@ -146,7 +146,7 @@ export default function Navigation() {
                     {link.name}
                   </a>
                 ))}
-                <Button variant="primary" size="sm" className="w-full mt-4">
+                <Button variant="primary" size="sm" className="w-full mt-4" onClick={() => alert('Coming Soon! 🚀')}>
                   Download App
                 </Button>
               </div>
