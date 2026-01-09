@@ -55,7 +55,7 @@ export default function TestimonialsSection() {
   }, [testimonials.length]);
 
   return (
-    <Section className="relative overflow-hidden bg-gradient-to-br from-light-blue via-white to-light-blue dark:from-dark-navy dark:via-dark-black dark:to-dark-navy">
+    <Section className="relative overflow-hidden bg-black">
       {/* Parallax Background Layers */}
       <div className="absolute inset-0">
         <motion.div
@@ -63,7 +63,7 @@ export default function TestimonialsSection() {
           style={{ transform: 'translateZ(-100px)' }}
         >
           <motion.div
-            className="absolute top-20 left-20 w-40 h-40 bg-light-primary/10 dark:bg-dark-neon/10 rounded-full blur-3xl"
+            className="absolute top-20 left-20 w-40 h-40 bg-[#D4A017]/10 rounded-full blur-3xl"
             animate={{
               y: [0, 50, 0],
               x: [0, 30, 0],
@@ -75,7 +75,7 @@ export default function TestimonialsSection() {
             }}
           />
           <motion.div
-            className="absolute bottom-20 right-20 w-60 h-60 bg-light-indigo/10 dark:bg-dark-purple/10 rounded-full blur-3xl"
+            className="absolute bottom-20 right-20 w-60 h-60 bg-[#D4A017]/10 rounded-full blur-3xl"
             animate={{
               y: [0, -40, 0],
               x: [0, -20, 0],
@@ -96,10 +96,10 @@ export default function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="gradient-text">What People Say</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>What People Say</span>
           </h2>
-          <p className="text-xl text-light-secondary dark:text-dark-slate max-w-3xl mx-auto">
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
             Join thousands of happy users experiencing the best events
           </p>
         </motion.div>
@@ -121,11 +121,11 @@ export default function TestimonialsSection() {
                   transition={{ duration: 0.5 }}
                 >
                   <motion.div
-                    className="glass-card p-12 relative"
+                    className="bg-black border border-white/20 rounded-2xl p-12 relative"
                     whileHover={{ scale: 1.02 }}
                   >
                     {/* Quote Icon */}
-                    <div className="absolute top-8 left-8 text-6xl text-light-primary/20 dark:text-dark-neon/20">
+                    <div className="absolute top-8 left-8 text-6xl text-[#D4A017]/20">
                       "
                     </div>
 
@@ -134,7 +134,7 @@ export default function TestimonialsSection() {
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <motion.svg
                           key={i}
-                          className="w-8 h-8 text-yellow-400"
+                          className="w-8 h-8 text-[#D4A017]"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                           initial={{ opacity: 0, scale: 0 }}
@@ -147,42 +147,28 @@ export default function TestimonialsSection() {
                     </div>
 
                     {/* Content */}
-                    <p className="text-xl md:text-2xl text-center text-light-text dark:text-dark-text mb-8 leading-relaxed">
+                    <p className="text-xl md:text-2xl text-center text-white mb-8 leading-relaxed font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
                       {testimonial.content}
                     </p>
 
                     {/* Author */}
                     <div className="flex items-center justify-center space-x-4">
                       <motion.div
-                        className="w-16 h-16 rounded-full bg-gradient-blue-indigo flex items-center justify-center text-3xl shadow-lg"
+                        className="w-16 h-16 rounded-full bg-[#D4A017] flex items-center justify-center text-3xl"
                         whileHover={{ scale: 1.1, rotate: 360 }}
                         transition={{ duration: 0.5 }}
                       >
                         {testimonial.avatar}
                       </motion.div>
                       <div className="text-left">
-                        <div className="font-bold text-lg text-light-text dark:text-dark-text">
+                        <div className="font-bold text-lg text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                           {testimonial.name}
                         </div>
-                        <div className="text-light-secondary dark:text-dark-slate">
+                        <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                           {testimonial.role}
                         </div>
                       </div>
                     </div>
-
-                    {/* Decorative Elements */}
-                    <motion.div
-                      className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-br from-light-primary/10 to-transparent dark:from-dark-neon/10 rounded-full blur-2xl"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.3, 0.5, 0.3],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    />
                   </motion.div>
                 </motion.div>
               ))}
@@ -195,9 +181,9 @@ export default function TestimonialsSection() {
               <motion.button
                 key={index}
                 onClick={() => setActiveIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === activeIndex
-                    ? 'bg-gradient-blue-indigo w-12'
-                    : 'bg-light-secondary/30 dark:bg-dark-slate/30'
+                className={`h-3 rounded-full transition-all duration-300 ${index === activeIndex
+                    ? 'bg-[#D4A017] w-12'
+                    : 'bg-white/30 w-3'
                   }`}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
@@ -208,7 +194,7 @@ export default function TestimonialsSection() {
           {/* Navigation Arrows */}
           <motion.button
             onClick={() => setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 glass-effect p-4 rounded-full hover:glow-effect"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-black border border-white/20 p-4 rounded-full hover:border-[#D4A017] text-white"
             whileHover={{ scale: 1.1, x: -5 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -218,7 +204,7 @@ export default function TestimonialsSection() {
           </motion.button>
           <motion.button
             onClick={() => setActiveIndex((prev) => (prev + 1) % testimonials.length)}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 glass-effect p-4 rounded-full hover:glow-effect"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-black border border-white/20 p-4 rounded-full hover:border-[#D4A017] text-white"
             whileHover={{ scale: 1.1, x: 5 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -250,10 +236,10 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ delay: 0.4 + index * 0.1 }}
             >
-              <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
+              <div className="text-4xl md:text-5xl font-bold text-[#D4A017] mb-2" style={{ fontFamily: 'var(--font-jersey)' }}>
                 {stat.value}
               </div>
-              <div className="text-light-secondary dark:text-dark-slate">
+              <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                 {stat.label}
               </div>
             </motion.div>

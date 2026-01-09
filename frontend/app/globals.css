@@ -2,48 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jersey+10&display=swap');
+
+/* Local Font - BBH Bartle for Headings */
+@font-face {
+  font-family: 'BBH Bartle';
+  src: url('/fonts/BBHBartle-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --background: #FFFFFF;
-    --surface: #F0F7FF;
-    --surface-highlight: #DBEAFE;
-    --primary: #2563EB;
-    --secondary: #475569;
-    --text-primary: #0F172A;
-    --text-secondary: #334155;
-    --text-muted: #64748B;
-    --border: #E2E8F0;
-    --radius: 1rem;
-
-    /* Legacy variables mapping for compatibility */
-    --color-light-pure: #FFFFFF;
-    --color-light-blue: #E7F1FF;
-    --color-primary: #3B82F6;
-    --color-indigo: #6366F1;
-    --color-text-dark: #0F172A;
-    --color-secondary: #475569;
+    /* Strict minimal palette - black, white, mustard ONLY */
+    --black: #000000;
+    --white: #FFFFFF;
+    --mustard: #D4A017;
+    
+    /* Semantic mappings */
+    --background: #000000;
+    --surface: #000000;
+    --surface-highlight: #111111;
+    --primary: #D4A017;
+    --secondary: #D4A017;
+    --text-primary: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --text-muted: #888888;
+    --border: #333333;
+    
+    /* Typography - Font Variables */
+    --font-roboto-bbh: 'BBH Bartle', 'Helvetica Neue', Arial, sans-serif;
+    --font-jersey: 'Jersey 10', sans-serif;
+    --font-lora: 'Lora', Georgia, serif;
   }
 
   .dark {
     --background: #000000;
-    --surface: #0B1121;
-    --surface-highlight: #1E293B;
-    --primary: #3B82F6;
-    --secondary: #94A3B8;
-    --text-primary: #F8FAFC;
-    --text-secondary: #CBD5E1;
-    --text-muted: #94A3B8;
-    --border: #3B82F6;
-    /* Light blue border for dark mode */
-
-    /* Legacy variables mapping */
-    --color-dark-navy: #0B1020;
-    --color-dark-black: #000000;
-    --color-neon: #3B82F6;
-    --color-purple: #3B82F6;
-    /* Map purple to blue to remove tint */
-    --color-text-light: #F9FAFB;
-    --color-slate: #94A3B8;
+    --surface: #000000;
+    --surface-highlight: #111111;
+    --primary: #D4A017;
+    --secondary: #D4A017;
+    --text-primary: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --text-muted: #888888;
+    --border: #333333;
   }
 
   * {
@@ -51,10 +55,10 @@
   }
 
   body {
-    @apply bg-background text-text-primary transition-colors duration-300;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    @apply bg-black text-white;
+    font-family: var(--font-lora);
+    font-size: 1rem;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -62,31 +66,597 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Strict Heading Typography - Roboto BBH Bartle Style */
+  h1, .h1 {
+    font-family: var(--font-roboto-bbh);
+    font-weight: 700;
+    font-size: 3.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+
+  h2, .h2 {
+    font-family: var(--font-roboto-bbh);
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--white);
+  }
+
+  h3, .h3 {
+    font-family: var(--font-roboto-bbh);
+    font-weight: 700;
+    font-size: 1.75rem;
+    line-height: 1.3;
+    color: var(--white);
+  }
+
+  /* Body text defaults - Lora */
+  p, span, li, td, th, label, input, textarea, select {
+    font-family: var(--font-lora);
+    line-height: 1.6;
+  }
+
+  /* Large hero headings */
+  .display-xl {
+    font-family: var(--font-roboto-bbh);
+    font-weight: 700;
+    font-size: 5rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .display-lg {
+    font-family: var(--font-roboto-bbh);
+    font-weight: 700;
+    font-size: 4rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  /* Animated/Highlight text - Jersey 10 ONLY */
+  .text-highlight, .text-animated {
+    font-family: var(--font-jersey);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--mustard);
+  }
+
+  @media (max-width: 768px) {
+    h1, .h1 {
+      font-size: 2.5rem;
+    }
+    h2, .h2 {
+      font-size: 2rem;
+    }
+    h3, .h3 {
+      font-size: 1.5rem;
+    }
+    .display-xl {
+      font-size: 3rem;
+    }
+    .display-lg {
+      font-size: 2.5rem;
+    }
+  }
+}
+
+/* ========================================
+   JERSEY 10 ANIMATED TEXT EFFECTS
+   Premium, calm, subtle animations
+   ======================================== */
+
+/* Base animated text class - Jersey 10 font in mustard */
+.jersey-animated {
+  font-family: var(--font-jersey);
+  color: #D4A017;
+  display: inline-block;
+}
+
+/* Fade In Up Animation - Subtle slide up with fade */
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In Animation - Simple elegant fade */
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Letter Reveal Animation - Characters appear one by one */
+.animate-letter-reveal {
+  animation: letterReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  display: inline-block;
+}
+
+@keyframes letterReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Slide In From Left */
+.animate-slide-left {
+  animation: slideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide In From Right */
+.animate-slide-right {
+  animation: slideRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Typewriter Effect Container */
+.animate-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter 2s steps(20, end) forwards;
+  width: 0;
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Gentle Scale Animation */
+.animate-scale-in {
+  animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Stagger delay utilities for sequential animations */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+
+/* Word-by-word animation wrapper */
+.animate-words > span {
+  display: inline-block;
+  opacity: 0;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-words > span:nth-child(1) { animation-delay: 0s; }
+.animate-words > span:nth-child(2) { animation-delay: 0.1s; }
+.animate-words > span:nth-child(3) { animation-delay: 0.2s; }
+.animate-words > span:nth-child(4) { animation-delay: 0.3s; }
+.animate-words > span:nth-child(5) { animation-delay: 0.4s; }
+.animate-words > span:nth-child(6) { animation-delay: 0.5s; }
+
+/* Hover effect for interactive animated text */
+.jersey-animated-hover {
+  font-family: var(--font-jersey);
+  color: #D4A017;
+  display: inline-block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.jersey-animated-hover:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* Gentle pulse for callouts (very subtle) */
+.animate-gentle-pulse {
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Underline reveal animation */
+.animate-underline-reveal {
+  position: relative;
+  display: inline-block;
+}
+
+.animate-underline-reveal::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #D4A017;
+  animation: underlineReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes underlineReveal {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Reduced motion preference - respect accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-letter-reveal,
+  .animate-slide-left,
+  .animate-slide-right,
+  .animate-typewriter,
+  .animate-scale-in,
+  .animate-gentle-pulse,
+  .animate-words > span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  
+  .animate-underline-reveal::after {
+    animation: none;
+    width: 100%;
+  }
 }
 
 @layer components {
+  /* ========================================
+     SMOOTH MINIMAL UI ANIMATIONS
+     Mustard accents, subtle motion
+     Duration: 200ms–500ms
+     Easing: ease-in-out / cubic-bezier
+     ======================================== */
+
+  /* Base transition utility */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ---- BUTTON STYLES ---- */
+  
+  /* Primary Button - Mustard bg, black text */
+  .btn-primary {
+    @apply px-8 py-4 rounded-full font-semibold;
+    background-color: #D4A017;
+    color: #000000;
+    transition: background-color 0.3s ease-in-out, 
+                box-shadow 0.3s ease-in-out,
+                transform 0.2s ease-out;
+  }
+
+  .btn-primary:hover {
+    background-color: #E5B020;
+    box-shadow: 0 4px 20px rgba(212, 160, 23, 0.25);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    background-color: #C49515;
+  }
+
+  /* Secondary Button - Outline style */
+  .btn-secondary {
+    @apply px-8 py-4 rounded-full font-semibold;
+    background-color: transparent;
+    color: #D4A017;
+    border: 2px solid #D4A017;
+    transition: background-color 0.3s ease-in-out, 
+                color 0.3s ease-in-out,
+                border-color 0.3s ease-in-out,
+                transform 0.2s ease-out;
+  }
+
+  .btn-secondary:hover {
+    background-color: #D4A017;
+    color: #000000;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0);
+    background-color: #C49515;
+    border-color: #C49515;
+  }
+
+  /* Ghost Button - Subtle text button */
+  .btn-ghost {
+    @apply px-6 py-3 rounded-full font-semibold;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease-in-out;
+  }
+
+  .btn-ghost:hover {
+    color: #D4A017;
+  }
+
+  /* ---- LINK HOVER EFFECTS ---- */
+
+  /* Mustard underline on hover */
+  .link-underline {
+    position: relative;
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+  }
+
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #D4A017;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .link-underline:hover {
+    color: #D4A017;
+  }
+
+  .link-underline:hover::after {
+    width: 100%;
+  }
+
+  /* Underline expand from center */
+  .link-underline-center {
+    position: relative;
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+  }
+
+  .link-underline-center::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: #D4A017;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .link-underline-center:hover {
+    color: #D4A017;
+  }
+
+  .link-underline-center:hover::after {
+    width: 100%;
+    left: 0;
+  }
+
+  /* ---- CARD HOVER EFFECTS ---- */
+
   .glass-effect {
-    @apply backdrop-blur-md bg-white/20 dark:bg-white/10 border border-white/30 dark:border-white/20;
+    @apply bg-black border border-white/20;
+    transition: border-color 0.3s ease-in-out,
+                box-shadow 0.3s ease-in-out;
+  }
+
+  .glass-effect:hover {
+    border-color: rgba(212, 160, 23, 0.4);
+    box-shadow: 0 8px 32px rgba(212, 160, 23, 0.08);
   }
 
   .glass-card {
-    @apply glass-effect rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300;
+    @apply bg-black border border-white/20 rounded-2xl;
+    transition: border-color 0.3s ease-in-out,
+                box-shadow 0.3s ease-in-out,
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  .glass-card:hover {
+    border-color: rgba(212, 160, 23, 0.5);
+    box-shadow: 0 12px 40px rgba(212, 160, 23, 0.1);
+    transform: translateY(-4px);
+  }
+
+  /* Card with mustard accent line */
+  .card-accent {
+    position: relative;
+    @apply bg-black border border-white/10 rounded-xl;
+    overflow: hidden;
+    transition: border-color 0.3s ease-in-out,
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-accent::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #D4A017;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-accent:hover {
+    border-color: rgba(212, 160, 23, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .card-accent:hover::before {
+    width: 100%;
+  }
+
+  /* ---- ICON HOVER EFFECTS ---- */
+
+  .icon-hover {
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.25s ease-in-out,
+                transform 0.25s ease-out;
+  }
+
+  .icon-hover:hover {
+    color: #D4A017;
+    transform: translateY(-2px);
+  }
+
+  /* ---- INPUT FOCUS EFFECTS ---- */
+
+  .input-minimal {
+    @apply w-full px-4 py-3 rounded-lg;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    transition: border-color 0.3s ease-in-out,
+                box-shadow 0.3s ease-in-out;
+  }
+
+  .input-minimal:focus {
+    outline: none;
+    border-color: #D4A017;
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15);
+  }
+
+  .input-minimal::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* ---- NAV LINK EFFECTS ---- */
+
+  .nav-link {
+    position: relative;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    padding: 0.5rem 0;
+    transition: color 0.25s ease-in-out;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #D4A017;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link:hover {
+    color: #FFFFFF;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  .nav-link.active {
+    color: #D4A017;
+  }
+
+  .nav-link.active::after {
+    width: 100%;
+  }
+
+  /* ---- MISC UTILITIES ---- */
+
   .gradient-text {
-    @apply bg-gradient-to-r from-primary via-blue-400 to-cyan-300 bg-clip-text text-transparent;
+    color: #D4A017;
   }
 
   .glow-effect {
-    @apply shadow-lg shadow-light-primary/50 dark:shadow-dark-neon/50;
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.3);
+    transition: box-shadow 0.3s ease-in-out;
   }
 
-  .btn-primary {
-    @apply px-8 py-4 rounded-full bg-gradient-blue-indigo text-white font-semibold hover:scale-105 transform transition-all duration-300 shadow-lg hover:shadow-xl;
+  .glow-effect:hover {
+    box-shadow: 0 0 30px rgba(212, 160, 23, 0.4);
   }
 
-  .btn-secondary {
-    @apply px-8 py-4 rounded-full border-2 border-light-primary dark:border-dark-neon text-light-primary dark:text-dark-neon font-semibold hover:bg-light-primary dark:hover:bg-dark-neon hover:text-white transform transition-all duration-300;
+  /* Subtle border glow on hover */
+  .border-glow {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: border-color 0.3s ease-in-out,
+                box-shadow 0.3s ease-in-out;
+  }
+
+  .border-glow:hover {
+    border-color: rgba(212, 160, 23, 0.5);
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.1);
   }
 
   .section-padding {
@@ -94,7 +664,7 @@
   }
 
   .container-custom {
-    @apply max-w-7xl mx-auto;
+    @apply max-w-7xl mx-auto px-4;
   }
 }
 
@@ -104,21 +674,22 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - black and mustard only */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-light-blue dark:bg-dark-navy;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-light-primary dark:bg-dark-neon rounded-full;
+  background: #D4A017;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-light-indigo dark:bg-dark-purple;
+  background: #B8860B;
 }
 
 /* Smooth Scroll */

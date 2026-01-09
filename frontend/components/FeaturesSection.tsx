@@ -9,7 +9,6 @@ interface Feature {
   title: string;
   description: string;
   icon: string;
-  gradient: string;
 }
 
 export default function FeaturesSection() {
@@ -24,19 +23,16 @@ export default function FeaturesSection() {
       title: 'Event Discovery',
       description: 'Find the perfect event near you with our intelligent recommendation system',
       icon: '🔍',
-      gradient: 'from-blue-500 to-cyan-500',
     },
     {
       title: 'Easy Ticketing',
       description: 'Seamless booking and instant ticket confirmation in seconds',
       icon: '🎫',
-      gradient: 'from-orange-500 to-red-500',
     },
     {
       title: 'Chat with Hosts',
       description: 'Direct communication with event organizers for any questions',
       icon: '💬',
-      gradient: 'from-green-500 to-teal-500',
     },
   ];
 
@@ -44,7 +40,7 @@ export default function FeaturesSection() {
   const phoneRotate = useTransform(scrollYProgress, [0, 1], [-10, 10]);
 
   return (
-    <Section id="features" className="relative overflow-hidden bg-gradient-to-br from-light-blue to-white dark:from-dark-black dark:to-dark-navy" ref={sectionRef}>
+    <Section id="features" className="relative overflow-hidden bg-black" ref={sectionRef}>
       <Container>
         <motion.div
           className="text-center mb-20"
@@ -52,10 +48,10 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="gradient-text">Powerful Features</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>Powerful Features</span>
           </h2>
-          <p className="text-xl text-light-secondary dark:text-dark-slate max-w-3xl mx-auto">
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
             Everything you need to discover, book, and enjoy incredible events
           </p>
         </motion.div>
@@ -80,33 +76,33 @@ export default function FeaturesSection() {
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
                 <motion.div
-                  className={`inline-block text-7xl mb-6 p-6 rounded-3xl bg-gradient-to-br ${feature.gradient} shadow-2xl`}
+                  className="inline-block text-7xl mb-6 p-6 rounded-3xl border border-white/20"
                   whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                   transition={{ duration: 0.5 }}
                 >
                   {feature.icon}
                 </motion.div>
-                <h3 className="text-4xl font-bold mb-4 text-light-text dark:text-dark-text">
+                <h3 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                   {feature.title}
                 </h3>
-                <p className="text-xl text-light-secondary dark:text-dark-slate mb-6">
+                <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
                   {feature.description}
                 </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-light-secondary dark:text-dark-slate">
-                    <svg className="w-6 h-6 mr-3 text-light-primary dark:text-dark-neon" fill="currentColor" viewBox="0 0 20 20">
+                <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                  <li className="flex items-center text-white/60">
+                    <svg className="w-6 h-6 mr-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     Lightning-fast performance
                   </li>
-                  <li className="flex items-center text-light-secondary dark:text-dark-slate">
-                    <svg className="w-6 h-6 mr-3 text-light-primary dark:text-dark-neon" fill="currentColor" viewBox="0 0 20 20">
+                  <li className="flex items-center text-white/60">
+                    <svg className="w-6 h-6 mr-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     Secure and reliable
                   </li>
-                  <li className="flex items-center text-light-secondary dark:text-dark-slate">
-                    <svg className="w-6 h-6 mr-3 text-light-primary dark:text-dark-neon" fill="currentColor" viewBox="0 0 20 20">
+                  <li className="flex items-center text-white/60">
+                    <svg className="w-6 h-6 mr-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     User-friendly interface
@@ -132,13 +128,13 @@ export default function FeaturesSection() {
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   {/* Phone Frame */}
-                  <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-[3rem] p-3 shadow-2xl">
+                  <div className="relative bg-black border border-white/20 rounded-[3rem] p-3">
                     {/* Notch */}
                     <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10" />
 
                     {/* Screen */}
-                    <div className={`relative bg-gradient-to-br ${feature.gradient} rounded-[2.5rem] overflow-hidden aspect-[9/19.5]`}>
-                      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="relative bg-black border border-white/10 rounded-[2.5rem] overflow-hidden aspect-[9/19.5]">
+                      <div className="absolute inset-0 flex items-center justify-center">
                         <motion.div
                           className="text-8xl"
                           animate={{
@@ -157,9 +153,9 @@ export default function FeaturesSection() {
                     </div>
                   </div>
 
-                  {/* Floating Elements */}
+                  {/* Floating Elements - mustard accent */}
                   <motion.div
-                    className="absolute -top-10 -right-10 w-24 h-24 bg-light-primary/20 dark:bg-dark-neon/20 rounded-full blur-xl"
+                    className="absolute -top-10 -right-10 w-24 h-24 bg-[#D4A017]/10 rounded-full blur-xl"
                     animate={{
                       scale: [1, 1.5, 1],
                       opacity: [0.3, 0.6, 0.3],
@@ -171,7 +167,7 @@ export default function FeaturesSection() {
                     }}
                   />
                   <motion.div
-                    className="absolute -bottom-10 -left-10 w-32 h-32 bg-light-indigo/20 dark:bg-dark-purple/20 rounded-full blur-xl"
+                    className="absolute -bottom-10 -left-10 w-32 h-32 bg-[#D4A017]/10 rounded-full blur-xl"
                     animate={{
                       scale: [1.5, 1, 1.5],
                       opacity: [0.6, 0.3, 0.6],

@@ -98,12 +98,12 @@ const EventDetailsModal = () => {
             {/* Modal Content */}
             <div
                 ref={contentRef}
-                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-surface border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl flex flex-col md:flex-row"
+                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-black border border-white/10 rounded-3xl flex flex-col md:flex-row"
             >
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-black/20 hover:bg-gray-200 dark:hover:bg-black/40 text-gray-600 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                     aria-label="Close modal"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,22 +128,22 @@ const EventDetailsModal = () => {
                             <div className="flex items-center gap-2 mb-2">
                                 <span
                                     className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${selectedEvent.type === 'formal'
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'bg-secondary/10 text-secondary'
+                                        ? 'bg-[#D4A017]/10 text-[#D4A017]'
+                                        : 'bg-white/10 text-white'
                                         }`}
                                 >
                                     {selectedEvent.type}
                                 </span>
                                 {selectedEvent.isSuperhost && (
-                                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-400/10 text-yellow-500 text-xs font-bold uppercase border border-yellow-400/20">
+                                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#D4A017]/10 text-[#D4A017] text-xs font-bold uppercase border border-[#D4A017]/20">
                                         Superhost
                                     </span>
                                 )}
                             </div>
-                            <h2 id="modal-title" className="text-3xl font-heading font-bold text-gray-900 dark:text-text-primary mb-2">
+                            <h2 id="modal-title" className="text-3xl font-heading font-bold text-white mb-2">
                                 {selectedEvent.title}
                             </h2>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-text-muted">
+                            <div className="flex items-center gap-4 text-sm text-white/50">
                                 <span className="flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -162,29 +162,29 @@ const EventDetailsModal = () => {
 
                         {/* Host Info */}
                         {host && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-100 dark:bg-white/10">
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                                 <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full" />
                                 <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                                    <p className="text-sm font-medium text-white flex items-center gap-1">
                                         Hosted by {host.name}
                                         {host.verified && (
-                                            <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Host">
+                                            <svg className="w-3 h-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Host">
                                                 <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
                                         )}
                                     </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{host.rating} ★ ({host.reviews} reviews)</p>
+                                    <p className="text-xs text-white/50">{host.rating} ★ ({host.reviews} reviews)</p>
                                 </div>
                             </div>
                         )}
 
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-text-secondary">
+                        <div className="prose prose-sm max-w-none text-white/70">
                             <p>{selectedEvent.description}</p>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                             {selectedEvent.tags.map((tag) => (
-                                <span key={tag} className="px-2 py-1 rounded-md bg-gray-100 dark:bg-surface-highlight text-xs text-gray-600 dark:text-text-muted">
+                                <span key={tag} className="px-2 py-1 rounded-md bg-white/10 text-xs text-white/60">
                                     #{tag}
                                 </span>
                             ))}
@@ -192,26 +192,26 @@ const EventDetailsModal = () => {
                     </div>
 
                     {/* Footer / Actions */}
-                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-border/50 space-y-4">
+                    <div className="mt-8 pt-6 border-t border-white/10 space-y-4">
                         <div className="flex items-center justify-between">
-                            <div className="text-2xl font-bold text-gray-900 dark:text-text-primary">
+                            <div className="text-2xl font-bold text-white">
                                 ₹{selectedEvent.price * qty}
-                                {qty > 1 && <span className="text-sm font-normal text-gray-500 dark:text-text-muted ml-2">(₹{selectedEvent.price} x {qty})</span>}
+                                {qty > 1 && <span className="text-sm font-normal text-white/50 ml-2">(₹{selectedEvent.price} x {qty})</span>}
                             </div>
 
                             {/* Quantity Selector */}
-                            <div className="flex items-center gap-3 bg-gray-100 dark:bg-surface-highlight rounded-lg p-1">
+                            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-1">
                                 <button
                                     onClick={() => setQty(Math.max(1, qty - 1))}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-surface text-gray-700 dark:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                                     aria-label="Decrease quantity"
                                 >
                                     -
                                 </button>
-                                <span className="font-medium w-4 text-center text-gray-900 dark:text-white" aria-label="Current quantity">{qty}</span>
+                                <span className="font-medium w-4 text-center text-white" aria-label="Current quantity">{qty}</span>
                                 <button
                                     onClick={() => setQty(qty + 1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-surface text-gray-700 dark:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                                     aria-label="Increase quantity"
                                 >
                                     +
@@ -222,13 +222,13 @@ const EventDetailsModal = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="py-3 px-4 rounded-xl border border-primary text-primary font-medium hover:bg-primary/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="py-3 px-4 rounded-xl border border-[#D4A017] text-[#D4A017] font-medium hover:bg-[#D4A017] hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="py-3 px-4 rounded-xl bg-primary text-white font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="py-3 px-4 rounded-xl bg-[#D4A017] text-black font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
                             >
                                 Buy Now
                             </button>

@@ -34,15 +34,15 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <Section id="how-it-works" className="relative overflow-hidden bg-gradient-to-br from-dark-navy via-dark-black to-dark-navy dark:from-dark-black dark:via-dark-navy dark:to-dark-black">
-      {/* Floating 3D Spheres Background */}
+    <Section id="how-it-works" className="relative overflow-hidden bg-black">
+      {/* Floating Background Elements - mustard accent */}
       <div className="absolute inset-0">
         <motion.div
-          className="absolute top-20 left-10 w-64 h-64 rounded-full bg-gradient-to-br from-light-neon/30 to-dark-purple/30 blur-3xl"
+          className="absolute top-20 left-10 w-64 h-64 rounded-full bg-[#D4A017]/10 blur-3xl"
           animate={{
             y: [0, 50, 0],
             scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
+            opacity: [0.1, 0.2, 0.1],
           }}
           transition={{
             duration: 8,
@@ -51,11 +51,11 @@ export default function HowItWorksSection() {
           }}
         />
         <motion.div
-          className="absolute top-40 right-20 w-96 h-96 rounded-full bg-gradient-to-br from-light-indigo/20 to-light-primary/20 blur-3xl"
+          className="absolute top-40 right-20 w-96 h-96 rounded-full bg-[#D4A017]/10 blur-3xl"
           animate={{
             y: [0, -50, 0],
             scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.7, 0.4],
+            opacity: [0.15, 0.25, 0.15],
           }}
           transition={{
             duration: 10,
@@ -64,12 +64,12 @@ export default function HowItWorksSection() {
           }}
         />
         <motion.div
-          className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full bg-gradient-to-br from-dark-purple/30 to-light-neon/30 blur-3xl"
+          className="absolute bottom-20 left-1/3 w-80 h-80 rounded-full bg-[#D4A017]/10 blur-3xl"
           animate={{
             y: [0, 30, 0],
             x: [0, -30, 0],
             scale: [1, 1.1, 1],
-            opacity: [0.5, 0.8, 0.5],
+            opacity: [0.1, 0.2, 0.1],
           }}
           transition={{
             duration: 12,
@@ -86,17 +86,17 @@ export default function HowItWorksSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white">
-            <span className="gradient-text">How It Works</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>How It Works</span>
           </h2>
-          <p className="text-xl text-dark-slate max-w-3xl mx-auto">
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
             Getting started is as easy as 1-2-3
           </p>
         </motion.div>
 
         <div className="relative">
           {/* Connecting Line */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-light-primary via-light-indigo to-dark-purple opacity-20" style={{ transform: 'translateY(-50%)' }} />
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px bg-white/20" style={{ transform: 'translateY(-50%)' }} />
 
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {steps.map((step, index) => (
@@ -110,14 +110,14 @@ export default function HowItWorksSection() {
               >
                 {/* Card */}
                 <motion.div
-                  className="relative glass-effect rounded-3xl p-8 text-center group hover:glow-effect"
+                  className="relative bg-black border border-white/20 rounded-2xl p-8 text-center group hover:border-[#D4A017]/50"
                   whileHover={{ y: -10, scale: 1.05 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
                   {/* Number Badge */}
                   <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                     <motion.div
-                      className="w-16 h-16 rounded-full bg-gradient-blue-purple flex items-center justify-center text-2xl font-bold text-white shadow-2xl"
+                      className="w-16 h-16 rounded-full bg-[#D4A017] flex items-center justify-center text-2xl font-bold text-black"
                       whileHover={{ rotate: 360, scale: 1.2 }}
                       transition={{ duration: 0.6 }}
                     >
@@ -125,7 +125,7 @@ export default function HowItWorksSection() {
                     </motion.div>
                   </div>
 
-                  {/* Icon with Neon Glow */}
+                  {/* Icon */}
                   <motion.div
                     className="mt-8 mb-6 text-8xl relative"
                     animate={{
@@ -138,35 +138,16 @@ export default function HowItWorksSection() {
                       delay: index * 0.3,
                     }}
                   >
-                    {/* Glow Effect */}
-                    <motion.div
-                      className="absolute inset-0 flex items-center justify-center text-8xl opacity-50 blur-xl"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.3, 0.6, 0.3],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    >
-                      {step.icon}
-                    </motion.div>
                     <div className="relative z-10">{step.icon}</div>
                   </motion.div>
 
                   {/* Content */}
-                  <h3 className="text-3xl font-bold mb-4 text-white group-hover:gradient-text transition-all duration-300">
+                  <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-[#D4A017] transition-all duration-300" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                     {step.title}
                   </h3>
-                  <p className="text-lg text-dark-slate">
+                  <p className="text-lg text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
                     {step.description}
                   </p>
-
-                  {/* Decorative Corner Elements */}
-                  <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-light-primary/10 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-4 left-4 w-16 h-16 bg-gradient-to-tr from-dark-purple/10 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.div>
 
                 {/* Arrow Between Steps (Desktop) */}
@@ -179,7 +160,7 @@ export default function HowItWorksSection() {
                     transition={{ delay: 0.5 + index * 0.2 }}
                   >
                     <svg
-                      className="w-16 h-16 text-light-primary dark:text-dark-neon"
+                      className="w-16 h-16 text-[#D4A017]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -206,13 +187,14 @@ export default function HowItWorksSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.8 }}
         >
-          <p className="text-xl text-dark-slate mb-6">
+          <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
             Ready to start your journey?
           </p>
           <motion.button
-            className="px-10 py-5 rounded-full bg-gradient-blue-purple text-white font-semibold text-lg hover:scale-105 transform transition-all duration-300 shadow-2xl glow-effect"
+            className="px-10 py-5 rounded-full bg-[#D4A017] text-black font-semibold text-lg hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
           >
             Get Started Now
           </motion.button>

@@ -5,35 +5,52 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/**/*.{js,ts,jsx,tsx,mdx}', // Include src directory
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: ['class', '[data-theme="dark"]'], // Support data-theme attribute
+  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        surface: 'var(--surface)',
-        'surface-highlight': 'var(--surface-highlight)',
-        primary: 'var(--primary)',
-        secondary: 'var(--secondary)',
+        // Strict minimal palette - NO other colors allowed
+        black: '#000000',
+        white: '#FFFFFF',
+        mustard: '#D4A017',
+        // Semantic mappings
+        background: '#000000',
+        surface: '#000000',
+        'surface-highlight': '#111111',
+        primary: '#D4A017',
+        secondary: '#D4A017',
+        accent: '#D4A017',
         text: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
-          muted: 'var(--text-muted)',
+          primary: '#FFFFFF',
+          secondary: '#CCCCCC',
+          muted: '#888888',
         },
-        border: 'var(--border)',
+        border: '#333333',
       },
       fontFamily: {
-        heading: ['var(--font-heading)', 'sans-serif'],
-        body: ['var(--font-body)', 'sans-serif'],
+        // Strict typography system
+        heading: ['BBH Bartle', 'var(--font-roboto-bbh)', 'sans-serif'], // H1-H3 headings
+        display: ['var(--font-jersey)', 'sans-serif'],     // Animated/highlight text ONLY
+        body: ['var(--font-lora)', 'serif'],               // Body text & paragraphs
+      },
+      fontSize: {
+        // Heading scale for Roboto BBH Bartle
+        'display-xl': ['5rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'display-lg': ['4rem', { lineHeight: '1.15', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'h1': ['3.5rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
+        'h2': ['2.5rem', { lineHeight: '1.25', fontWeight: '700', letterSpacing: '-0.01em' }],
+        'h3': ['1.75rem', { lineHeight: '1.3', fontWeight: '700' }],
+        // Body scale for Lora
+        'body-lg': ['1.125rem', { lineHeight: '1.7' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.5' }],
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
-      },
-      backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+        lg: '1rem',
+        md: '0.5rem',
+        sm: '0.25rem',
       },
     },
   },

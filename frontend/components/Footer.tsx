@@ -49,7 +49,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative bg-white dark:bg-dark-black border-t border-light-blue/20 dark:border-dark-navy/50">
+    <footer className="relative bg-black border-t border-white/10">
       {/* Top Section */}
       <div className="container-custom py-16 md:py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-12 mb-12">
@@ -60,26 +60,24 @@ export default function Footer() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h3 className="text-3xl font-bold gradient-text mb-4">UpSosh</h3>
-              <p className="text-light-secondary dark:text-dark-slate mb-6 max-w-sm">
+              <h3 className="text-3xl font-bold text-[#D4A017] mb-4" style={{ fontFamily: 'var(--font-jersey)' }}>UpSosh</h3>
+              <p className="text-white/60 mb-6 max-w-sm font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
                 Your all-in-one platform for discovering and hosting incredible experiences.
                 Official + Unofficial events, all in one place.
               </p>
               {/* Social Links */}
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
-                  <motion.a
+                  <a
                     key={social.name}
                     href={social.href}
-                    className="w-10 h-10 rounded-full glass-effect flex items-center justify-center hover:glow-effect transition-all duration-300"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 transition-all duration-300 ease-in-out hover:border-[#D4A017] hover:text-[#D4A017] hover:-translate-y-1"
                     aria-label={social.name}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={social.icon} />
                     </svg>
-                  </motion.a>
+                  </a>
                 ))}
               </div>
             </motion.div>
@@ -94,15 +92,15 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <h4 className="font-semibold text-light-text dark:text-dark-text mb-4">
+              <h4 className="font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                 {section.title}
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="text-light-secondary dark:text-dark-slate hover:text-light-primary dark:hover:text-dark-neon transition-colors duration-300"
+                      className="text-white/60 hover:text-[#D4A017] transition-colors duration-300"
                     >
                       {link.name}
                     </a>
@@ -115,29 +113,31 @@ export default function Footer() {
 
         {/* Newsletter */}
         <motion.div
-          className="glass-effect rounded-3xl p-8 md:p-12"
+          className="bg-black border border-white/20 rounded-2xl p-8 md:p-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
           <div className="max-w-2xl mx-auto text-center">
-            <h4 className="text-2xl font-bold mb-2 text-light-text dark:text-dark-text">
+            <h4 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
               Stay in the Loop
             </h4>
-            <p className="text-light-secondary dark:text-dark-slate mb-6">
+            <p className="text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
               Get the latest updates on events, features, and exclusive offers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-full glass-effect border border-light-primary/20 dark:border-dark-neon/20 focus:outline-none focus:border-light-primary dark:focus:border-dark-neon transition-colors"
+                className="flex-1 px-6 py-4 rounded-full bg-black border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-[#D4A017] transition-colors font-body"
+                style={{ fontFamily: 'var(--font-lora)' }}
               />
               <motion.button
-                className="px-8 py-4 rounded-full bg-gradient-blue-indigo text-white font-semibold hover:scale-105 transform transition-all duration-300 shadow-lg"
+                className="px-8 py-4 rounded-full bg-[#D4A017] text-black font-semibold hover:scale-105 transform transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                style={{ fontFamily: 'var(--font-roboto-bbh)' }}
               >
                 Subscribe
               </motion.button>
@@ -147,31 +147,33 @@ export default function Footer() {
       </div>
 
       {/* Bottom Section */}
-      <div className="border-t border-light-blue/20 dark:border-dark-navy/50">
+      <div className="border-t border-white/10">
         <div className="container-custom py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <motion.p
-              className="text-sm text-light-secondary dark:text-dark-slate"
+              className="text-sm text-white/60 font-body"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
+              style={{ fontFamily: 'var(--font-lora)' }}
             >
               © {new Date().getFullYear()} UpSosh. All rights reserved.
             </motion.p>
             <motion.div
-              className="flex items-center space-x-6 text-sm text-light-secondary dark:text-dark-slate"
+              className="flex items-center space-x-6 text-sm text-white/60 font-body"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
+              style={{ fontFamily: 'var(--font-lora)' }}
             >
-              <a href="/terms" className="hover:text-light-primary dark:hover:text-dark-neon transition-colors">
+              <a href="/terms" className="hover:text-[#D4A017] transition-colors">
                 Terms
               </a>
-              <a href="/privacy" className="hover:text-light-primary dark:hover:text-dark-neon transition-colors">
+              <a href="/privacy" className="hover:text-[#D4A017] transition-colors">
                 Privacy
               </a>
-              <a href="#" className="hover:text-light-primary dark:hover:text-dark-neon transition-colors">
+              <a href="#" className="hover:text-[#D4A017] transition-colors">
                 Cookies
               </a>
             </motion.div>
@@ -179,9 +181,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-light-primary/5 dark:bg-dark-neon/5 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-light-indigo/5 dark:bg-dark-purple/5 rounded-full blur-3xl -z-10" />
+      {/* Decorative Elements - subtle mustard glow */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-[#D4A017]/5 rounded-full blur-3xl -z-10" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#D4A017]/5 rounded-full blur-3xl -z-10" />
     </footer>
   );
 }

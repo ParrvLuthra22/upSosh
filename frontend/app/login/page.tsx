@@ -41,23 +41,23 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+        <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-black">
             <div className="w-full max-w-md space-y-8">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                         Sign in to your account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
+                    <p className="mt-2 text-center text-sm text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                         Or{' '}
-                        <Link href="/signup" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+                        <Link href="/signup" className="font-semibold text-[#D4A017] hover:opacity-80">
                             create a new account
                         </Link>
                     </p>
                 </div>
-                <form className="mt-8 space-y-6 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700" onSubmit={handleSubmit}>
+                <form className="mt-8 space-y-6 bg-black p-8 rounded-2xl border border-white/10" onSubmit={handleSubmit}>
                     <div className="space-y-5">
                         <div className="space-y-2">
-                            <Label htmlFor="email-address" className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <Label htmlFor="email-address" className="text-sm font-semibold text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                                 Email address
                             </Label>
                             <Input
@@ -67,11 +67,12 @@ export default function LoginPage() {
                                 autoComplete="email"
                                 required
                                 placeholder="Enter your email"
-                                className="h-12 text-base border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-indigo-600 dark:focus:ring-indigo-400"
+                                className="h-12 text-base border border-white/20 bg-black text-white placeholder:text-white/40 focus:border-[#D4A017] focus:ring-[#D4A017] font-body"
+                                style={{ fontFamily: 'var(--font-lora)' }}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <Label htmlFor="password" className="text-sm font-semibold text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                                 Password
                             </Label>
                             <Input
@@ -81,7 +82,8 @@ export default function LoginPage() {
                                 autoComplete="current-password"
                                 required
                                 placeholder="Enter your password"
-                                className="h-12 text-base border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-indigo-600 dark:focus:ring-indigo-400"
+                                className="h-12 text-base border border-white/20 bg-black text-white placeholder:text-white/40 focus:border-[#D4A017] focus:ring-[#D4A017] font-body"
+                                style={{ fontFamily: 'var(--font-lora)' }}
                             />
                         </div>
                     </div>
@@ -92,15 +94,15 @@ export default function LoginPage() {
                                 id="remember-me"
                                 name="remember-me"
                                 type="checkbox"
-                                className="h-4 w-4 rounded border-gray-400 text-indigo-600 focus:ring-indigo-600"
+                                className="h-4 w-4 rounded border-white/20 bg-black text-[#D4A017] focus:ring-[#D4A017]"
                             />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label htmlFor="remember-me" className="ml-2 block text-sm font-medium text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                                 Remember me
                             </label>
                         </div>
 
-                        <div className="text-sm">
-                            <Link href="/forgot-password" className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+                        <div className="text-sm font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                            <Link href="/forgot-password" className="font-semibold text-[#D4A017] hover:opacity-80">
                                 Forgot password?
                             </Link>
                         </div>
@@ -110,7 +112,8 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full h-12 px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200"
+                            className="w-full h-12 px-6 py-3 text-base font-semibold text-black bg-[#D4A017] rounded-full hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4A017] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                         >
                             {isLoading ? 'Signing in...' : 'Sign in'}
                         </button>

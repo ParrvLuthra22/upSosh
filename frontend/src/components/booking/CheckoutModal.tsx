@@ -292,83 +292,83 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     return (
         <div ref={modalRef} className="fixed inset-0 z-[70] flex items-center justify-center p-4 opacity-0 pointer-events-none" role="dialog" aria-modal="true">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={status === 'uploading' ? undefined : onClose} />
-            <div ref={contentRef} className="relative w-full max-w-2xl bg-surface border border-white/10 rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b border-border/50 flex items-center justify-between bg-surface/50 sticky top-0 z-10">
-                    <h2 className="text-2xl font-heading font-bold text-text-primary">
+            <div ref={contentRef} className="relative w-full max-w-2xl bg-black border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black sticky top-0 z-10">
+                    <h2 className="text-2xl font-heading font-bold text-white">
                         {status === 'success' ? '✅ Booking Submitted!' : status === 'payment-details' ? '💳 Payment Details' : 'Complete Your Purchase'}
                     </h2>
-                    {status !== 'uploading' && <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-highlight text-text-muted hover:text-text-primary transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
+                    {status !== 'uploading' && <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
                 </div>
                 <div className="p-8">
                     {status === 'success' ? (
                         <div className="flex flex-col items-center justify-center text-center space-y-6">
-                            <div className="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-24 h-24 bg-[#D4A017]/20 text-[#D4A017] rounded-full flex items-center justify-center">
                                 <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                             </div>
-                            <h3 className="text-3xl font-bold text-text-primary">Booking Submitted!</h3>
-                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 w-full">
-                                <p className="text-yellow-500 font-medium">⏳ Pending Verification</p>
-                                <p className="text-text-secondary text-sm mt-2">Your booking will be confirmed once we verify your payment. You'll receive an email confirmation within 24 hours.</p>
+                            <h3 className="text-3xl font-bold text-white">Booking Submitted!</h3>
+                            <div className="bg-[#D4A017]/10 border border-[#D4A017]/20 rounded-xl p-4 w-full">
+                                <p className="text-[#D4A017] font-medium">⏳ Pending Verification</p>
+                                <p className="text-white/60 text-sm mt-2">Your booking will be confirmed once we verify your payment. You'll receive an email confirmation within 24 hours.</p>
                             </div>
-                            <div className="bg-surface-highlight rounded-xl p-6 w-full">
-                                <p className="text-sm text-text-muted mb-2">Booking Reference</p>
-                                <p className="text-2xl font-mono font-bold text-primary">{bookingDetails?.id}</p>
+                            <div className="bg-white/10 rounded-xl p-6 w-full">
+                                <p className="text-sm text-white/50 mb-2">Booking Reference</p>
+                                <p className="text-2xl font-mono font-bold text-[#D4A017]">{bookingDetails?.id}</p>
                             </div>
-                            <button onClick={onClose} className="w-full py-3 px-6 rounded-xl bg-primary text-white font-bold hover:opacity-90">Done</button>
+                            <button onClick={onClose} className="w-full py-3 px-6 rounded-xl bg-[#D4A017] text-black font-bold hover:opacity-90">Done</button>
                         </div>
                     ) : status === 'uploading' ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-                            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                            <h3 className="text-2xl font-bold text-text-primary">Submitting Booking...</h3>
-                            <p className="text-text-secondary">Please wait while we process your request</p>
+                            <div className="w-16 h-16 border-4 border-[#D4A017] border-t-transparent rounded-full animate-spin"></div>
+                            <h3 className="text-2xl font-bold text-white">Submitting Booking...</h3>
+                            <p className="text-white/60">Please wait while we process your request</p>
                         </div>
                     ) : status === 'payment-details' ? (
                         <div className="space-y-6">
-                            {errorMessage && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
+                            {errorMessage && <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-white/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
                             
-                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-blue-400 flex items-center gap-2">
+                            <div className="bg-[#D4A017]/10 border border-[#D4A017]/20 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-[#D4A017] flex items-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     How to Pay
                                 </h3>
-                                <p className="text-text-secondary text-sm">Send ₹{total.toFixed(2)} using the QR code, UPI ID, or Bank Account details below, then upload your payment screenshot.</p>
+                                <p className="text-white/60 text-sm">Send ₹{total.toFixed(2)} using the QR code, UPI ID, or Bank Account details below, then upload your payment screenshot.</p>
                             </div>
 
                             {/* QR Code Section */}
-                            <div className="bg-surface-highlight rounded-xl p-6 flex flex-col items-center space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary">Scan QR Code to Pay</h3>
-                                <div className="bg-white p-4 rounded-xl shadow-lg">
+                            <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center space-y-4">
+                                <h3 className="text-lg font-bold text-white">Scan QR Code to Pay</h3>
+                                <div className="bg-white p-4 rounded-xl">
                                     <img 
                                         src="/payment-qr.png" 
                                         alt="Payment QR Code" 
                                         className="w-64 h-64 object-contain"
                                     />
                                 </div>
-                                <p className="text-sm text-text-muted text-center">Scan with any UPI app (Google Pay, PhonePe, Paytm, etc.)</p>
-                                <p className="text-xs text-text-muted text-center">Amount: ₹{total.toFixed(2)}</p>
+                                <p className="text-sm text-white/50 text-center">Scan with any UPI app (Google Pay, PhonePe, Paytm, etc.)</p>
+                                <p className="text-xs text-white/50 text-center">Amount: ₹{total.toFixed(2)}</p>
                             </div>
 
-                            <div className="bg-surface-highlight rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary mb-4">Payment Methods</h3>
+                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-white mb-4">Payment Methods</h3>
                                 
                                 <div className="space-y-3">
-                                    <div className="bg-surface border border-border/50 rounded-lg p-4">
-                                        <p className="text-sm text-text-muted mb-1">UPI ID</p>
-                                        <p className="text-xl font-mono font-bold text-primary">upsosh@ptyes</p>
-                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-blue-400 hover:text-blue-300 mt-2">Copy UPI ID</button>
+                                    <div className="bg-black border border-white/10 rounded-lg p-4">
+                                        <p className="text-sm text-white/50 mb-1">UPI ID</p>
+                                        <p className="text-xl font-mono font-bold text-[#D4A017]">upsosh@ptyes</p>
+                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-[#D4A017] hover:opacity-80 mt-2">Copy UPI ID</button>
                                     </div>
                                     
-                                    <div className="bg-surface border border-border/50 rounded-lg p-4">
-                                        <p className="text-sm text-text-muted mb-2">Bank Transfer</p>
+                                    <div className="bg-black border border-white/10 rounded-lg p-4">
+                                        <p className="text-sm text-white/50 mb-2">Bank Transfer</p>
                                         <div className="space-y-1 text-sm">
-                                            <p className="text-text-secondary"><span className="text-text-muted">Account Holder:</span> Aadit Vachher</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">Bank:</span> HDFC Bank</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">Account Number:</span> 50100828764622</p>
-                                            <p className="text-text-secondary"><span className="text-text-muted">IFSC Code:</span> HDFC0000027</p>
+                                            <p className="text-white/60"><span className="text-white/40">Account Holder:</span> Aadit Vachher</p>
+                                            <p className="text-white/60"><span className="text-white/40">Bank:</span> HDFC Bank</p>
+                                            <p className="text-white/60"><span className="text-white/40">Account Number:</span> 50100828764622</p>
+                                            <p className="text-white/60"><span className="text-white/40">IFSC Code:</span> HDFC0000027</p>
                                         </div>
                                         <button 
                                             onClick={() => navigator.clipboard.writeText('50100828764622')} 
-                                            className="text-sm text-blue-400 hover:text-blue-300 mt-2"
+                                            className="text-sm text-[#D4A017] hover:opacity-80 mt-2"
                                         >
                                             Copy Account Number
                                         </button>
@@ -376,23 +376,23 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
 
-                            <div className="bg-surface-highlight rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary">📸 Upload Payment Proof</h3>
-                                <p className="text-sm text-text-muted">Take a screenshot of your payment and upload it here</p>
+                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-white">📸 Upload Payment Proof</h3>
+                                <p className="text-sm text-white/50">Take a screenshot of your payment and upload it here</p>
                                 
                                 <label className="block">
                                     <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                                    <div className="border-2 border-dashed border-border/50 rounded-xl p-8 text-center hover:border-primary/50 cursor-pointer transition-colors">
+                                    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-[#D4A017]/50 cursor-pointer transition-colors">
                                         {previewUrl ? (
                                             <div className="space-y-3">
                                                 <img src={previewUrl} alt="Payment proof" className="max-h-48 mx-auto rounded-lg" />
-                                                <p className="text-sm text-green-400">✓ Image uploaded</p>
+                                                <p className="text-sm text-[#D4A017]">✓ Image uploaded</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
-                                                <svg className="w-12 h-12 mx-auto text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                                                <p className="text-text-primary font-medium">Click to upload screenshot</p>
-                                                <p className="text-xs text-text-muted">PNG, JPG up to 5MB</p>
+                                                <svg className="w-12 h-12 mx-auto text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                                                <p className="text-white font-medium">Click to upload screenshot</p>
+                                                <p className="text-xs text-white/50">PNG, JPG up to 5MB</p>
                                             </div>
                                         )}
                                     </div>
@@ -400,65 +400,65 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                             </div>
 
                             <div className="flex gap-3">
-                                <button onClick={() => setStatus('idle')} className="flex-1 py-3 px-6 rounded-xl bg-surface-highlight text-text-primary font-bold hover:bg-surface-highlight/80">Back</button>
-                                <button onClick={handleSubmitManualPayment} disabled={!paymentProof} className="flex-1 py-3 px-6 rounded-xl bg-primary text-white font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">Submit Booking</button>
+                                <button onClick={() => setStatus('idle')} className="flex-1 py-3 px-6 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20">Back</button>
+                                <button onClick={handleSubmitManualPayment} disabled={!paymentProof} className="flex-1 py-3 px-6 rounded-xl bg-[#D4A017] text-black font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">Submit Booking</button>
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {errorMessage && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
+                            {errorMessage && <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-white/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
                             
-                            <div className="bg-surface-highlight rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary mb-4">Order Summary</h3>
+                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-white mb-4">Order Summary</h3>
                                 <div className="space-y-3">
                                     {checkoutItems.map((item) => (
                                         <div key={item.event?.id || item.id} className="flex justify-between items-center">
                                             <div>
-                                                <p className="font-medium text-text-primary">{item.event?.title || item.title}</p>
-                                                <p className="text-sm text-text-muted">Qty: {item.qty}</p>
+                                                <p className="font-medium text-white">{item.event?.title || item.title}</p>
+                                                <p className="text-sm text-white/50">Qty: {item.qty}</p>
                                             </div>
-                                            <p className="font-bold text-text-primary">₹{(item.price * item.qty).toFixed(2)}</p>
+                                            <p className="font-bold text-white">₹{(item.price * item.qty).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="border-t border-border/50 pt-4 mt-4">
+                                <div className="border-t border-white/10 pt-4 mt-4">
                                     <div className="flex justify-between items-center text-xl font-bold">
-                                        <span className="text-text-primary">Total</span>
-                                        <span className="text-primary">₹{total.toFixed(2)}</span>
+                                        <span className="text-white">Total</span>
+                                        <span className="text-[#D4A017]">₹{total.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Payment Options */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-bold text-text-primary">Choose Payment Method</h3>
+                                <h3 className="text-lg font-bold text-white">Choose Payment Method</h3>
                                 
                                 {/* Online Payment - Dodo Payments */}
                                 <button 
                                     onClick={handleDodoPayment} 
-                                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3 shadow-lg"
+                                    className="w-full py-4 px-6 rounded-xl bg-[#D4A017] text-black font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                                     Pay Online (Card/UPI/Wallet)
                                 </button>
-                                <p className="text-center text-xs text-text-muted">Instant Secure payment powered by Dodo Payments(platform charges may apply)</p>
+                                <p className="text-center text-xs text-white/50">Instant Secure payment powered by Dodo Payments(platform charges may apply)</p>
                                 
                                 {/* Divider */}
                                 <div className="flex items-center gap-4 my-4">
-                                    <div className="flex-1 h-px bg-border/50"></div>
-                                    <span className="text-sm text-text-muted">or</span>
-                                    <div className="flex-1 h-px bg-border/50"></div>
+                                    <div className="flex-1 h-px bg-white/10"></div>
+                                    <span className="text-sm text-white/50">or</span>
+                                    <div className="flex-1 h-px bg-white/10"></div>
                                 </div>
                                 
                                 {/* Manual Payment */}
                                 <button 
                                     onClick={handleShowPaymentDetails} 
-                                    className="w-full py-4 px-6 rounded-xl bg-surface-highlight border border-border/50 text-text-primary font-bold text-lg hover:bg-surface-highlight/80 transition-colors flex items-center justify-center gap-3"
+                                    className="w-full py-4 px-6 rounded-xl bg-white/10 border border-white/10 text-white font-bold text-lg hover:bg-white/20 transition-colors flex items-center justify-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                                     Pay via UPI/Bank Transfer
                                 </button>
-                                <p className="text-center text-xs text-text-muted">Manual verification (6-8 hours)</p>
+                                <p className="text-center text-xs text-white/50">Manual verification (6-8 hours)</p>
                             </div>
                         </div>
                     )}

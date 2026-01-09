@@ -45,7 +45,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             onClick={onClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="group relative bg-surface/50 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden cursor-pointer transition-colors hover:bg-surface/80"
+            className="group relative bg-black border border-white/10 rounded-2xl overflow-hidden cursor-pointer transition-colors hover:border-white/20"
         >
             {/* Image Container */}
             <div className="relative h-48 overflow-hidden">
@@ -59,7 +59,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                 />
 
                 {/* Price Badge */}
-                <div className="absolute top-4 right-4 z-20 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-text-primary shadow-sm">
+                <div className="absolute top-4 right-4 z-20 bg-black/90 px-3 py-1 rounded-full text-sm font-bold text-white border border-white/10" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                     {event.price === 0 ? 'Free' : `₹${event.price}`}
                 </div>
 
@@ -67,9 +67,10 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                 <div className="absolute top-4 left-4 z-20">
                     <span
                         className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${event.type === 'formal'
-                            ? 'bg-primary/90 text-white'
-                            : 'bg-secondary/90 text-black'
+                            ? 'bg-[#D4A017] text-black'
+                            : 'bg-white/20 text-white'
                             }`}
+                        style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                     >
                         {event.type}
                     </span>
@@ -80,18 +81,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             <div className="p-5 space-y-4">
                 <div className="space-y-1">
                     <div className="flex justify-between items-start gap-2">
-                        <h3 className="text-lg font-heading font-bold text-text-primary line-clamp-1 group-hover:text-primary transition-colors">
+                        <h3 className="text-lg font-heading font-bold text-white line-clamp-1 group-hover:text-[#D4A017] transition-colors" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
                             {event.title}
                         </h3>
                     </div>
-                    <div className="flex items-center text-sm text-text-muted gap-2">
+                    <div className="flex items-center text-sm text-white/50 gap-2 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                         <span>{event.date}</span>
                         <span>•</span>
                         <span>{event.time}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-text-secondary">
+                <div className="flex items-center gap-2 text-sm text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -101,21 +102,21 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
 
                 {/* Host Info */}
                 {host && (
-                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <div className="flex items-center gap-2">
                             <img src={host.avatar} alt={host.name} className="w-6 h-6 rounded-full" />
-                            <span className="text-xs font-medium text-text-secondary line-clamp-1">
+                            <span className="text-xs font-medium text-white/60 line-clamp-1 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
                                 {host.name}
                             </span>
                             {host.verified && (
-                                <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-3 h-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                             )}
                         </div>
                         {event.isSuperhost && (
-                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-400/10 border border-yellow-400/20">
-                                <span className="text-[10px] font-bold text-yellow-500 uppercase">Superhost</span>
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D4A017]/10 border border-[#D4A017]/20">
+                                <span className="text-[10px] font-bold text-[#D4A017] uppercase" style={{ fontFamily: 'var(--font-jersey)' }}>Superhost</span>
                             </div>
                         )}
                     </div>

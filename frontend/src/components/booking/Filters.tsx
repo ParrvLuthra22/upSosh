@@ -11,16 +11,16 @@ const Filters = () => {
     };
 
     return (
-        <div className="glass-panel p-6 rounded-2xl space-y-8">
-            <h3 className="text-xl font-heading font-bold text-text-primary">Filters</h3>
+        <div className="bg-black border border-white/10 p-6 rounded-2xl space-y-8">
+            <h3 className="text-xl font-heading font-bold text-white">Filters</h3>
 
             {/* Sort Dropdown */}
             <div className="space-y-3">
-                <label className="text-sm font-medium text-text-secondary">Sort By</label>
+                <label className="text-sm font-medium text-white/60">Sort By</label>
                 <select
                     value={filters.sort}
                     onChange={(e) => setFilters({ sort: e.target.value as any })}
-                    className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+                    className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-white focus:ring-2 focus:ring-[#D4A017] cursor-pointer"
                 >
                     <option value="date">Newest First</option>
                     <option value="price_asc">Price: Low to High</option>
@@ -30,7 +30,7 @@ const Filters = () => {
 
             {/* Type Filter */}
             <div className="space-y-3">
-                <label className="text-sm font-medium text-text-secondary">Event Type</label>
+                <label className="text-sm font-medium text-white/60">Event Type</label>
                 <div className="flex flex-col gap-2">
                     {['all', 'formal', 'informal'].map((type) => (
                         <label key={type} className="flex items-center gap-2 cursor-pointer">
@@ -39,9 +39,9 @@ const Filters = () => {
                                 name="type"
                                 checked={filters.type === type}
                                 onChange={() => setFilters({ type: type as any })}
-                                className="w-4 h-4 text-primary border-border focus:ring-primary focus:ring-offset-0 bg-surface-highlight"
+                                className="w-4 h-4 text-[#D4A017] border-white/20 focus:ring-[#D4A017] focus:ring-offset-0 bg-white/10"
                             />
-                            <span className="capitalize text-text-secondary">{type}</span>
+                            <span className="capitalize text-white/60">{type}</span>
                         </label>
                     ))}
                 </div>
@@ -49,17 +49,17 @@ const Filters = () => {
 
             {/* Superhost Toggle */}
             <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-text-secondary">Superhost Only</label>
+                <label className="text-sm font-medium text-white/60">Superhost Only</label>
                 <button
                     onClick={() => setFilters({ isSuperhost: !filters.isSuperhost })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${filters.isSuperhost ? 'bg-primary' : 'bg-surface-highlight'
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017] ${filters.isSuperhost ? 'bg-[#D4A017]' : 'bg-white/10'
                         }`}
                     role="switch"
                     aria-checked={filters.isSuperhost}
                     aria-label="Toggle Superhost only"
                 >
                     <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${filters.isSuperhost ? 'translate-x-6' : 'translate-x-1'
+                        className={`inline-block h-4 w-4 transform rounded-full bg-black transition-transform ${filters.isSuperhost ? 'translate-x-6' : 'translate-x-1'
                             }`}
                     />
                 </button>
@@ -68,7 +68,7 @@ const Filters = () => {
             {/* Apply Button */}
             <button
                 onClick={handleApply}
-                className="w-full py-3 px-4 bg-primary text-white font-medium rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full py-3 px-4 bg-[#D4A017] text-black font-medium rounded-xl hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
             >
                 Apply Filters
             </button>

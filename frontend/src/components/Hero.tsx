@@ -2,15 +2,14 @@
 
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/src/store/useAppStore';
-import { useTheme } from '@/contexts/ThemeContext';
 import AnimeHeroBackground from '@/src/components/AnimeHeroBackground';
 import SplineToggle from './SplineToggle';
 import Link from 'next/link';
 
 const Hero = () => {
     const { isFormal } = useAppStore();
-    const { theme } = useTheme();
     const containerRef = useRef<HTMLDivElement>(null);
     const headlineRef = useRef<HTMLHeadingElement>(null);
     const subtextRef = useRef<HTMLParagraphElement>(null);
@@ -18,31 +17,6 @@ const Hero = () => {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline({ defaults: { duration: 0.5, ease: 'power2.out' } });
-
-            if (isFormal) {
-                // Formal Mode Transitions
-                tl.to(containerRef.current, {
-                    backgroundColor: theme === 'dark' ? '#0B0E12' : '#F8FAFC',
-                    backgroundImage: theme === 'dark'
-                        ? 'radial-gradient(circle at 50% 50%, #1E293B 0%, #0B0E12 100%)'
-                        : 'radial-gradient(circle at 50% 50%, #E7F1FF 0%, #F8FAFC 100%)',
-                })
-                    .to(headlineRef.current, { color: theme === 'dark' ? '#F8FAFC' : '#0F172A' }, 0)
-                    .to(subtextRef.current, { color: theme === 'dark' ? '#94A3B8' : '#475569' }, 0);
-            } else {
-                // Informal (Party) Mode Transitions
-                // Using different colors for Light/Dark in Informal mode too
-                tl.to(containerRef.current, {
-                    backgroundColor: theme === 'dark' ? '#0B0E12' : '#F0F9FF', // Sky 50 for light
-                    backgroundImage: theme === 'dark'
-                        ? 'radial-gradient(circle at 50% 50%, #1E3A8A 0%, #0B0E12 100%)' // Blue-900 instead of Indigo
-                        : 'radial-gradient(circle at 50% 50%, #CFFAFE 0%, #F0F9FF 100%)', // Cyan 100/Sky 50
-                })
-                    .to(headlineRef.current, { color: theme === 'dark' ? '#F8FAFC' : '#0F172A' }, 0)
-                    .to(subtextRef.current, { color: theme === 'dark' ? '#94A3B8' : '#475569' }, 0);
-            }
-
             // Text Content Animation (Fade out/in)
             gsap.fromTo(
                 [headlineRef.current, subtextRef.current],
@@ -52,12 +26,35 @@ const Hero = () => {
         }, containerRef);
 
         return () => ctx.revert();
-    }, [isFormal, theme]);
+    }, [isFormal]);
+
+    // Animated text variants for Jersey 10 keywords
+    const keywordVariants = {
+        hidden: { opacity: 0, y: 20, filter: 'blur(4px)' },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            filter: 'blur(0px)',
+            transition: {
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+            }
+        },
+        exit: { 
+            opacity: 0, 
+            y: -20, 
+            filter: 'blur(4px)',
+            transition: {
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+            }
+        }
+    };
 
     return (
         <section
             ref={containerRef}
-            className="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 overflow-hidden transition-colors duration-500"
+            className="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 overflow-hidden bg-black"
         >
             <div className="w-full relative z-20">
                 <SplineToggle />
@@ -67,47 +64,71 @@ const Hero = () => {
                 <div className="space-y-8 z-10">
                     <h1
                         ref={headlineRef}
-                        className="text-5xl md:text-7xl font-heading font-bold leading-tight"
+                        className="display-xl md:text-7xl font-heading font-bold leading-tight text-white"
+                        style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                     >
-                        Switch Up Your <br />
-                        <span className={isFormal ? 'text-primary' : 'text-secondary'}>
-                            {isFormal ? 'Professional Network' : 'Social Experiences'}
-                        </span>
+                        <motion.span
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            Switch Up Your
+                        </motion.span>
+                        <br />
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={isFormal ? 'formal' : 'informal'}
+                                className="jersey-animated inline-block"
+                                style={{ fontFamily: 'var(--font-jersey)', color: '#D4A017' }}
+                                variants={keywordVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                            >
+                                {isFormal ? 'Professional Network' : 'Social Experiences'}
+                            </motion.span>
+                        </AnimatePresence>
                     </h1>
 
                     <p
                         ref={subtextRef}
-                        className="text-lg md:text-xl max-w-lg"
+                        className="text-lg md:text-xl max-w-lg text-white/70 font-body"
+                        style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}
                     >
                         {isFormal
                             ? 'Discover workshops, conferences, and networking events curated for your career growth.'
                             : 'Find the hottest house parties, underground gigs, and social meetups happening right now.'}
                     </p>
 
-                    <div ref={ctaRef} className="flex flex-wrap gap-4">
+                    <motion.div 
+                        ref={ctaRef} 
+                        className="flex flex-wrap gap-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    >
                         <button
                             onClick={() => alert('Coming Soon! 🚀')}
-                            className={`px-8 py-4 rounded-full font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(99,102,241,0.5)] ${isFormal ? 'bg-primary' : 'bg-secondary hover:shadow-[0_0_20px_rgba(34,211,238,0.5)]'
-                                }`}
+                            className="px-8 py-4 rounded-full font-semibold bg-[#D4A017] text-black transition-all duration-300 hover:scale-105"
+                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                         >
                             Download App
                         </button>
                         <Link
                             href="/booking"
-                            className={`px-8 py-4 rounded-full font-semibold border transition-colors ${isFormal
-                                ? 'border-primary text-primary hover:bg-primary/10'
-                                : 'border-secondary text-secondary hover:bg-secondary/10'
-                                }`}
+                            className="px-8 py-4 rounded-full font-semibold border-2 border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-black transition-colors"
+                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                         >
                             Explore Events
                         </Link>
                         <Link
                             href="/host"
-                            className="px-8 py-4 rounded-full font-semibold text-text-muted hover:text-text-primary transition-colors"
+                            className="px-8 py-4 rounded-full font-semibold text-white/60 hover:text-white transition-colors"
+                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
                         >
                             Host an Event
                         </Link>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Right Content - Anime Animation */}
@@ -116,10 +137,10 @@ const Hero = () => {
                 </div>
             </div>
 
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
-                <div className={`absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl ${isFormal ? 'bg-primary' : 'bg-secondary'}`} />
-                <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl ${isFormal ? 'bg-secondary' : 'bg-primary'}`} />
+            {/* Background Elements - mustard accent circles */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-10">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl bg-[#D4A017]" />
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl bg-[#D4A017]" />
             </div>
         </section>
     );

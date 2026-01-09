@@ -19,15 +19,15 @@ const FormalInformalToggle = () => {
         if (isFormal) {
             // Animate to Formal state
             tl.to(knobRef.current, { x: '100%' }, 0)
-                .to(formalTextRef.current, { color: '#1e293b', fontWeight: 600 }, 0) // Dark text on white knob
-                .to(informalTextRef.current, { color: '#e2e8f0', fontWeight: 400 }, 0) // Light text on blue bg
-                .to(toggleRef.current, { backgroundColor: '#3B82F6' }, 0); // Blue for formal
+                .to(formalTextRef.current, { color: '#000000', fontWeight: 600 }, 0) // Black text on mustard knob
+                .to(informalTextRef.current, { color: '#ffffff', fontWeight: 400 }, 0) // White text on black bg
+                .to(toggleRef.current, { backgroundColor: '#000000', borderColor: 'rgba(255,255,255,0.2)' }, 0);
         } else {
             // Animate to Informal state
             tl.to(knobRef.current, { x: '0%' }, 0)
-                .to(formalTextRef.current, { color: '#e2e8f0', fontWeight: 400 }, 0) // Light text on purple bg
-                .to(informalTextRef.current, { color: '#1e293b', fontWeight: 600 }, 0) // Dark text on white knob
-                .to(toggleRef.current, { backgroundColor: '#A855F7' }, 0); // Purple for informal
+                .to(formalTextRef.current, { color: '#ffffff', fontWeight: 400 }, 0) // White text on black bg
+                .to(informalTextRef.current, { color: '#000000', fontWeight: 600 }, 0) // Black text on mustard knob
+                .to(toggleRef.current, { backgroundColor: '#000000', borderColor: 'rgba(255,255,255,0.2)' }, 0);
         }
     }, [isFormal]);
 
@@ -36,12 +36,12 @@ const FormalInformalToggle = () => {
             <div
                 ref={toggleRef}
                 onClick={toggleMode}
-                className="relative flex items-center justify-between w-64 h-12 px-1 rounded-full cursor-pointer bg-secondary shadow-lg transition-colors"
+                className="relative flex items-center justify-between w-64 h-12 px-1 rounded-full cursor-pointer bg-black border border-white/20 transition-colors"
             >
                 {/* Sliding Knob */}
                 <div
                     ref={knobRef}
-                    className="absolute left-1 top-1 w-[calc(50%-4px)] h-10 bg-white rounded-full shadow-md z-10"
+                    className="absolute left-1 top-1 w-[calc(50%-4px)] h-10 bg-[#D4A017] rounded-full z-10"
                 />
 
                 {/* Labels */}

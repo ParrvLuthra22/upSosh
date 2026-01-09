@@ -19,12 +19,15 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-300 transform hover:scale-105';
+  // Removed scale from base - using subtle translateY instead
+  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full';
+  const fontStyle = { fontFamily: 'var(--font-roboto-bbh)' };
   
+  // Smooth transitions with mustard accents
   const variantClasses = {
-    primary: 'bg-gradient-blue-indigo text-white shadow-lg hover:shadow-xl glow-effect',
-    secondary: 'border-2 border-light-primary dark:border-dark-neon text-light-primary dark:text-dark-neon hover:bg-light-primary dark:hover:bg-dark-neon hover:text-white',
-    ghost: 'text-light-text dark:text-dark-text hover:bg-light-blue dark:hover:bg-dark-navy/50',
+    primary: 'bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)]',
+    secondary: 'border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black',
+    ghost: 'text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]',
   };
   
   const sizeClasses = {
@@ -35,13 +38,25 @@ export default function Button({
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
+  // Subtle motion - translateY only, no aggressive scaling
+  const hoverAnimation = {
+    y: -2,
+    transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }
+  };
+  
+  const tapAnimation = {
+    y: 0,
+    transition: { duration: 0.15, ease: 'easeOut' as const }
+  };
+
   if (href) {
     return (
       <motion.a
         href={href}
         className={classes}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        style={fontStyle}
+        whileHover={hoverAnimation}
+        whileTap={tapAnimation}
       >
         {children}
       </motion.a>
@@ -54,8 +69,9 @@ export default function Button({
       disabled={props.disabled}
       onClick={onClick}
       className={classes}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      style={fontStyle}
+      whileHover={hoverAnimation}
+      whileTap={tapAnimation}
     >
       {children}
     </motion.button>

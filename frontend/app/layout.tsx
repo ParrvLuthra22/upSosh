@@ -1,10 +1,20 @@
 import type { Metadata } from 'next';
-import '@/src/styles/globals.css';
+import { Lora } from 'next/font/google';
+import './globals.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import SmoothScrollProvider from '@/components/SmoothScrollProvider';
 import Navigation from '@/components/Navigation'; // Keeping this if it's a different nav, otherwise might replace with Header
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
+
+// Load Lora for body text - serif, comfortable reading
+const lora = Lora({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-lora',
+});
 
 
 export const metadata: Metadata = {
@@ -47,17 +57,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
+    <html lang="en" suppressHydrationWarning className={`dark ${lora.variable}`}>
+      <head>
+        {/* Preconnect for Google Fonts performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Load Jersey 10 for animated/highlight text */}
+        <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet" />
+        {/* BBH Bartle font is loaded via @font-face in globals.css from /fonts/BBHBartle-Regular.ttf */}
+      </head>
+      <body className={`bg-black text-white font-body ${lora.className}`}>
         <noscript>
-          <div style={{ padding: '20px', textAlign: 'center', background: '#f8d7da', color: '#721c24' }}>
+          <div style={{ padding: '20px', textAlign: 'center', background: '#D4A017', color: '#000000' }}>
             JavaScript is disabled. For the best experience, please enable JavaScript or download our mobile app.
           </div>
         </noscript>
         <ThemeProvider>
           <SmoothScrollProvider>
             <Header />
-            <main className="min-h-screen pt-4">
+            <main className="min-h-screen pt-4 bg-black">
               {children}
             </main>
             <Footer />
