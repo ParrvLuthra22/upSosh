@@ -91,7 +91,7 @@ router.patch('/:id/confirm-payment', authenticate, async (req: Request, res: Res
             }
         });
 
-        console.log(`✅ Booking ${id} confirmed with payment ${paymentId}`);
+        console.log(`Booking ${id} confirmed with payment ${paymentId}`);
         res.json(booking);
     } catch (error: any) {
         console.error('Error confirming payment:', error);
