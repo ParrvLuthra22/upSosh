@@ -59,6 +59,46 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     }
 });
 
+// Confirm payment for a booking (after Dodo Payments success)
+router.patch('/:id/confirm-payment', authenticate, async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { id } = req.params;
+        const { paymentId, status } = req.body;
+
+        // Find the booking and verify it belongs to the user
+        const existingBooking = await prisma.booking.findUnique({ where: { id } });
+        
+        if (!existingBooking) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+
+        // Allow the booking owner or an admin to confirm
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (existingBooking.userId !== userId && user?.role !== 'admin') {
+            return res.status(403).json({ error: 'Not authorized to update this booking' });
+        }
+
+        const booking = await prisma.booking.update({
+            where: { id },
+            data: { 
+                status: status || 'confirmed',
+                paymentId: paymentId || existingBooking.paymentId
+            }
+        });
+
+        console.log(`✅ Booking ${id} confirmed with payment ${paymentId}`);
+        res.json(booking);
+    } catch (error: any) {
+        console.error('Error confirming payment:', error);
+        res.status(500).json({ error: 'Failed to confirm payment', message: error.message });
+    }
+});
+
 // Get pending bookings (admin only)
 router.get('/pending', authenticate, async (req: Request, res: Response) => {
     try {

@@ -130,6 +130,29 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 qty: item.qty,
             }));
             
+            // First, create a pending booking BEFORE redirecting to payment
+            const bookingData = {
+                userId: user.id,
+                items: checkoutItems.map(item => ({
+                    id: item.event?.id || item.id,
+                    title: item.event?.title || item.title,
+                    price: item.price,
+                    qty: item.qty,
+                    ...(item.event || item)
+                })),
+                totalAmount: total,
+                status: 'pending_payment' as const,
+                customer: { name: user.name, email: user.email, phone: user.phone || '' },
+                createdAt: new Date().toISOString(),
+            };
+            
+            const booking = await api.createBooking(bookingData as any);
+            console.log('Pre-payment booking created:', booking.id);
+            
+            // Store booking ID for confirmation page
+            sessionStorage.setItem('pendingBookingId', booking.id);
+            sessionStorage.setItem('pendingBookingItems', JSON.stringify(items));
+            
             const response = await api.createDodoCheckout({
                 items,
                 customer: {
@@ -137,9 +160,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                     email: user.email,
                     phone: user.phone || '',
                 },
-                returnUrl: `${window.location.origin}/booking/confirmation`,
+                returnUrl: `${window.location.origin}/booking/confirmation?bookingId=${booking.id}`,
                 metadata: {
                     userId: user.id,
+                    bookingId: booking.id,
                 },
             });
             
@@ -151,6 +175,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             }
             
             if (response.checkoutUrl) {
+                // Clear cart before redirect
+                clearCart();
                 // Redirect to Dodo checkout page
                 window.location.href = response.checkoutUrl;
             } else {

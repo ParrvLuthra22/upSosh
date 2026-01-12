@@ -4,30 +4,72 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
+    : 'https://upsosh-production.up.railway.app/api';
+
 export default function ConfirmationContent() {
     const searchParams = useSearchParams();
     const [status, setStatus] = useState<'loading' | 'success' | 'failed' | 'pending'>('loading');
     
     const paymentId = searchParams.get('payment_id');
     const paymentStatus = searchParams.get('status');
+    const bookingId = searchParams.get('bookingId');
     
     useEffect(() => {
-        // Check payment status from URL params
-        if (paymentStatus === 'succeeded' || paymentStatus === 'success') {
-            setStatus('success');
-        } else if (paymentStatus === 'failed') {
-            setStatus('failed');
-        } else if (paymentStatus === 'pending') {
-            setStatus('pending');
-        } else {
-            // Default to success if payment_id exists
-            if (paymentId) {
+        const confirmBooking = async () => {
+            // Get booking ID from URL or sessionStorage
+            const pendingBookingId = bookingId || sessionStorage.getItem('pendingBookingId');
+            
+            // Check payment status from URL params
+            const isPaymentSuccess = paymentStatus === 'succeeded' || paymentStatus === 'success' || paymentId;
+            
+            if (isPaymentSuccess && pendingBookingId) {
+                try {
+                    // Update the booking status to confirmed
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${API_URL}/bookings/${pendingBookingId}/confirm-payment`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token && { 'Authorization': `Bearer ${token}` })
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ 
+                            paymentId: paymentId || 'dodo_payment',
+                            status: 'confirmed'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        setStatus('success');
+                        // Clear session storage
+                        sessionStorage.removeItem('pendingBookingId');
+                        sessionStorage.removeItem('pendingBookingItems');
+                    } else {
+                        // Even if update fails, show success since payment was made
+                        console.warn('Failed to update booking status, but payment succeeded');
+                        setStatus('success');
+                    }
+                } catch (error) {
+                    console.error('Error confirming booking:', error);
+                    // Still show success since payment was made
+                    setStatus('success');
+                }
+            } else if (paymentStatus === 'failed') {
+                setStatus('failed');
+            } else if (paymentStatus === 'pending') {
+                setStatus('pending');
+            } else if (paymentId) {
+                // Payment ID exists, assume success
                 setStatus('success');
             } else {
                 setStatus('pending');
             }
-        }
-    }, [paymentId, paymentStatus]);
+        };
+        
+        confirmBooking();
+    }, [paymentId, paymentStatus, bookingId]);
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
