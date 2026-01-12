@@ -15,13 +15,16 @@ function getDodoClient(): DodoPayments {
         if (!apiKey) {
             throw new Error('DODO_PAYMENTS_API_KEY is not configured');
         }
-        // Use test_mode or live_mode based on environment variable
-        const mode = process.env.DODO_PAYMENTS_MODE === 'live' ? 'live_mode' : 'test_mode';
+        // ALWAYS use test_mode unless explicitly set to 'live'
+        // Default to test_mode for safety
+        const modeEnv = process.env.DODO_PAYMENTS_MODE?.toLowerCase();
+        const mode = modeEnv === 'live' ? 'live_mode' : 'test_mode';
+        console.log(`[DodoPayments] Initializing with mode: ${mode} (env: ${modeEnv || 'not set, defaulting to test'})`);
         dodo = new DodoPayments({
             bearerToken: apiKey,
             environment: mode,
         });
-        console.log(`Dodo Payments client initialized in ${mode}`);
+        console.log(`[DodoPayments] Client initialized successfully in ${mode}`);
     }
     return dodo;
 }
@@ -43,12 +46,15 @@ async function getOrCreateProductId(): Promise<string> {
 router.get('/health', (req: Request, res: Response) => {
     const apiKeySet = !!process.env.DODO_PAYMENTS_API_KEY;
     const productIdSet = !!process.env.DODO_PRODUCT_ID && process.env.DODO_PRODUCT_ID.trim() !== '';
-    const mode = process.env.DODO_PAYMENTS_MODE === 'live' ? 'live_mode' : 'test_mode';
+    const modeEnv = process.env.DODO_PAYMENTS_MODE?.toLowerCase();
+    const mode = modeEnv === 'live' ? 'live_mode' : 'test_mode';
     
     res.json({
         status: apiKeySet ? 'configured' : 'not_configured',
         mode,
+        modeEnvValue: modeEnv || 'not set (defaulting to test)',
         apiKeySet,
+        apiKeyPrefix: apiKeySet ? process.env.DODO_PAYMENTS_API_KEY?.substring(0, 10) + '...' : null,
         productIdSet,
         message: !apiKeySet 
             ? 'DODO_PAYMENTS_API_KEY is not set' 
