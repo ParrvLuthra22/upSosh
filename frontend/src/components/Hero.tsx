@@ -124,23 +124,16 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                     >
-                        <button
-                            onClick={() => alert('Coming Soon! 🚀')}
-                            className="px-8 py-4 rounded-full font-sans font-semibold bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
-                            style={{ letterSpacing: '0.02em' }}
-                        >
-                            Download App
-                        </button>
                         <Link
                             href="/booking"
-                            className="px-8 py-4 rounded-full font-sans font-semibold border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black hover:-translate-y-0.5"
+                            className="px-8 py-4 rounded-full font-sans font-semibold bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
                             style={{ letterSpacing: '0.02em' }}
                         >
                             Explore Events
                         </Link>
                         <Link
                             href="/host"
-                            className="px-8 py-4 rounded-full font-sans font-semibold text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]"
+                            className="px-8 py-4 rounded-full font-sans font-semibold border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black hover:-translate-y-0.5"
                             style={{ letterSpacing: '0.02em' }}
                         >
                             Host an Event
