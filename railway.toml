@@ -7,3 +7,5 @@ phases.build = { cmd = "cd backend && npm run build" }
 
 [deploy]
 startCommand = "cd backend && npm run start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
