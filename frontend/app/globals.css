@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jersey+10&display=swap');
+/* Import Google Fonts - JetBrains Mono for body text */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Jersey+10&display=swap');
 
 /* Local Font - BBH Bartle for Headings */
 @font-face {
@@ -33,9 +33,9 @@
     --border: #333333;
     
     /* Typography - Font Variables */
-    --font-roboto-bbh: 'BBH Bartle', 'Helvetica Neue', Arial, sans-serif;
-    --font-jersey: 'Jersey 10', sans-serif;
-    --font-lora: 'Lora', Georgia, serif;
+    --font-heading: 'JetBrains Mono', monospace;
+    --font-display: 'JetBrains Mono', monospace;
+    --font-body: 'JetBrains Mono', monospace;
   }
 
   .dark {
@@ -56,9 +56,9 @@
 
   body {
     @apply bg-black text-white;
-    font-family: var(--font-lora);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -67,9 +67,9 @@
     scroll-behavior: smooth;
   }
 
-  /* Strict Heading Typography - Roboto BBH Bartle Style */
+  /* Strict Heading Typography - JetBrains Mono Bold */
   h1, .h1 {
-    font-family: var(--font-roboto-bbh);
+    font-family: var(--font-heading);
     font-weight: 700;
     font-size: 3.5rem;
     line-height: 1.2;
@@ -78,7 +78,7 @@
   }
 
   h2, .h2 {
-    font-family: var(--font-roboto-bbh);
+    font-family: var(--font-heading);
     font-weight: 700;
     font-size: 2.5rem;
     line-height: 1.25;
@@ -87,22 +87,46 @@
   }
 
   h3, .h3 {
-    font-family: var(--font-roboto-bbh);
+    font-family: var(--font-heading);
     font-weight: 700;
     font-size: 1.75rem;
     line-height: 1.3;
     color: var(--white);
   }
 
-  /* Body text defaults - Lora */
-  p, span, li, td, th, label, input, textarea, select {
-    font-family: var(--font-lora);
-    line-height: 1.6;
+  h4, .h4 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: var(--white);
   }
 
-  /* Large hero headings */
+  h5, .h5 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: var(--white);
+  }
+
+  h6, .h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--white);
+  }
+
+  /* Body text defaults - JetBrains Mono */
+  p, span, li, td, th, label, input, textarea, select {
+    font-family: var(--font-body);
+    line-height: 1.7;
+  }
+
+  /* Large hero headings - JetBrains Mono Bold */
   .display-xl {
-    font-family: var(--font-roboto-bbh);
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 5rem;
     line-height: 1.1;
@@ -110,17 +134,17 @@
   }
 
   .display-lg {
-    font-family: var(--font-roboto-bbh);
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 4rem;
     line-height: 1.15;
     letter-spacing: -0.02em;
   }
 
-  /* Animated/Highlight text - Jersey 10 ONLY */
+  /* Highlight text - JetBrains Mono with mustard color */
   .text-highlight, .text-animated {
-    font-family: var(--font-jersey);
-    font-weight: 400;
+    font-family: var(--font-body);
+    font-weight: 600;
     letter-spacing: 0.02em;
     color: var(--mustard);
   }

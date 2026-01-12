@@ -143,16 +143,26 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 },
             });
             
+            // Check if backend suggests manual payment (DodoPayments not configured)
+            if (response.useManualPayment) {
+                setStatus('payment-details');
+                setErrorMessage('Online payments are currently unavailable. Please use manual payment.');
+                return;
+            }
+            
             if (response.checkoutUrl) {
                 // Redirect to Dodo checkout page
                 window.location.href = response.checkoutUrl;
             } else {
-                throw new Error('No checkout URL received');
+                // Fallback to manual payment if no checkout URL
+                setStatus('payment-details');
+                setErrorMessage('Online checkout unavailable. Please use manual payment.');
             }
         } catch (error: any) {
             console.error('Dodo payment error:', error);
-            setStatus('error');
-            setErrorMessage(error.message || 'Payment initiation failed. Please try again.');
+            // On error, fallback to manual payment option
+            setStatus('payment-details');
+            setErrorMessage(error.message || 'Online payment unavailable. Please use manual payment below.');
         }
     };
 

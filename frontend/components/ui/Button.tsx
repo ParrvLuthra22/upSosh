@@ -21,7 +21,7 @@ export default function Button({
 }: ButtonProps) {
   // Removed scale from base - using subtle translateY instead
   const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full';
-  const fontStyle = { fontFamily: 'var(--font-roboto-bbh)' };
+  const fontStyle = { fontFamily: 'var(--font-heading)' };
   
   // Smooth transitions with mustard accents
   const variantClasses = {

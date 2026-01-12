@@ -59,7 +59,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                 />
 
                 {/* Price Badge */}
-                <div className="absolute top-4 right-4 z-20 bg-black/90 px-3 py-1 rounded-full text-sm font-bold text-white border border-white/10" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                <div className="absolute top-4 right-4 z-20 bg-black/90 px-3 py-1 rounded-full text-sm font-bold text-white border border-white/10" style={{ fontFamily: 'var(--font-heading)' }}>
                     {event.price === 0 ? 'Free' : `₹${event.price}`}
                 </div>
 
@@ -70,7 +70,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                             ? 'bg-[#D4A017] text-black'
                             : 'bg-white/20 text-white'
                             }`}
-                        style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                        style={{ fontFamily: 'var(--font-heading)' }}
                     >
                         {event.type}
                     </span>
@@ -81,18 +81,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             <div className="p-5 space-y-4">
                 <div className="space-y-1">
                     <div className="flex justify-between items-start gap-2">
-                        <h3 className="text-lg font-heading font-bold text-white line-clamp-1 group-hover:text-[#D4A017] transition-colors" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                        <h3 className="text-lg font-heading font-bold text-white line-clamp-1 group-hover:text-[#D4A017] transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>
                             {event.title}
                         </h3>
                     </div>
-                    <div className="flex items-center text-sm text-white/50 gap-2 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                    <div className="flex items-center text-sm text-white/50 gap-2 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                         <span>{event.date}</span>
                         <span>•</span>
                         <span>{event.time}</span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                <div className="flex items-center gap-2 text-sm text-white/60 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -105,7 +105,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                     <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <div className="flex items-center gap-2">
                             <img src={host.avatar} alt={host.name} className="w-6 h-6 rounded-full" />
-                            <span className="text-xs font-medium text-white/60 line-clamp-1 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                            <span className="text-xs font-medium text-white/60 line-clamp-1 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                                 {host.name}
                             </span>
                             {host.verified && (
@@ -116,7 +116,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
                         </div>
                         {event.isSuperhost && (
                             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D4A017]/10 border border-[#D4A017]/20">
-                                <span className="text-[10px] font-bold text-[#D4A017] uppercase" style={{ fontFamily: 'var(--font-jersey)' }}>Superhost</span>
+                                <span className="text-[10px] font-bold text-[#D4A017] uppercase" style={{ fontFamily: 'var(--font-heading)' }}>Superhost</span>
                             </div>
                         )}
                     </div>

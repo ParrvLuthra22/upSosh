@@ -96,10 +96,10 @@ export default function TestimonialsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
-            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>What People Say</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-heading)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>What People Say</span>
           </h2>
-          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
             Join thousands of happy users experiencing the best events
           </p>
         </motion.div>
@@ -147,7 +147,7 @@ export default function TestimonialsSection() {
                     </div>
 
                     {/* Content */}
-                    <p className="text-xl md:text-2xl text-center text-white mb-8 leading-relaxed font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+                    <p className="text-xl md:text-2xl text-center text-white mb-8 leading-relaxed font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
                       {testimonial.content}
                     </p>
 
@@ -161,10 +161,10 @@ export default function TestimonialsSection() {
                         {testimonial.avatar}
                       </motion.div>
                       <div className="text-left">
-                        <div className="font-bold text-lg text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                        <div className="font-bold text-lg text-white" style={{ fontFamily: 'var(--font-heading)' }}>
                           {testimonial.name}
                         </div>
-                        <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                        <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                           {testimonial.role}
                         </div>
                       </div>
@@ -236,10 +236,10 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ delay: 0.4 + index * 0.1 }}
             >
-              <div className="text-4xl md:text-5xl font-bold text-[#D4A017] mb-2" style={{ fontFamily: 'var(--font-jersey)' }}>
+              <div className="text-4xl md:text-5xl font-bold text-[#D4A017] mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
                 {stat.value}
               </div>
-              <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+              <div className="text-white/60 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                 {stat.label}
               </div>
             </motion.div>

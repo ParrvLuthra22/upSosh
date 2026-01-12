@@ -60,8 +60,8 @@ export default function Footer() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <h3 className="text-3xl font-bold text-[#D4A017] mb-4" style={{ fontFamily: 'var(--font-jersey)' }}>UpSosh</h3>
-              <p className="text-white/60 mb-6 max-w-sm font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+              <h3 className="text-3xl font-bold text-[#D4A017] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>UpSosh</h3>
+              <p className="text-white/60 mb-6 max-w-sm font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
                 Your all-in-one platform for discovering and hosting incredible experiences.
                 Official + Unofficial events, all in one place.
               </p>
@@ -92,15 +92,15 @@ export default function Footer() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <h4 className="font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+              <h4 className="font-semibold text-white mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
                 {section.title}
               </h4>
-              <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+              <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="text-white/60 hover:text-[#D4A017] transition-colors duration-300"
+                      className="text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]"
                     >
                       {link.name}
                     </a>
@@ -120,27 +120,25 @@ export default function Footer() {
           transition={{ delay: 0.4 }}
         >
           <div className="max-w-2xl mx-auto text-center">
-            <h4 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+            <h4 className="text-2xl font-bold mb-2 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
               Stay in the Loop
             </h4>
-            <p className="text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+            <p className="text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
               Get the latest updates on events, features, and exclusive offers.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-full bg-black border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-[#D4A017] transition-colors font-body"
-                style={{ fontFamily: 'var(--font-lora)' }}
+                className="input-minimal flex-1 px-6 py-4 rounded-full"
+                style={{ fontFamily: 'var(--font-body)' }}
               />
-              <motion.button
-                className="px-8 py-4 rounded-full bg-[#D4A017] text-black font-semibold hover:scale-105 transform transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+              <button
+                className="px-8 py-4 rounded-full bg-[#D4A017] text-black font-semibold transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
+                style={{ fontFamily: 'var(--font-heading)' }}
               >
                 Subscribe
-              </motion.button>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -155,7 +153,7 @@ export default function Footer() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              style={{ fontFamily: 'var(--font-lora)' }}
+              style={{ fontFamily: 'var(--font-body)' }}
             >
               © {new Date().getFullYear()} UpSosh. All rights reserved.
             </motion.p>
@@ -165,7 +163,7 @@ export default function Footer() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              style={{ fontFamily: 'var(--font-lora)' }}
+              style={{ fontFamily: 'var(--font-body)' }}
             >
               <a href="/terms" className="hover:text-[#D4A017] transition-colors">
                 Terms

@@ -48,10 +48,10 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
-            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>Powerful Features</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-heading)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>Powerful Features</span>
           </h2>
-          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
             Everything you need to discover, book, and enjoy incredible events
           </p>
         </motion.div>
@@ -82,13 +82,13 @@ export default function FeaturesSection() {
                 >
                   {feature.icon}
                 </motion.div>
-                <h3 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                <h3 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
                   {feature.title}
                 </h3>
-                <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+                <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
                   {feature.description}
                 </p>
-                <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+                <ul className="space-y-3 font-body" style={{ fontFamily: 'var(--font-body)' }}>
                   <li className="flex items-center text-white/60">
                     <svg className="w-6 h-6 mr-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

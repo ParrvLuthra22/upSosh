@@ -44,7 +44,7 @@ export default function Navigation() {
           <motion.a
             href="/"
             className="text-2xl md:text-3xl font-bold text-[#D4A017] transition-opacity duration-300 hover:opacity-80"
-            style={{ fontFamily: 'var(--font-jersey)' }}
+            style={{ fontFamily: 'var(--font-heading)' }}
           >
             UpSosh
           </motion.a>
@@ -56,7 +56,7 @@ export default function Navigation() {
                 key={link.name}
                 href={link.href}
                 className="nav-link"
-                style={{ fontFamily: 'var(--font-lora)' }}
+                style={{ fontFamily: 'var(--font-body)' }}
               >
                 {link.name}
               </a>
@@ -103,7 +103,7 @@ export default function Navigation() {
                     href={link.href}
                     className="text-white/70 hover:text-[#D4A017] transition-colors duration-300 ease-in-out py-2"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    style={{ fontFamily: 'var(--font-lora)' }}
+                    style={{ fontFamily: 'var(--font-body)' }}
                   >
                     {link.name}
                   </a>

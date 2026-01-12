@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/src/store/useAppStore';
-import AnimeHeroBackground from '@/src/components/AnimeHeroBackground';
+import FloatingMesh3D from '@/src/components/FloatingMesh3D';
 import SplineToggle from './SplineToggle';
 import Link from 'next/link';
 
@@ -65,7 +65,7 @@ const Hero = () => {
                     <h1
                         ref={headlineRef}
                         className="display-xl md:text-7xl font-heading font-bold leading-tight text-white"
-                        style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                        style={{ fontFamily: 'var(--font-heading)' }}
                     >
                         <motion.span
                             initial={{ opacity: 0, y: 20 }}
@@ -79,7 +79,7 @@ const Hero = () => {
                             <motion.span
                                 key={isFormal ? 'formal' : 'informal'}
                                 className="jersey-animated inline-block"
-                                style={{ fontFamily: 'var(--font-jersey)', color: '#D4A017' }}
+                                style={{ fontFamily: 'var(--font-heading)', color: '#D4A017' }}
                                 variants={keywordVariants}
                                 initial="hidden"
                                 animate="visible"
@@ -93,7 +93,7 @@ const Hero = () => {
                     <p
                         ref={subtextRef}
                         className="text-lg md:text-xl max-w-lg text-white/70 font-body"
-                        style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}
+                        style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}
                     >
                         {isFormal
                             ? 'Discover workshops, conferences, and networking events curated for your career growth.'
@@ -105,35 +105,35 @@ const Hero = () => {
                         className="flex flex-wrap gap-4"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                     >
                         <button
                             onClick={() => alert('Coming Soon! 🚀')}
-                            className="px-8 py-4 rounded-full font-semibold bg-[#D4A017] text-black transition-all duration-300 hover:scale-105"
-                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                            className="px-8 py-4 rounded-full font-semibold bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
+                            style={{ fontFamily: 'var(--font-heading)' }}
                         >
                             Download App
                         </button>
                         <Link
                             href="/booking"
-                            className="px-8 py-4 rounded-full font-semibold border-2 border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-black transition-colors"
-                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                            className="px-8 py-4 rounded-full font-semibold border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black hover:-translate-y-0.5"
+                            style={{ fontFamily: 'var(--font-heading)' }}
                         >
                             Explore Events
                         </Link>
                         <Link
                             href="/host"
-                            className="px-8 py-4 rounded-full font-semibold text-white/60 hover:text-white transition-colors"
-                            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                            className="px-8 py-4 rounded-full font-semibold text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]"
+                            style={{ fontFamily: 'var(--font-heading)' }}
                         >
                             Host an Event
                         </Link>
                     </motion.div>
                 </div>
 
-                {/* Right Content - Anime Animation */}
+                {/* Right Content - 3D Floating Mesh */}
                 <div className="relative h-[500px] lg:h-[700px] w-full flex items-center justify-center">
-                    <AnimeHeroBackground />
+                    <FloatingMesh3D />
                 </div>
             </div>
 

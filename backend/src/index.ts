@@ -55,12 +55,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/debug', (req, res) => {
+    const mode = process.env.DODO_PAYMENTS_MODE === 'live' ? 'live_mode' : 'test_mode';
     res.json({
         frontendUrl: process.env.FRONTEND_URL,
         nodeEnv: process.env.NODE_ENV,
         port: PORT,
         dodoApiKey: process.env.DODO_PAYMENTS_API_KEY ? 'SET' : 'NOT SET',
-        dodoProductId: process.env.DODO_PRODUCT_ID ? 'SET' : 'NOT SET',
+        dodoProductId: process.env.DODO_PRODUCT_ID && process.env.DODO_PRODUCT_ID.trim() !== '' ? 'SET' : 'NOT SET',
+        dodoMode: mode,
         jwtSecret: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
         databaseUrl: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
         message: 'Debug info'

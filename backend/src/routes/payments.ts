@@ -15,24 +15,48 @@ function getDodoClient(): DodoPayments {
         if (!apiKey) {
             throw new Error('DODO_PAYMENTS_API_KEY is not configured');
         }
-        // Try live_mode - the API key might be for production
+        // Use test_mode or live_mode based on environment variable
+        const mode = process.env.DODO_PAYMENTS_MODE === 'live' ? 'live_mode' : 'test_mode';
         dodo = new DodoPayments({
             bearerToken: apiKey,
-            environment: 'live_mode',
+            environment: mode,
         });
-        console.log('Dodo Payments client initialized in live_mode');
+        console.log(`Dodo Payments client initialized in ${mode}`);
     }
     return dodo;
 }
 
-// Product ID for event tickets
-function getProductId(): string {
-    const productId = process.env.DODO_PRODUCT_ID;
-    if (!productId) {
-        throw new Error('DODO_PRODUCT_ID is not configured');
+// Get or create a default product for event tickets
+async function getOrCreateProductId(): Promise<string> {
+    // If product ID is set in env, use it
+    const envProductId = process.env.DODO_PRODUCT_ID;
+    if (envProductId && envProductId.trim() !== '') {
+        return envProductId;
     }
-    return productId;
+    
+    // Otherwise, create a one-time payment link dynamically
+    // For test mode, we'll use payment links instead of products
+    throw new Error('DODO_PRODUCT_ID not configured. Please create a product in DodoPayments dashboard and set the product ID in environment variables.');
 }
+
+// Health check endpoint
+router.get('/health', (req: Request, res: Response) => {
+    const apiKeySet = !!process.env.DODO_PAYMENTS_API_KEY;
+    const productIdSet = !!process.env.DODO_PRODUCT_ID && process.env.DODO_PRODUCT_ID.trim() !== '';
+    const mode = process.env.DODO_PAYMENTS_MODE === 'live' ? 'live_mode' : 'test_mode';
+    
+    res.json({
+        status: apiKeySet ? 'configured' : 'not_configured',
+        mode,
+        apiKeySet,
+        productIdSet,
+        message: !apiKeySet 
+            ? 'DODO_PAYMENTS_API_KEY is not set' 
+            : !productIdSet 
+                ? 'DODO_PRODUCT_ID is not set - create a product in DodoPayments dashboard'
+                : 'Payments are ready'
+    });
+});
 
 // Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
@@ -49,10 +73,37 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
             return res.status(400).json({ error: 'Customer email is required' });
         }
 
-        // Calculate total quantity
+        // Calculate total amount and quantity
         const totalQuantity = items.reduce((sum: number, item: any) => sum + item.qty, 0);
+        const totalAmount = items.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0);
         
-        const productId = getProductId();
+        // Check if DodoPayments is properly configured
+        const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+        const productId = process.env.DODO_PRODUCT_ID;
+        
+        if (!apiKey) {
+            console.log('DodoPayments not configured, using manual payment flow');
+            // Return a response that tells frontend to use manual payment
+            return res.json({
+                success: true,
+                useManualPayment: true,
+                message: 'Online payments are not configured. Please use manual payment.',
+                totalAmount,
+                totalQuantity,
+            });
+        }
+        
+        if (!productId || productId.trim() === '') {
+            console.log('Product ID not set, using manual payment flow');
+            return res.json({
+                success: true,
+                useManualPayment: true,
+                message: 'Payment product not configured. Please use manual payment.',
+                totalAmount,
+                totalQuantity,
+            });
+        }
+
         console.log('Using product ID:', productId, 'Quantity:', totalQuantity);
 
         // Create checkout session with Dodo Payments
@@ -82,6 +133,16 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
     } catch (error: any) {
         console.error('Dodo Payments error:', error.message);
         console.error('Full error:', JSON.stringify(error, null, 2));
+        
+        // If it's a configuration error, suggest manual payment
+        if (error.message?.includes('not configured') || error.message?.includes('API key')) {
+            return res.json({
+                success: true,
+                useManualPayment: true,
+                message: 'Online payments temporarily unavailable. Please use manual payment.',
+            });
+        }
+        
         res.status(500).json({ 
             error: 'Failed to create payment session', 
             details: error.message 

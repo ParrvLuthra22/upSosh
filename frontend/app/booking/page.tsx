@@ -63,7 +63,7 @@ export default function BookingPage() {
             </button>
 
             <div className="container mx-auto">
-                <h1 className="text-4xl font-heading font-bold mb-8 text-center text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                <h1 className="text-4xl font-heading font-bold mb-8 text-center text-white" style={{ fontFamily: 'var(--font-heading)' }}>
                     Find Your Next Experience
                 </h1>
 
@@ -85,7 +85,7 @@ export default function BookingPage() {
                     <button
                         className="lg:hidden w-full py-3 px-4 bg-white/10 rounded-xl font-medium text-white mb-4 border border-white/20"
                         onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                        style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+                        style={{ fontFamily: 'var(--font-heading)' }}
                     >
                         {isMobileFiltersOpen ? 'Hide Filters' : 'Show Filters'}
                     </button>

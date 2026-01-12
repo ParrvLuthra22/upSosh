@@ -30,10 +30,10 @@ const config: Config = {
         border: '#333333',
       },
       fontFamily: {
-        // Strict typography system
-        heading: ['BBH Bartle', 'var(--font-roboto-bbh)', 'sans-serif'], // H1-H3 headings
-        display: ['var(--font-jersey)', 'sans-serif'],     // Animated/highlight text ONLY
-        body: ['var(--font-lora)', 'serif'],               // Body text & paragraphs
+        // Unified JetBrains Mono typography system
+        heading: ['JetBrains Mono', 'var(--font-body)', 'monospace'], // H1-H3 headings (bold)
+        display: ['JetBrains Mono', 'var(--font-body)', 'monospace'], // Display text (bold)
+        body: ['JetBrains Mono', 'var(--font-body)', 'monospace'],    // Body text (regular)
       },
       fontSize: {
         // Heading scale for Roboto BBH Bartle
@@ -42,10 +42,10 @@ const config: Config = {
         'h1': ['3.5rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
         'h2': ['2.5rem', { lineHeight: '1.25', fontWeight: '700', letterSpacing: '-0.01em' }],
         'h3': ['1.75rem', { lineHeight: '1.3', fontWeight: '700' }],
-        // Body scale for Lora
-        'body-lg': ['1.125rem', { lineHeight: '1.7' }],
-        'body': ['1rem', { lineHeight: '1.6' }],
-        'body-sm': ['0.875rem', { lineHeight: '1.5' }],
+        // Body scale for JetBrains Mono
+        'body-lg': ['1.05rem', { lineHeight: '1.7' }],
+        'body': ['0.95rem', { lineHeight: '1.7' }],
+        'body-sm': ['0.85rem', { lineHeight: '1.6' }],
       },
       borderRadius: {
         lg: '1rem',

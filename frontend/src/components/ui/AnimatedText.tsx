@@ -97,7 +97,7 @@ export default function AnimatedText({
       <motion.span
         ref={ref as React.RefObject<HTMLSpanElement>}
         className={`${baseStyles} ${className}`}
-        style={{ fontFamily: 'var(--font-jersey)' }}
+        style={{ fontFamily: 'var(--font-heading)' }}
         initial={{ width: 0 }}
         animate={isInView ? { width: 'auto' } : { width: 0 }}
         transition={{
@@ -120,7 +120,7 @@ export default function AnimatedText({
       <span 
         ref={ref as React.RefObject<HTMLSpanElement>}
         className={`${baseStyles} ${className}`}
-        style={{ fontFamily: 'var(--font-jersey)' }}
+        style={{ fontFamily: 'var(--font-heading)' }}
       >
         {letters.map((letter, index) => (
           <motion.span
@@ -153,7 +153,7 @@ export default function AnimatedText({
       <Tag 
         ref={ref as any}
         className={`${baseStyles} ${className}`}
-        style={{ fontFamily: 'var(--font-jersey)' }}
+        style={{ fontFamily: 'var(--font-heading)' }}
       >
         {words.map((word, index) => (
           <motion.span
@@ -184,7 +184,7 @@ export default function AnimatedText({
     <MotionTag
       ref={ref}
       className={`${baseStyles} ${className}`}
-      style={{ fontFamily: 'var(--font-jersey)' }}
+      style={{ fontFamily: 'var(--font-heading)' }}
       variants={variants}
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}

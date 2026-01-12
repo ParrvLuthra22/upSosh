@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Lora } from 'next/font/google';
+import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import SmoothScrollProvider from '@/components/SmoothScrollProvider';
@@ -7,13 +7,13 @@ import Navigation from '@/components/Navigation'; // Keeping this if it's a diff
 import Header from '@/src/components/Header';
 import Footer from '@/src/components/Footer';
 
-// Load Lora for body text - serif, comfortable reading
-const lora = Lora({
+// Load JetBrains Mono for body text - clean monospace
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   style: ['normal', 'italic'],
   display: 'swap',
-  variable: '--font-lora',
+  variable: '--font-body',
 });
 
 
@@ -57,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`dark ${lora.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`dark ${jetbrainsMono.variable}`}>
       <head>
         {/* Preconnect for Google Fonts performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -66,7 +66,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet" />
         {/* BBH Bartle font is loaded via @font-face in globals.css from /fonts/BBHBartle-Regular.ttf */}
       </head>
-      <body className={`bg-black text-white font-body ${lora.className}`}>
+      <body className={`bg-black text-white font-body ${jetbrainsMono.className}`}>
         <noscript>
           <div style={{ padding: '20px', textAlign: 'center', background: '#D4A017', color: '#000000' }}>
             JavaScript is disabled. For the best experience, please enable JavaScript or download our mobile app.

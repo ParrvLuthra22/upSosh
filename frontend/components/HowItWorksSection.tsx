@@ -86,10 +86,10 @@ export default function HowItWorksSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
-            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-jersey)' }}>How It Works</span>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
+            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>How It Works</span>
           </h2>
-          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
             Getting started is as easy as 1-2-3
           </p>
         </motion.div>
@@ -142,10 +142,10 @@ export default function HowItWorksSection() {
                   </motion.div>
 
                   {/* Content */}
-                  <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-[#D4A017] transition-all duration-300" style={{ fontFamily: 'var(--font-roboto-bbh)' }}>
+                  <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-[#D4A017] transition-all duration-300" style={{ fontFamily: 'var(--font-heading)' }}>
                     {step.title}
                   </h3>
-                  <p className="text-lg text-white/60 font-body" style={{ fontFamily: 'var(--font-lora)', lineHeight: '1.7' }}>
+                  <p className="text-lg text-white/60 font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
                     {step.description}
                   </p>
                 </motion.div>
@@ -187,14 +187,14 @@ export default function HowItWorksSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.8 }}
         >
-          <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-lora)' }}>
+          <p className="text-xl text-white/60 mb-6 font-body" style={{ fontFamily: 'var(--font-body)' }}>
             Ready to start your journey?
           </p>
           <motion.button
             className="px-10 py-5 rounded-full bg-[#D4A017] text-black font-semibold text-lg hover:scale-105 transform transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            style={{ fontFamily: 'var(--font-roboto-bbh)' }}
+            style={{ fontFamily: 'var(--font-heading)' }}
           >
             Get Started Now
           </motion.button>

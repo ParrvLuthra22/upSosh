@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jersey+10&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jersey+10&display=swap');
 
 /* Local Font - BBH Bartle for Headings */
 @font-face {
@@ -32,10 +32,10 @@
     --text-muted: #888888;
     --border: #333333;
     
-    /* Typography - Font Variables */
-    --font-roboto-bbh: 'BBH Bartle', 'Helvetica Neue', Arial, sans-serif;
-    --font-jersey: 'Jersey 10', sans-serif;
-    --font-lora: 'Lora', Georgia, serif;
+    /* Typography - Font Variables (JetBrains Mono everywhere) */
+    --font-heading: 'JetBrains Mono', monospace;
+    --font-display: 'JetBrains Mono', monospace;
+    --font-body: 'JetBrains Mono', monospace;
   }
 
   .dark {
@@ -56,7 +56,7 @@
 
   body {
     @apply bg-black text-white;
-    font-family: var(--font-lora);
+    font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -67,16 +67,16 @@
     scroll-behavior: smooth;
   }
 
-  /* Strict Heading Typography - BBH Bartle */
+  /* Strict Heading Typography - JetBrains Mono Bold */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-roboto-bbh);
-    font-weight: 400;
+    font-family: var(--font-heading);
+    font-weight: 700;
     color: var(--white);
   }
 
-  /* Body text defaults - Lora */
+  /* Body text defaults - JetBrains Mono Regular */
   p, span, li, td, th, label, input, textarea, select {
-    font-family: var(--font-lora);
+    font-family: var(--font-body);
     line-height: 1.6;
   }
 }
