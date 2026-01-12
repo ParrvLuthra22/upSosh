@@ -168,6 +168,10 @@ export const api = {
 
         if (!res.ok) {
             const error = await res.json();
+            // Check for token expiration
+            if (res.status === 401 && error.reason?.includes('expired')) {
+                throw new Error('Session expired. Please log in again.');
+            }
             throw new Error(error.message || error.error || 'Failed to create booking');
         }
         return res.json();

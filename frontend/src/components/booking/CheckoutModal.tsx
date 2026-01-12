@@ -105,6 +105,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         setErrorMessage('');
     };
 
+    // Helper to check if token is valid (not expired)
+    const isTokenValid = (token: string): boolean => {
+        try {
+            // Decode JWT payload (base64)
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            // Check if expired (exp is in seconds)
+            return payload.exp * 1000 > Date.now();
+        } catch {
+            return false;
+        }
+    };
+
     // Handle Dodo Payments online checkout
     const handleDodoPayment = async () => {
         const token = localStorage.getItem('token');
@@ -113,6 +125,16 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         if (!token || !userData) {
             setErrorMessage('Please login to complete your booking');
             setStatus('error');
+            setTimeout(() => window.location.href = '/login', 2000);
+            return;
+        }
+        
+        // Check if token is expired before making request
+        if (!isTokenValid(token)) {
+            setErrorMessage('Your session has expired. Please log in again.');
+            setStatus('error');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
             setTimeout(() => window.location.href = '/login', 2000);
             return;
         }
@@ -186,7 +208,19 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             }
         } catch (error: any) {
             console.error('Dodo payment error:', error);
-            // On error, fallback to manual payment option
+            
+            // Check if token expired - redirect to login
+            if (error.message?.includes('expired') || error.message?.includes('Invalid token') || error.message?.includes('401')) {
+                setErrorMessage('Your session has expired. Please log in again.');
+                setStatus('error');
+                // Clear expired token
+                localStorage.removeItem('token');
+                localStorage.removeItem('userData');
+                setTimeout(() => window.location.href = '/login', 2000);
+                return;
+            }
+            
+            // On other errors, fallback to manual payment option
             setStatus('payment-details');
             setErrorMessage(error.message || 'Online payment unavailable. Please use manual payment below.');
         }
