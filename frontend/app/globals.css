@@ -2,17 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Google Fonts - JetBrains Mono for body text */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Jersey+10&display=swap');
+/* ========================================
+   AWARD-WINNING TYPOGRAPHY SYSTEM
+   Dark • Gold • Tech-Luxury
+   ======================================== */
 
-/* Local Font - BBH Bartle for Headings */
-@font-face {
-  font-family: 'BBH Bartle';
-  src: url('/fonts/BBHBartle-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* Import Google Fonts - Premium Typography Stack */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=VT323&display=swap');
 
 @layer base {
   :root {
@@ -28,14 +24,19 @@
     --primary: #D4A017;
     --secondary: #D4A017;
     --text-primary: #FFFFFF;
-    --text-secondary: #CCCCCC;
-    --text-muted: #888888;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.5);
     --border: #333333;
     
     /* Typography - Font Variables */
-    --font-heading: 'JetBrains Mono', monospace;
-    --font-display: 'JetBrains Mono', monospace;
-    --font-body: 'JetBrains Mono', monospace;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-pixel: 'VT323', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
+    /* Legacy support */
+    --font-heading: var(--font-serif);
+    --font-display: var(--font-serif);
+    --font-body: var(--font-sans);
   }
 
   .dark {
@@ -45,8 +46,8 @@
     --primary: #D4A017;
     --secondary: #D4A017;
     --text-primary: #FFFFFF;
-    --text-secondary: #CCCCCC;
-    --text-muted: #888888;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.5);
     --border: #333333;
   }
 
@@ -54,56 +55,67 @@
     border-color: inherit;
   }
 
+  /* ========================================
+     BASE BODY - Inter (Default)
+     ======================================== */
   body {
     @apply bg-black text-white;
-    font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 400;
     line-height: 1.7;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   html {
     scroll-behavior: smooth;
   }
 
-  /* Strict Heading Typography - JetBrains Mono Bold */
+  /* ========================================
+     HEADING TYPOGRAPHY - Playfair Display
+     Elegant serif for luxury feel
+     ======================================== */
   h1, .h1 {
-    font-family: var(--font-heading);
+    font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 3.5rem;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     color: var(--white);
   }
 
   h2, .h2 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 2.5rem;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
     color: var(--white);
   }
 
   h3, .h3 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 1.75rem;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
     line-height: 1.3;
+    letter-spacing: -0.01em;
     color: var(--white);
   }
 
   h4, .h4 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-weight: 600;
     font-size: 1.25rem;
     line-height: 1.4;
+    letter-spacing: -0.01em;
     color: var(--white);
   }
 
   h5, .h5 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-weight: 600;
     font-size: 1.1rem;
     line-height: 1.4;
@@ -111,43 +123,202 @@
   }
 
   h6, .h6 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-weight: 600;
     font-size: 1rem;
     line-height: 1.4;
     color: var(--white);
   }
 
-  /* Body text defaults - JetBrains Mono */
-  p, span, li, td, th, label, input, textarea, select {
-    font-family: var(--font-body);
-    line-height: 1.7;
+  /* ========================================
+     BODY TEXT DEFAULTS - Inter
+     Clean, readable, professional
+     ======================================== */
+  p {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    font-weight: 400;
   }
 
-  /* Large hero headings - JetBrains Mono Bold */
+  p.lead, .lead {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  span, li, td, th, label {
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  /* Form elements - Inter */
+  input, textarea, select, button {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  /* ========================================
+     DISPLAY TYPOGRAPHY - Playfair Display
+     Hero sections and major headings
+     ======================================== */
   .display-xl {
-    font-family: var(--font-display);
+    font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 5rem;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--white);
   }
 
   .display-lg {
-    font-family: var(--font-display);
+    font-family: var(--font-serif);
     font-weight: 700;
-    font-size: 4rem;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--white);
   }
 
-  /* Highlight text - JetBrains Mono with mustard color */
-  .text-highlight, .text-animated {
-    font-family: var(--font-body);
+  .display-md {
+    font-family: var(--font-serif);
     font-weight: 600;
-    letter-spacing: 0.02em;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  /* ========================================
+     PIXEL / ACCENT TEXT - VT323
+     Tech-retro accent for keywords
+     ======================================== */
+  .font-pixel, .pixel-text, .accent-text {
+    font-family: var(--font-pixel) !important;
+    font-size: 1.5em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .pixel-sm {
+    font-family: var(--font-pixel) !important;
+    font-size: 1.25em;
+    letter-spacing: 0.04em;
+  }
+
+  .pixel-lg {
+    font-family: var(--font-pixel) !important;
+    font-size: 2em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .pixel-xl {
+    font-family: var(--font-pixel) !important;
+    font-size: 2.5em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Pixel text with mustard color (common combo) */
+  .pixel-accent {
+    font-family: var(--font-pixel) !important;
+    font-size: 1.5em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--mustard);
   }
+
+  /* ========================================
+     HIGHLIGHT / ANIMATED TEXT
+     VT323 pixel font for dynamic keywords
+     ======================================== */
+  .text-highlight, .text-animated, .jersey-animated {
+    font-family: var(--font-pixel) !important;
+    font-size: 1.15em;
+    letter-spacing: 0.04em;
+    color: var(--mustard);
+    text-transform: uppercase;
+  }
+
+  /* ========================================
+     UI TYPOGRAPHY - Inter
+     Navbar, buttons, forms, labels
+     ======================================== */
+  .nav-link {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  .btn-text, .button-text {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .label-text {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .caption {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* ========================================
+     RESPONSIVE TYPOGRAPHY ADJUSTMENTS
+     ======================================== */
+  @media (max-width: 768px) {
+    body {
+      font-size: 0.9375rem;
+    }
+    
+    .nav-link {
+      font-size: 0.8125rem;
+    }
+
+    .pixel-text, .accent-text, .font-pixel {
+      font-size: 1.35em;
+    }
+
+    .pixel-lg {
+      font-size: 1.75em;
+    }
+
+    .pixel-xl {
+      font-size: 2em;
+    }
+  }
+
+  /* ========================================
+     DARK BACKGROUND OPTIMIZATIONS
+     Enhanced readability on black
+     ======================================== */
+  .text-readable {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .text-glow-gold {
+    color: var(--mustard);
+    text-shadow: 0 0 30px rgba(212, 160, 23, 0.3);
+  }
+}
 
   @media (max-width: 768px) {
     h1, .h1 {

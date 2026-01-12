@@ -48,10 +48,13 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-heading)' }}>
-            <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>Powerful Features</span>
+          <h2 
+            className="text-5xl md:text-6xl font-bold mb-6 text-white"
+            style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+          >
+            <span className="text-[#D4A017]">Powerful</span> Features
           </h2>
-          <p className="text-xl text-white/60 max-w-3xl mx-auto font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
+          <p className="text-xl text-white/60 max-w-3xl mx-auto font-sans" style={{ lineHeight: '1.7' }}>
             Everything you need to discover, book, and enjoy incredible events
           </p>
         </motion.div>

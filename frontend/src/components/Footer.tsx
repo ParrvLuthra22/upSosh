@@ -18,15 +18,19 @@ const Footer = () => {
     };
 
     return (
-        <footer className="bg-surface border-t border-white/10 pt-16 pb-8 mt-20">
+        <footer className="bg-surface border-t border-white/10 pt-16 pb-8 mt-20 font-sans">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Brand Column */}
                     <div className="space-y-4">
-                        <Link href="/" className="text-2xl font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        <Link 
+                            href="/" 
+                            className="text-2xl font-bold text-[#D4A017]"
+                            style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                        >
                             UpSosh
                         </Link>
-                        <p className="text-text-secondary text-sm leading-relaxed">
+                        <p className="text-white/60 text-sm leading-relaxed">
                             Discover formal + informal events around you — all in one place. Join the community today.
                         </p>
                         <div className="flex gap-4 pt-2">

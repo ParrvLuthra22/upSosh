@@ -57,16 +57,17 @@ export default function WhatIsUpSoshSection() {
           transition={{ duration: 0.6 }}
         >
           <motion.h2
-            className="text-4xl md:text-6xl font-bold mb-6"
+            className="text-4xl md:text-6xl font-bold mb-6 text-white"
+            style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <span className="gradient-text">What Is UpSosh?</span>
+            What Is <span className="text-[#D4A017]">UpSosh</span>?
           </motion.h2>
           <motion.p
-            className="text-xl text-light-secondary dark:text-dark-slate max-w-3xl mx-auto"
+            className="text-xl text-white/70 max-w-3xl mx-auto font-sans"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

@@ -16,22 +16,34 @@ const SplineToggle = () => {
                     }`}
                 />
 
-                {/* Informal button */}
+                {/* Informal button - VT323 pixel font */}
                 <button
                     onClick={() => !isFormal || toggleMode()}
-                    className={`relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-300 ${
+                    className={`relative z-10 px-6 py-2 rounded-full transition-colors duration-300 ${
                         !isFormal ? 'text-black' : 'text-white/70 hover:text-white'
                     }`}
+                    style={{
+                        fontFamily: 'VT323, monospace',
+                        fontSize: '1.25rem',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase'
+                    }}
                 >
                     Informal
                 </button>
 
-                {/* Formal button */}
+                {/* Formal button - VT323 pixel font */}
                 <button
                     onClick={() => isFormal || toggleMode()}
-                    className={`relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-300 ${
+                    className={`relative z-10 px-6 py-2 rounded-full transition-colors duration-300 ${
                         isFormal ? 'text-black' : 'text-white/70 hover:text-white'
                     }`}
+                    style={{
+                        fontFamily: 'VT323, monospace',
+                        fontSize: '1.25rem',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase'
+                    }}
                 >
                     Formal
                 </button>

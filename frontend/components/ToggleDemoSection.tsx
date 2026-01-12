@@ -52,15 +52,18 @@ export default function ToggleDemoSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="gradient-text">One App, Two Worlds</span>
+          <h2 
+            className="text-5xl md:text-6xl font-bold mb-6 text-white"
+            style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+          >
+            One App, <span className="text-[#D4A017]">Two Worlds</span>
           </h2>
-          <p className="text-xl text-light-secondary dark:text-dark-slate max-w-3xl mx-auto">
+          <p className="text-xl text-white/70 max-w-3xl mx-auto font-sans">
             Seamlessly switch between formal and informal events based on your mood
           </p>
         </motion.div>
 
-        {/* Toggle Switch */}
+        {/* Toggle Switch - VT323 pixel font for labels */}
         <motion.div
           className="flex justify-center mb-16"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -79,22 +82,34 @@ export default function ToggleDemoSection() {
             />
             <motion.button
               onClick={() => setMode('informal')}
-              className={`relative z-10 px-8 py-3 rounded-full font-semibold transition-colors duration-300 ${
+              className={`relative z-10 px-8 py-3 rounded-full transition-colors duration-300 ${
                 mode === 'informal'
                   ? 'text-black'
                   : 'text-white/70 hover:text-white'
               }`}
+              style={{
+                fontFamily: 'VT323, monospace',
+                fontSize: '1.35rem',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+              }}
               whileTap={{ scale: 0.95 }}
             >
               Informal
             </motion.button>
             <motion.button
               onClick={() => setMode('formal')}
-              className={`relative z-10 px-8 py-3 rounded-full font-semibold transition-colors duration-300 ${
+              className={`relative z-10 px-8 py-3 rounded-full transition-colors duration-300 ${
                 mode === 'formal'
                   ? 'text-black'
                   : 'text-white/70 hover:text-white'
               }`}
+              style={{
+                fontFamily: 'VT323, monospace',
+                fontSize: '1.35rem',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+              }}
               whileTap={{ scale: 0.95 }}
             >
               Formal

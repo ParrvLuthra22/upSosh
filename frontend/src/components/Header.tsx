@@ -104,7 +104,7 @@ const Header = () => {
 
     return (
         <header
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-5'
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-sans ${isScrolled ? 'py-3' : 'py-5'
                 }`}
         >
             <div className="container mx-auto px-4">
@@ -114,18 +114,22 @@ const Header = () => {
                         : 'bg-transparent'
                         }`}
                 >
-                    {/* Logo */}
-                    <Link href="/" className="text-xl md:text-2xl font-heading font-bold text-[#D4A017]">
+                    {/* Logo - Playfair Display for elegant branding */}
+                    <Link 
+                        href="/" 
+                        className="text-xl md:text-2xl font-bold text-[#D4A017]"
+                        style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                    >
                         UpSosh
                     </Link>
 
-                    {/* Desktop Nav */}
+                    {/* Desktop Nav - Inter for clean UI */}
                     <nav className="hidden md:flex items-center gap-8">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className="text-sm font-medium text-white/60 hover:text-[#D4A017] transition-colors"
+                                className="text-sm font-medium text-white/60 hover:text-[#D4A017] transition-colors uppercase tracking-wide"
                             >
                                 {link.name}
                             </Link>

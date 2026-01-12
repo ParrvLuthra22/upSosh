@@ -28,7 +28,7 @@ const Hero = () => {
         return () => ctx.revert();
     }, [isFormal]);
 
-    // Animated text variants for Jersey 10 keywords
+    // Animated text variants for VT323 pixel keywords
     const keywordVariants = {
         hidden: { opacity: 0, y: 20, filter: 'blur(4px)' },
         visible: { 
@@ -62,44 +62,61 @@ const Hero = () => {
             <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
                 {/* Left Content */}
                 <div className="space-y-8 z-10">
+                    {/* Hero Heading - Playfair Display */}
                     <h1
                         ref={headlineRef}
-                        className="display-xl md:text-7xl font-heading font-bold leading-tight text-white"
-                        style={{ fontFamily: 'var(--font-heading)' }}
+                        className="font-serif font-bold leading-tight text-white"
+                        style={{ 
+                            fontSize: 'clamp(2.5rem, 6vw, 5rem)',
+                            lineHeight: '1.05',
+                            letterSpacing: '-0.02em'
+                        }}
                     >
                         <motion.span
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                            className="block"
                         >
                             Switch Up Your
                         </motion.span>
-                        <br />
+                        {/* Animated Keyword - VT323 Pixel Font */}
                         <AnimatePresence mode="wait">
                             <motion.span
                                 key={isFormal ? 'formal' : 'informal'}
-                                className="jersey-animated inline-block"
-                                style={{ fontFamily: 'var(--font-heading)', color: '#D4A017' }}
+                                className="font-pixel inline-block text-[#D4A017] uppercase"
+                                style={{ 
+                                    fontFamily: 'VT323, monospace',
+                                    fontSize: 'clamp(2rem, 5vw, 4rem)',
+                                    letterSpacing: '0.05em',
+                                    textShadow: '0 0 40px rgba(212, 160, 23, 0.3)'
+                                }}
                                 variants={keywordVariants}
                                 initial="hidden"
                                 animate="visible"
                                 exit="exit"
                             >
-                                {isFormal ? 'Professional Network' : 'Social Experiences'}
+                                {isFormal ? 'PROFESSIONAL NETWORK' : 'SOCIAL EXPERIENCES'}
                             </motion.span>
                         </AnimatePresence>
                     </h1>
 
+                    {/* Subtext - Inter body font */}
                     <p
                         ref={subtextRef}
-                        className="text-lg md:text-xl max-w-lg text-white/70 font-body"
-                        style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}
+                        className="text-lg md:text-xl max-w-lg font-sans"
+                        style={{ 
+                            color: 'rgba(255, 255, 255, 0.75)',
+                            lineHeight: '1.75',
+                            letterSpacing: '-0.01em'
+                        }}
                     >
                         {isFormal
                             ? 'Discover workshops, conferences, and networking events curated for your career growth.'
                             : 'Find the hottest house parties, underground gigs, and social meetups happening right now.'}
                     </p>
 
+                    {/* CTA Buttons - Inter font */}
                     <motion.div 
                         ref={ctaRef} 
                         className="flex flex-wrap gap-4"
@@ -109,22 +126,22 @@ const Hero = () => {
                     >
                         <button
                             onClick={() => alert('Coming Soon! 🚀')}
-                            className="px-8 py-4 rounded-full font-semibold bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
-                            style={{ fontFamily: 'var(--font-heading)' }}
+                            className="px-8 py-4 rounded-full font-sans font-semibold bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)] hover:-translate-y-0.5"
+                            style={{ letterSpacing: '0.02em' }}
                         >
                             Download App
                         </button>
                         <Link
                             href="/booking"
-                            className="px-8 py-4 rounded-full font-semibold border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black hover:-translate-y-0.5"
-                            style={{ fontFamily: 'var(--font-heading)' }}
+                            className="px-8 py-4 rounded-full font-sans font-semibold border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black hover:-translate-y-0.5"
+                            style={{ letterSpacing: '0.02em' }}
                         >
                             Explore Events
                         </Link>
                         <Link
                             href="/host"
-                            className="px-8 py-4 rounded-full font-semibold text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]"
-                            style={{ fontFamily: 'var(--font-heading)' }}
+                            className="px-8 py-4 rounded-full font-sans font-semibold text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]"
+                            style={{ letterSpacing: '0.02em' }}
                         >
                             Host an Event
                         </Link>

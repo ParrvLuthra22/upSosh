@@ -81,17 +81,18 @@ export default function HeroSection() {
 
             <motion.h1
               className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+              style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <span className="gradient-text">Switch Up</span>
+              <span className="text-[#D4A017]">Switch Up</span>
               <br />
-              Your Experiences
+              <span className="text-white">Your Experiences</span>
             </motion.h1>
 
             <motion.p
-              className="text-xl md:text-2xl text-light-secondary dark:text-dark-slate mb-8 max-w-2xl mx-auto lg:mx-0"
+              className="text-xl md:text-2xl text-white/70 mb-8 max-w-2xl mx-auto lg:mx-0 font-sans"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}

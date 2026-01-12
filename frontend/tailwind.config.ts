@@ -24,28 +24,62 @@ const config: Config = {
         accent: '#D4A017',
         text: {
           primary: '#FFFFFF',
-          secondary: '#CCCCCC',
-          muted: '#888888',
+          secondary: 'rgba(255, 255, 255, 0.8)',
+          muted: 'rgba(255, 255, 255, 0.5)',
         },
         border: '#333333',
       },
       fontFamily: {
-        // Unified JetBrains Mono typography system
-        heading: ['JetBrains Mono', 'var(--font-body)', 'monospace'], // H1-H3 headings (bold)
-        display: ['JetBrains Mono', 'var(--font-body)', 'monospace'], // Display text (bold)
-        body: ['JetBrains Mono', 'var(--font-body)', 'monospace'],    // Body text (regular)
+        // Award-winning typography system
+        // Headings: Playfair Display - elegant serif
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+        heading: ['Playfair Display', 'Georgia', 'serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        // Accent/Pixel: VT323 - retro tech feel
+        pixel: ['VT323', 'monospace'],
+        mono: ['VT323', 'monospace'],
+        // Body/UI: Inter - clean, readable
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        body: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
       },
       fontSize: {
-        // Heading scale for Roboto BBH Bartle
-        'display-xl': ['5rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
-        'display-lg': ['4rem', { lineHeight: '1.15', fontWeight: '700', letterSpacing: '-0.02em' }],
-        'h1': ['3.5rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
-        'h2': ['2.5rem', { lineHeight: '1.25', fontWeight: '700', letterSpacing: '-0.01em' }],
-        'h3': ['1.75rem', { lineHeight: '1.3', fontWeight: '700' }],
-        // Body scale for JetBrains Mono
-        'body-lg': ['1.05rem', { lineHeight: '1.7' }],
-        'body': ['0.95rem', { lineHeight: '1.7' }],
-        'body-sm': ['0.85rem', { lineHeight: '1.6' }],
+        // Display scale - Playfair Display
+        'display-xl': ['clamp(3rem, 8vw, 6rem)', { lineHeight: '1.05', fontWeight: '700', letterSpacing: '-0.03em' }],
+        'display-lg': ['clamp(2.5rem, 6vw, 4.5rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.025em' }],
+        'display-md': ['clamp(2rem, 4vw, 3.5rem)', { lineHeight: '1.15', fontWeight: '600', letterSpacing: '-0.02em' }],
+        // Heading scale
+        'h1': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'h2': ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.15', fontWeight: '600', letterSpacing: '-0.015em' }],
+        'h3': ['clamp(1.25rem, 2.5vw, 1.75rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '-0.01em' }],
+        // Body scale - Inter
+        'body-lg': ['1.125rem', { lineHeight: '1.75', fontWeight: '400' }],
+        'body': ['1rem', { lineHeight: '1.75', fontWeight: '400' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.6', fontWeight: '400' }],
+        // Pixel/Accent scale - VT323
+        'pixel-xl': ['2.5rem', { lineHeight: '1.2', letterSpacing: '0.06em' }],
+        'pixel-lg': ['2rem', { lineHeight: '1.2', letterSpacing: '0.06em' }],
+        'pixel': ['1.5rem', { lineHeight: '1.3', letterSpacing: '0.05em' }],
+        'pixel-sm': ['1.25rem', { lineHeight: '1.3', letterSpacing: '0.04em' }],
+        // UI scale - Inter
+        'ui-lg': ['1rem', { lineHeight: '1.5', fontWeight: '500' }],
+        'ui': ['0.9375rem', { lineHeight: '1.5', fontWeight: '500' }],
+        'ui-sm': ['0.8125rem', { lineHeight: '1.4', fontWeight: '500' }],
+        'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400' }],
+      },
+      letterSpacing: {
+        'tighter': '-0.03em',
+        'tight': '-0.02em',
+        'normal': '0',
+        'wide': '0.02em',
+        'wider': '0.04em',
+        'widest': '0.08em',
+        'pixel': '0.05em',
+      },
+      lineHeight: {
+        'display': '1.05',
+        'heading': '1.15',
+        'body': '1.75',
+        'ui': '1.5',
       },
       borderRadius: {
         lg: '1rem',

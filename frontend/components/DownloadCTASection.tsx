@@ -45,37 +45,42 @@ export default function DownloadCTASection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            {/* Badge */}
+            {/* Badge - VT323 pixel font for accent */}
             <motion.div
-              className="inline-block mb-6 px-6 py-2 border border-white/20 rounded-full text-sm font-semibold text-white font-body"
+              className="inline-block mb-6 px-6 py-2 border border-white/20 rounded-full text-white"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              style={{ fontFamily: 'var(--font-body)' }}
+              style={{ 
+                fontFamily: 'VT323, monospace',
+                fontSize: '1.25rem',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase'
+              }}
             >
-              🚀 Available on iOS & Android
+              🚀 AVAILABLE ON iOS & ANDROID
             </motion.div>
 
-            {/* Headline */}
+            {/* Headline - Playfair Display */}
             <motion.h2
               className="text-5xl md:text-7xl font-bold mb-6 text-white"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              style={{ fontFamily: 'var(--font-heading)' }}
+              style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
             >
-              Ready to <span className="text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>Switch Up?</span>
+              Ready to <span className="text-[#D4A017]">Switch Up?</span>
             </motion.h2>
 
             <motion.p
-              className="text-xl md:text-2xl text-white/60 mb-12 max-w-2xl mx-auto font-body"
+              className="text-xl md:text-2xl text-white/60 mb-12 max-w-2xl mx-auto font-sans"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}
+              style={{ lineHeight: '1.7' }}
             >
               Download now and discover your next unforgettable experience
             </motion.p>
