@@ -68,39 +68,37 @@ export default function ToggleDemoSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
         >
-          <div className="relative glass-effect rounded-full p-2 flex items-center space-x-2">
+          <div className="relative flex items-center bg-black border border-white/20 rounded-full p-1">
+            {/* Background slider */}
+            <motion.div
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#D4A017] rounded-full"
+              animate={{
+                left: mode === 'informal' ? '4px' : 'calc(50% + 2px)',
+              }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            />
             <motion.button
               onClick={() => setMode('informal')}
-              className={`relative z-10 px-8 py-4 rounded-full font-semibold transition-colors duration-300 ${
+              className={`relative z-10 px-8 py-3 rounded-full font-semibold transition-colors duration-300 ${
                 mode === 'informal'
-                  ? 'text-white'
-                  : 'text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-neon'
+                  ? 'text-black'
+                  : 'text-white/70 hover:text-white'
               }`}
-              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Informal
             </motion.button>
             <motion.button
               onClick={() => setMode('formal')}
-              className={`relative z-10 px-8 py-4 rounded-full font-semibold transition-colors duration-300 ${
+              className={`relative z-10 px-8 py-3 rounded-full font-semibold transition-colors duration-300 ${
                 mode === 'formal'
-                  ? 'text-white'
-                  : 'text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-neon'
+                  ? 'text-black'
+                  : 'text-white/70 hover:text-white'
               }`}
-              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Formal
             </motion.button>
-            <motion.div
-              className={`absolute top-2 bottom-2 rounded-full bg-gradient-to-r ${currentMode.color} shadow-lg`}
-              animate={{
-                left: mode === 'informal' ? '0.5rem' : '50%',
-                right: mode === 'informal' ? '50%' : '0.5rem',
-              }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            />
           </div>
         </motion.div>
 
