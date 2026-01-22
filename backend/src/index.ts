@@ -9,6 +9,7 @@ import eventRoutes from './routes/events';
 import hostRoutes from './routes/hosts';
 import bookingRoutes from './routes/bookings';
 import paymentRoutes from './routes/payments';
+import aiRoutes from './routes/ai';
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
@@ -36,7 +37,7 @@ app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -58,6 +59,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/hosts', hostRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/ai', aiRoutes); // Added AI routes usage
 
 // Health check endpoint for Railway
 app.get('/health', (req, res) => {

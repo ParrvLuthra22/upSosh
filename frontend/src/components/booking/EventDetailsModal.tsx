@@ -19,43 +19,30 @@ const EventDetailsModal = () => {
 
     useEffect(() => {
         if (selectedEvent) {
-            // Reset state
             setQty(1);
             setHost(null);
-
-            // Fetch host
             api.getHostById(selectedEvent.hostId).then(setHost).catch(console.error);
 
             // Animate in
-            const tl = gsap.timeline();
-            tl.to(modalRef.current, {
-                opacity: 1,
-                duration: 0.3,
-                pointerEvents: 'auto',
-            }).fromTo(
-                contentRef.current,
-                { y: 50, opacity: 0, scale: 0.95 },
-                { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' },
-                '-=0.2'
-            );
+            gsap.timeline()
+                .to(modalRef.current, { opacity: 1, duration: 0.3, pointerEvents: 'auto' })
+                .fromTo(contentRef.current,
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
+                    '-=0.1'
+                );
         }
     }, [selectedEvent]);
 
     if (!selectedEvent) return null;
 
     const handleClose = () => {
-        gsap.to(contentRef.current, {
-            y: 50,
-            opacity: 0,
-            scale: 0.95,
-            duration: 0.3,
-            ease: 'power2.in',
-        });
+        gsap.to(contentRef.current, { y: 20, opacity: 0, duration: 0.2, ease: 'power2.in' });
         gsap.to(modalRef.current, {
             opacity: 0,
-            duration: 0.3,
+            duration: 0.2,
             delay: 0.1,
-            onComplete: () => setSelectedEvent(null),
+            onComplete: () => setSelectedEvent(null)
         });
     };
 
@@ -65,172 +52,132 @@ const EventDetailsModal = () => {
     };
 
     const handleBuyNow = () => {
-        // Buy Now should skip cart and go directly to checkout
-        // We'll pass the event and quantity directly to checkout
-        const buyNowItem = {
-            event: selectedEvent,
-            qty: qty,
-            price: selectedEvent.price,
-        };
-        
-        // Store the buy now item temporarily
+        const buyNowItem = { event: selectedEvent, qty, price: selectedEvent.price };
         sessionStorage.setItem('buyNowItem', JSON.stringify(buyNowItem));
-        
         handleClose();
-        setTimeout(() => toggleCheckout(true), 300); // Wait for modal close animation
+        setTimeout(() => toggleCheckout(true), 300);
     };
 
     return (
         <div
             ref={modalRef}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 opacity-0 pointer-events-none"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="modal-title"
         >
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                onClick={handleClose}
-                aria-hidden="true"
-            />
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
 
-            {/* Modal Content */}
             <div
                 ref={contentRef}
-                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-black border border-white/10 rounded-3xl flex flex-col md:flex-row"
+                className="relative w-full max-w-4xl bg-background border border-border overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[800px]"
             >
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
-                    aria-label="Close modal"
+                    className="absolute top-4 right-4 z-20 p-2 text-foreground/50 hover:text-foreground transition-colors"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
                 {/* Image Section */}
-                <div className="md:w-1/2 h-64 md:h-auto relative">
+                <div className="md:w-1/2 h-64 md:h-auto relative bg-neutral-100 dark:bg-neutral-900">
                     <img
                         src={selectedEvent.image}
                         alt={selectedEvent.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700 ease-out"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:hidden" />
                 </div>
 
                 {/* Details Section */}
-                <div className="md:w-1/2 p-8 flex flex-col">
-                    <div className="flex-1 space-y-6">
+                <div className="md:w-1/2 p-8 md:p-12 flex flex-col overflow-y-auto">
+                    <div className="flex-1 space-y-8">
                         <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <span
-                                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${selectedEvent.type === 'formal'
-                                        ? 'bg-[#D4A017]/10 text-[#D4A017]'
-                                        : 'bg-white/10 text-white'
-                                        }`}
-                                >
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="text-xs font-bold uppercase tracking-wider border border-foreground/20 px-2 py-1">
                                     {selectedEvent.type}
                                 </span>
                                 {selectedEvent.isSuperhost && (
-                                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#D4A017]/10 text-[#D4A017] text-xs font-bold uppercase border border-[#D4A017]/20">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-foreground/50">
                                         Superhost
                                     </span>
                                 )}
                             </div>
-                            <h2 id="modal-title" className="text-3xl font-heading font-bold text-white mb-2">
+
+                            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-4 leading-[1.1]">
                                 {selectedEvent.title}
                             </h2>
-                            <div className="flex items-center gap-4 text-sm text-white/50">
-                                <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+
+                            <div className="space-y-2 text-foreground/70 text-lg">
+                                <div className="flex items-center gap-2">
+                                    <span>{selectedEvent.date}</span>
+                                    <span className="w-1 h-1 bg-foreground/50 rounded-full" />
+                                    <span>{selectedEvent.time}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    {selectedEvent.date} • {selectedEvent.time}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    {selectedEvent.venue}
-                                </span>
+                                    <span>{selectedEvent.venue}</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* Host Info */}
                         {host && (
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                                <img src={host.avatar} alt={host.name} className="w-10 h-10 rounded-full" />
+                            <div className="flex items-center gap-4 py-4 border-y border-border">
+                                <img src={host.avatar} alt={host.name} className="w-12 h-12 rounded-full grayscale" />
                                 <div>
-                                    <p className="text-sm font-medium text-white flex items-center gap-1">
-                                        Hosted by {host.name}
-                                        {host.verified && (
-                                            <svg className="w-3 h-3 text-[#D4A017]" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Host">
-                                                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                        )}
-                                    </p>
-                                    <p className="text-xs text-white/50">{host.rating} ★ ({host.reviews} reviews)</p>
+                                    <p className="font-medium text-foreground">Hosted by {host.name}</p>
+                                    <p className="text-sm text-foreground/50">{host.rating} ★ ({host.reviews} reviews)</p>
                                 </div>
                             </div>
                         )}
 
-                        <div className="prose prose-sm max-w-none text-white/70">
-                            <p>{selectedEvent.description}</p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                            {selectedEvent.tags.map((tag) => (
-                                <span key={tag} className="px-2 py-1 rounded-md bg-white/10 text-xs text-white/60">
-                                    #{tag}
-                                </span>
-                            ))}
+                        <div className="prose prose-neutral dark:prose-invert">
+                            <p className="text-foreground/80 leading-relaxed text-lg font-light">
+                                {selectedEvent.description}
+                            </p>
                         </div>
                     </div>
 
                     {/* Footer / Actions */}
-                    <div className="mt-8 pt-6 border-t border-white/10 space-y-4">
+                    <div className="mt-8 pt-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <div className="text-2xl font-bold text-white">
+                            <div className="text-3xl font-medium text-foreground">
                                 ₹{selectedEvent.price * qty}
-                                {qty > 1 && <span className="text-sm font-normal text-white/50 ml-2">(₹{selectedEvent.price} x {qty})</span>}
+                                <span className="text-base text-foreground/40 ml-2 font-normal">
+                                    {qty > 1 && `(₹${selectedEvent.price} × ${qty})`}
+                                </span>
                             </div>
 
-                            {/* Quantity Selector */}
-                            <div className="flex items-center gap-3 bg-white/10 rounded-lg p-1">
+                            <div className="flex items-center border border-border rounded-full">
                                 <button
                                     onClick={() => setQty(Math.max(1, qty - 1))}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
-                                    aria-label="Decrease quantity"
-                                >
-                                    -
-                                </button>
-                                <span className="font-medium w-4 text-center text-white" aria-label="Current quantity">{qty}</span>
+                                    className="w-10 h-10 flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors rounded-l-full"
+                                >-</button>
+                                <span className="w-8 text-center font-medium">{qty}</span>
                                 <button
                                     onClick={() => setQty(qty + 1)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/20 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
-                                    aria-label="Increase quantity"
-                                >
-                                    +
-                                </button>
+                                    className="w-10 h-10 flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors rounded-r-full"
+                                >+</button>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="py-3 px-4 rounded-xl border border-[#D4A017] text-[#D4A017] font-medium hover:bg-[#D4A017] hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                                className="py-4 px-6 border border-foreground text-foreground font-medium text-lg hover:bg-foreground hover:text-background transition-colors"
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="py-3 px-4 rounded-xl bg-[#D4A017] text-black font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[#D4A017]"
+                                className="py-4 px-6 bg-foreground text-background font-medium text-lg hover:opacity-90 transition-opacity"
                             >
-                                Buy Now
+                                Book Now
                             </button>
                         </div>
                     </div>

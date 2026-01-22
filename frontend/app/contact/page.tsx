@@ -46,42 +46,20 @@ export default function ContactPage() {
                             <h3 className="text-xl font-bold mb-4">Contact Information</h3>
                             <div className="space-y-4 text-text-secondary">
                                 <p className="flex items-start gap-3">
-                                    <span className="text-primary text-xl">📧</span> 
+                                    <span className="text-primary text-xl"></span> 
                                     <span>support@upsosh.app</span>
                                 </p>
                                 <p className="flex items-start gap-3">
-                                    <span className="text-primary text-xl">📞</span> 
+                                    <span className="text-primary text-xl"></span> 
                                     <span>+91 8076524225</span>
                                 </p>
                                 <p className="flex items-start gap-3">
-                                    <span className="text-primary text-xl">📍</span> 
+                                    <span className="text-primary text-xl"></span> 
                                     <span>B-17, GK Enclave-2<br />New Delhi 110048<br />India</span>
                                 </p>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-primary/20 to-secondary/20 p-8 rounded-3xl border border-white/10">
-                            <h3 className="text-xl font-bold mb-2">Join the Community</h3>
-                            <p className="text-sm text-text-secondary mb-4">Follow us on social media for updates and featured events.</p>
-                            <div className="flex gap-4">
-                                <a 
-                                    href="https://www.instagram.com/upsosh.app/" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all text-sm font-medium text-white shadow-lg hover:shadow-xl transform hover:scale-105"
-                                >
-                                    Instagram
-                                </a>
-                                <a 
-                                    href="https://www.linkedin.com/company/upsosh" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all text-sm font-medium text-white shadow-lg hover:shadow-xl transform hover:scale-105"
-                                >
-                                    LinkedIn
-                                </a>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Contact Form */}

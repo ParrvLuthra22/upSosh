@@ -95,7 +95,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     tags: [formData.type, 'live', 'event'],
                 };
                 console.log('Update payload:', updateData);
-                
+
                 const response = await api.updateEvent(eventToEdit.id, updateData as any);
                 console.log('Event updated successfully:', response);
                 alert('Event updated successfully! 🎉');
@@ -108,19 +108,19 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 }
 
                 const user = JSON.parse(userData);
-                
+
                 const eventData = {
                     ...formData,
                     hostId: user.id,
                     tags: [formData.type, 'live', 'event'],
                     isSuperhost: user.hostVerified || false,
                 };
-                
+
                 console.log('Submitting event data:', eventData);
                 const response = await api.createEvent(eventData as any);
                 console.log('Event created successfully:', response);
                 alert('Event created successfully! 🎉');
-                
+
                 // Reset form
                 setFormData({
                     title: '',
@@ -134,7 +134,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     menu: [] as string[],
                 });
                 setImagePreview('https://images.unsplash.com/photo-1492684223066-81342ee5ff30');
-                
+
                 if (onEventSaved) onEventSaved();
             }
         } catch (error: any) {
@@ -161,7 +161,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             value={formData.title}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                             placeholder="e.g., Summer Rooftop Party"
                         />
                     </div>
@@ -171,7 +171,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                         >
                             <option value="formal">Formal</option>
                             <option value="informal">Informal</option>
@@ -189,7 +189,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             value={formData.date}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                         />
                     </div>
                     <div className="space-y-2">
@@ -200,7 +200,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             value={formData.time}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                         />
                     </div>
                 </div>
@@ -215,7 +215,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             value={formData.venue}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                             placeholder="e.g., Grand Hotel Ballroom"
                         />
                     </div>
@@ -228,7 +228,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             onChange={handleChange}
                             required
                             min="0"
-                            className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                         />
                     </div>
                 </div>
@@ -242,7 +242,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                         onChange={handleChange}
                         required
                         rows={4}
-                        className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                         placeholder="Tell guests what to expect..."
                     />
                 </div>
@@ -259,7 +259,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        
+
                         {/* Upload Buttons */}
                         <div className="flex gap-4">
                             <label className="flex-1 cursor-pointer">
@@ -280,7 +280,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                                     setFormData((prev) => ({ ...prev, image: e.target.value }));
                                     setImagePreview(e.target.value);
                                 }}
-                                className="flex-1 p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                                className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                             />
                         </div>
                         <p className="text-xs text-text-secondary">
@@ -297,7 +297,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             type="text"
                             value={menuItem}
                             onChange={(e) => setMenuItem(e.target.value)}
-                            className="flex-1 p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-primary"
+                            className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
                             placeholder="Add menu item (e.g., Vegan Sliders)"
                         />
                         <button
@@ -329,8 +329,8 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     disabled={isSubmitting}
                     className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-primary/25 disabled:opacity-50"
                 >
-                    {isSubmitting 
-                        ? (eventToEdit ? 'Updating Event...' : 'Creating Event...') 
+                    {isSubmitting
+                        ? (eventToEdit ? 'Updating Event...' : 'Creating Event...')
                         : (eventToEdit ? 'Update Event' : 'Publish Event')
                     }
                 </button>

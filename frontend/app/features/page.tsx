@@ -7,87 +7,55 @@ export default function FeaturesPage() {
     const features = [
         {
             title: 'Smart Discovery',
-            description: 'Our AI-powered recommendation engine learns your preferences to suggest events you\'ll actually love.',
-            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            description: 'Our AI engine learns your preferences to suggest events that align with your interests.',
         },
         {
             title: 'Instant Booking',
-            description: 'Secure your spot in seconds with our seamless one-click booking system. No more waiting in queues.',
-            gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            description: 'Secure your spot in seconds. One-click booking with no queues or wait times.',
         },
         {
             title: 'Verified Hosts',
-            description: 'Every host is vetted to ensure safety and quality. Look for the Superhost badge for top-tier experiences.',
-            gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            description: 'Every host is manually vetted. Look for the refined badge for top-tier experiences.',
         },
         {
             title: 'Social Connections',
-            description: 'See who\'s attending, connect with like-minded people, and build your social circle effortlessly.',
-            gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            description: 'See who is attending, connect with like-minded people, and expand your circle.',
         },
         {
             title: 'Seamless Payments',
-            description: 'Pay securely with multiple payment options. Track all your bookings and receipts in one place.',
-            gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            description: 'Track all your bookings and receipts in one place. Secure and encrypted.',
         },
         {
             title: 'Real-time Updates',
-            description: 'Get instant notifications about event changes, new messages, and exclusive offers.',
-            gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+            description: 'Instant notifications for event changes, ensuring you never miss a beat.',
         },
     ];
 
     return (
-        <div className="min-h-screen pt-32 pb-16 px-4 bg-white dark:bg-[#0a0a0a] transition-colors">
-            {/* Hero Section */}
-            <div className="max-w-7xl mx-auto mb-16 text-center">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6" style={{ 
-                    background: 'linear-gradient(to right, #8b5cf6, #ec4899, #f59e0b)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                }}>
-                    Features that Empower You
-                </h1>
-                <p className="text-xl md:text-2xl mb-4 text-gray-600 dark:text-gray-400">
-                    Experience a new way to discover, book, and host events.
-                </p>
-                <p className="text-lg text-gray-500 dark:text-gray-500">
-                    Built for the modern socialite.
-                </p>
+        <div className="min-h-screen pt-32 pb-24 bg-background text-foreground">
+            {/* Header */}
+            <div className="container mx-auto px-6 mb-24">
+                <div className="max-w-3xl">
+                    <h1 className="text-display font-semibold tracking-tighter leading-[1] mb-8">
+                        Features designed <br />
+                        <span className="text-foreground/40">for human connection.</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-foreground/60 font-light leading-relaxed max-w-2xl">
+                        A curated set of tools built for the modern socialite. Simple, effective, and invisible.
+                    </p>
+                </div>
             </div>
 
             {/* Features Grid */}
-            <div className="max-w-7xl mx-auto mb-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="container mx-auto px-6 mb-32">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
                     {features.map((feature, index) => (
-                        <div
-                            key={index}
-                            className="p-8 rounded-2xl transition-all duration-300 hover:scale-105 bg-gray-50 dark:bg-[#1a1a1a] border-2 border-gray-200 dark:border-[#2a2a2a]"
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = '#8b5cf6';
-                                e.currentTarget.style.boxShadow = '0 20px 60px rgba(139, 92, 246, 0.3)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.classList.contains('dark') 
-                                    ? e.currentTarget.style.borderColor = '#2a2a2a'
-                                    : e.currentTarget.style.borderColor = 'rgb(229, 231, 235)';
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}
-                        >
-                            {/* Gradient Icon Circle */}
-                            <div 
-                                className="w-16 h-16 rounded-full mb-6"
-                                style={{
-                                    background: feature.gradient,
-                                    boxShadow: '0 8px 20px rgba(139, 92, 246, 0.4)',
-                                }}
-                            />
-                            
-                            <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
+                        <div key={index} className="group space-y-4">
+                            <div className="w-12 h-[1px] bg-foreground/20 group-hover:bg-foreground transition-colors duration-500" />
+                            <h3 className="text-xl font-medium tracking-tight">
                                 {feature.title}
                             </h3>
-                            <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
+                            <p className="text-base text-foreground/60 leading-relaxed max-w-sm">
                                 {feature.description}
                             </p>
                         </div>
@@ -95,34 +63,20 @@ export default function FeaturesPage() {
                 </div>
             </div>
 
-            {/* CTA Section */}
-            <div className="max-w-4xl mx-auto">
-                <div 
-                    className="p-12 rounded-3xl text-center bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 border border-purple-200 dark:border-purple-800/50"
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
-                        Ready to Switch Up?
+            {/* CTA Section - Minimal */}
+            <div className="container mx-auto px-6 border-t border-border pt-24">
+                <div className="flex flex-col md:flex-row items-baseline justify-between gap-8">
+                    <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter">
+                        Ready to switch up?
                     </h2>
-                    <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300">
-                        Join thousands of users who are already experiencing the future of event discovery.
-                    </p>
-                    <Link 
+                    <Link
                         href="/"
-                        className="inline-block px-10 py-4 rounded-full font-bold text-lg transition-all duration-300"
-                        style={{
-                            backgroundColor: '#8b5cf6',
-                            color: '#ffffff',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#7c3aed';
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#8b5cf6';
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
+                        className="group inline-flex items-center text-xl font-medium border-b border-foreground/30 hover:border-foreground pb-1 transition-all duration-300"
                     >
-                        Get Started Now
+                        Get Started
+                        <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                     </Link>
                 </div>
             </div>

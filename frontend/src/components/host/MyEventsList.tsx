@@ -78,11 +78,11 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
                         <div className="p-4 space-y-3">
                             <h3 className="text-xl font-bold text-text-primary">{event.title}</h3>
                             <div className="text-sm text-text-secondary space-y-1">
-                                <p>📅 {event.date} at {event.time}</p>
-                                <p>📍 {event.venue}</p>
-                                <p>💰 ₹{event.price}</p>
+                                <p> {event.date} at {event.time}</p>
+                                <p> {event.venue}</p>
+                                <p> ₹{event.price}</p>
                                 <p className="capitalize">
-                                    🎭 {event.type}
+                                     {event.type}
                                     {event.isSuperhost && ' ⭐ Superhost'}
                                 </p>
                             </div>

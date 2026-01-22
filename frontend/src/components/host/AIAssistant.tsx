@@ -11,34 +11,49 @@ const AIAssistant = () => {
     const [response, setResponse] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleAskAI = () => {
+    const handleAskAI = async () => {
         setIsLoading(true);
-        // Simulate AI processing
-        setTimeout(() => {
-            const budget = Number(input.budget);
-            const guests = Number(input.guests);
-            const profit = (guests * 500) - budget; // Simple heuristic: ₹500 ticket price
+        setResponse(null);
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
-            const suggestion = `
-### 🤖 AI Event Plan
+            const res = await fetch(`${apiUrl}/api/ai/plan`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` }),
+                },
+                body: JSON.stringify({
+                    budget: input.budget,
+                    guests: input.guests,
+                    vibe: input.vibe
+                })
+            });
 
-**📍 Suggested Venues:**
-1.  **The Loft at Downtown** - Industrial chic, fits ${guests} guests. Cost: $${budget * 0.4}
-2.  **Skyline Garden** - Open air, great views. Cost: $${budget * 0.5}
+            const data = await res.json();
 
-**💰 Budget Breakdown:**
--   Venue: $${budget * 0.45}
--   Catering/Menu: $${budget * 0.3}
--   Marketing & Staff: $${budget * 0.25}
-
-**📈 Profitability Analysis:**
--   Estimated Ticket Price: ₹500
--   Potential Revenue: $${guests * 50}
--   **Estimated Profit: $${profit}** ${profit > 0 ? '✅ Profitable!' : '⚠️ Tight Budget'}
-            `;
-            setResponse(suggestion);
+            if (!res.ok) {
+                if (data.detail === 'GEMINI_API_KEY missing') {
+                    setResponse(`
+### ⚠️ AI Configuration Missing
+Please ask the administrator to add the **GEMINI_API_KEY** to the backend environment variables.
+                    `);
+                } else {
+                    throw new Error(data.error || 'Failed to generate plan');
+                }
+            } else {
+                setResponse(data.plan);
+            }
+        } catch (error) {
+            console.error('AI Error:', error);
+            setResponse(`
+### ❌ AI Error
+Failed to connect to the AI planner. Please try again later.
+            `);
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -59,7 +74,7 @@ const AIAssistant = () => {
                         type="number"
                         value={input.budget}
                         onChange={(e) => setInput({ ...input, budget: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
                         placeholder="5000"
                     />
                 </div>
@@ -69,7 +84,7 @@ const AIAssistant = () => {
                         type="number"
                         value={input.guests}
                         onChange={(e) => setInput({ ...input, guests: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
                         placeholder="100"
                     />
                 </div>
@@ -79,7 +94,7 @@ const AIAssistant = () => {
                         type="text"
                         value={input.vibe}
                         onChange={(e) => setInput({ ...input, vibe: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-surface-highlight border-none text-text-primary focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
                         placeholder="e.g., Cyberpunk Rave, Professional Mixer"
                     />
                 </div>
