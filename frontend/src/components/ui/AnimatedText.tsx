@@ -12,11 +12,10 @@ interface AnimatedTextProps {
   duration?: number;
   className?: string;
   as?: 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'div';
-  once?: boolean; // Only animate once when in view
-  staggerDelay?: number; // For letter/word reveal
+  once?: boolean; 
+  staggerDelay?: number; 
 }
 
-// Animation variants for different effects
 const fadeUpVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -67,14 +66,6 @@ const getVariants = (type: AnimationType): Variants => {
   }
 };
 
-/**
- * AnimatedText - Premium animated text component using Jersey 10 font
- * 
- * Usage:
- * <AnimatedText animation="fade-up">Switch Up</AnimatedText>
- * <AnimatedText animation="word-reveal" as="h2">Your Experience</AnimatedText>
- * <AnimatedText animation="letter-reveal" staggerDelay={0.03}>PREMIUM</AnimatedText>
- */
 export default function AnimatedText({
   children,
   animation = 'fade-up',
@@ -88,10 +79,10 @@ export default function AnimatedText({
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once, margin: '-50px' });
   
-  // Base styles for Jersey 10 animated text in mustard
+  
   const baseStyles = 'font-display text-[#D4A017] inline-block';
   
-  // Typewriter effect
+  
   if (animation === 'typewriter') {
     return (
       <motion.span
@@ -113,7 +104,7 @@ export default function AnimatedText({
     );
   }
 
-  // Letter-by-letter reveal
+  
   if (animation === 'letter-reveal') {
     const letters = children.split('');
     return (
@@ -146,7 +137,7 @@ export default function AnimatedText({
     );
   }
 
-  // Word-by-word reveal
+  
   if (animation === 'word-reveal') {
     const words = children.split(' ');
     return (
@@ -175,7 +166,7 @@ export default function AnimatedText({
     );
   }
 
-  // Standard animations (fade-up, fade-in, slide-left, slide-right, scale-in)
+  
   const variants = getVariants(animation);
   
   const MotionTag = motion[Tag as keyof typeof motion] as any;
@@ -199,9 +190,6 @@ export default function AnimatedText({
   );
 }
 
-/**
- * AnimatedHeadline - For hero sections with mixed static and animated text
- */
 export function AnimatedHeadline({
   staticText,
   animatedText,
@@ -225,9 +213,6 @@ export function AnimatedHeadline({
   );
 }
 
-/**
- * AnimatedCallout - For short emphasis phrases
- */
 export function AnimatedCallout({
   children,
   className = '',

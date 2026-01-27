@@ -22,11 +22,11 @@ export default function LoginPage() {
         try {
             const data = await api.login({ email, password });
             
-            // Store user name for backward compatibility
+            
             localStorage.setItem('user', data.user.name);
-            // Store full user data including isHost
+            
             localStorage.setItem('userData', JSON.stringify(data.user));
-            // Store token for API calls
+            
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }

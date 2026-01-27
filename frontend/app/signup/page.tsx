@@ -24,11 +24,11 @@ export default function SignupPage() {
 
         try {
             const responseData = await api.signup(formData);
-            // Store user name for backward compatibility
+            
             localStorage.setItem('user', responseData.user.name);
-            // Store full user data including isHost (defaults to false for new users)
+            
             localStorage.setItem('userData', JSON.stringify(responseData.user));
-            // Store token for API calls
+            
             if (responseData.token) {
                 localStorage.setItem('token', responseData.token);
             }

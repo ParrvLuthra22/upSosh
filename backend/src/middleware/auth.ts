@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// Extend Express Request type to include userId
 declare global {
     namespace Express {
         interface Request {
@@ -12,10 +11,10 @@ declare global {
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Try to get token from cookie first
+        
         let token = req.cookies.token;
         
-        // If no cookie, check Authorization header
+        
         if (!token && req.headers.authorization) {
             const authHeader = req.headers.authorization;
             if (authHeader.startsWith('Bearer ')) {

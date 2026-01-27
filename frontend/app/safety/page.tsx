@@ -21,7 +21,7 @@ export default function SafetyPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {/* Header */}
+            
             <div className="mb-12">
               <div className="inline-block px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-semibold mb-4">
                 Critical Safety Guidelines
@@ -39,7 +39,7 @@ export default function SafetyPage() {
               </div>
             </div>
 
-            {/* Critical Warning Banner */}
+            
             <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-8 rounded-2xl mb-12 relative overflow-hidden">
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-9xl opacity-10">!</div>
               <h3 className="text-2xl font-bold mb-4 relative z-10">CRITICAL SAFETY NOTICE</h3>
@@ -51,7 +51,7 @@ export default function SafetyPage() {
               </p>
             </div>
 
-            {/* Safety Categories Overview */}
+            
             <div className="glass-card mb-12">
               <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">Safety Categories Overview</h2>
               <p className="text-light-secondary dark:text-dark-slate mb-8">
@@ -78,10 +78,10 @@ export default function SafetyPage() {
               </div>
             </div>
 
-            {/* Main Content */}
+            
             <div className="space-y-8 text-light-secondary dark:text-dark-slate">
               
-              {/* Purpose */}
+              
               <section className="glass-card" id="purpose">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">1. Purpose of This Policy</h2>
                 <p className="mb-4">This Policy exists to:</p>
@@ -114,7 +114,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* General Safety Guidelines */}
+              
               <section className="glass-card" id="general-safety">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">2. General Safety Guidelines</h2>
                 <p className="mb-4">All events must:</p>
@@ -134,7 +134,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Informal Event Safety */}
+              
               <section className="glass-card" id="informal-safety">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">3. Informal Event Safety Rules</h2>
                 <p className="mb-4"><strong>Informal events carry higher risks due to:</strong></p>
@@ -245,7 +245,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Prohibited Behaviour */}
+              
               <section className="glass-card" id="prohibited">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">4. Prohibited Behaviour</h2>
                 <p className="mb-6">The following actions are <strong>strictly NOT allowed</strong>:</p>
@@ -279,7 +279,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Address Privacy */}
+              
               <section className="glass-card" id="privacy">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">5. Address Privacy & Safety</h2>
                 <p className="mb-4">For informal events:</p>
@@ -296,7 +296,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Emergency Protocols */}
+              
               <section className="glass-card" id="emergency">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">6. Emergency Protocols</h2>
                 
@@ -322,7 +322,7 @@ export default function SafetyPage() {
                 </ol>
               </section>
 
-              {/* Emergency Contact Card */}
+              
               <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-8 rounded-2xl relative">
                 <h3 className="text-2xl font-bold mb-4">Emergency Quick Reference</h3>
                 <p className="mb-6">Save these numbers and keep them accessible during your event:</p>
@@ -344,7 +344,7 @@ export default function SafetyPage() {
                 </div>
               </div>
 
-              {/* Interactive Safety Checklist */}
+              
               <section className="glass-card" id="checklist">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                   <h2 className="text-3xl font-bold text-light-text dark:text-dark-text">7. Pre-Event Safety Checklist</h2>
@@ -445,7 +445,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Liability & Risk */}
+              
               <section className="glass-card" id="liability">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">8. Liability & Risk Acknowledgment</h2>
                 
@@ -488,7 +488,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Incident Reporting */}
+              
               <section className="glass-card" id="reporting">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">9. Incident Reporting</h2>
                 <p className="mb-4"><strong>Users may report:</strong></p>
@@ -550,7 +550,7 @@ export default function SafetyPage() {
                 </ul>
               </section>
 
-              {/* upSosh's Role */}
+              
               <section className="glass-card" id="role">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">10. upSosh's Role & Disclaimer</h2>
                 
@@ -572,7 +572,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Policy Violations */}
+              
               <section className="glass-card" id="violations">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">11. Policy Violations</h2>
                 <p className="mb-4"><strong>If this Policy is violated, upSosh may:</strong></p>
@@ -590,7 +590,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Contact & Support */}
+              
               <section className="glass-card" id="contact">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">12. Contact & Support</h2>
                 <p className="mb-6">For safety-related concerns, please contact:</p>
@@ -612,7 +612,7 @@ export default function SafetyPage() {
                 </div>
               </section>
 
-              {/* Report Safety Issue CTA */}
+              
               <div className="text-center py-12">
                 <a 
                   href="mailto:safety@upsosh.app"

@@ -11,7 +11,7 @@ const CartDrawer = () => {
     const drawerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
 
-    // Accessibility hooks
+    
     useFocusTrap(drawerRef, isCartOpen);
     useEscapeKey(() => toggleCart(false), isCartOpen);
 
@@ -39,7 +39,7 @@ const CartDrawer = () => {
                 ref={drawerRef}
                 className="absolute top-0 right-0 h-full w-full max-w-md bg-background border-l border-border transform translate-x-full pointer-events-auto flex flex-col shadow-2xl"
             >
-                {/* Header */}
+                
                 <div className="p-6 border-b border-border flex items-center justify-between">
                     <h2 className="text-xl font-semibold tracking-tight text-foreground">Your Cart</h2>
                     <button
@@ -52,7 +52,7 @@ const CartDrawer = () => {
                     </button>
                 </div>
 
-                {/* Items */}
+                
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {cart.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center text-foreground/50">
@@ -109,7 +109,7 @@ const CartDrawer = () => {
                     )}
                 </div>
 
-                {/* Footer */}
+                
                 {cart.length > 0 && (
                     <div className="p-6 border-t border-border bg-background">
                         <div className="flex items-center justify-between mb-6">

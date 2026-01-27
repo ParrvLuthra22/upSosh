@@ -20,21 +20,21 @@ export const generateEventSchema = (event: any) => {
         '@type': 'Event',
         name: event.title,
         description: event.description,
-        startDate: `${event.date}T${event.time}`, // Assuming date is YYYY-MM-DD and time is HH:MM
-        endDate: `${event.date}T23:59`, // Placeholder end time
+        startDate: `${event.date}T${event.time}`, 
+        endDate: `${event.date}T23:59`, 
         location: {
             '@type': 'Place',
             name: event.venue,
             address: {
                 '@type': 'PostalAddress',
-                addressLocality: 'City Name', // Needs to be dynamic if available
+                addressLocality: 'City Name', 
                 addressCountry: 'US',
             },
         },
         image: [event.image],
         organizer: {
             '@type': 'Person',
-            name: 'Host Name', // Should fetch host name if available
+            name: 'Host Name', 
         },
         offers: {
             '@type': 'Offer',

@@ -7,7 +7,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-    isFormal: false, // Default to informal (party mode)
+    isFormal: false, 
     toggleMode: () => set((state) => ({ isFormal: !state.isFormal })),
     setMode: (isFormal) => set({ isFormal }),
 }));

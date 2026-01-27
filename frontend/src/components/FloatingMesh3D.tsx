@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 'use client';
 
 import React from 'react';
@@ -19,39 +19,39 @@ const FloatingMesh3D = () => {
                 camera={{ position: [0, 0, 15], fov: 35 }}
                 gl={{ alpha: true, antialias: true }}
             >
-                {/* Soft Studio Lighting */}
+                
                 <ambientLight intensity={1.5} />
                 <directionalLight position={[10, 10, 5]} intensity={2} color="#ffffff" />
                 <directionalLight position={[-10, -10, -5]} intensity={1} color="#ffffff" />
 
-                {/* The Floating Abstract Form */}
+                
                 <Float
-                    speed={1.5} // Slow, hypnotic
-                    rotationIntensity={0.4}
-                    floatIntensity={0.5}
-                    floatingRange={[-0.2, 0.2]}
+                    speed={1} 
+                    rotationIntensity={0.2}
+                    floatIntensity={0.2}
+                    floatingRange={[-0.1, 0.1]}
                 >
                     <group rotation={[0, 0, Math.PI / 4]}>
                         <mesh castShadow receiveShadow>
-                            {/* Abstract Minimal Shape */}
-                            <torusKnotGeometry args={[3, 0.8, 128, 32]} />
+                            
+                            <torusKnotGeometry args={[2.5, 0.6, 128, 32]} />
 
-                            {/* Premium Frosted Glass Material */}
+                            
                             <MeshTransmissionMaterial
                                 backside
                                 samples={4}
-                                resolution={512}
-                                thickness={0.5}
-                                roughness={0.2}
-                                anisotropy={0.5}
-                                chromaticAberration={0.05}
-                                color="#ffffff"
+                                resolution={256}
+                                thickness={0.2}
+                                roughness={0.4} 
+                                anisotropy={0.1}
+                                chromaticAberration={0.02} 
+                                color="#f5f5f5" 
                             />
                         </mesh>
                     </group>
                 </Float>
 
-                {/* Subtle Environment for Reflections */}
+                
                 <Environment preset="studio" />
             </Canvas>
         </div>

@@ -50,10 +50,10 @@ export default function Footer() {
 
   return (
     <footer className="relative bg-black border-t border-white/10">
-      {/* Top Section */}
+      
       <div className="container-custom py-16 md:py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-12 mb-12">
-          {/* Brand Column */}
+          
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -65,7 +65,7 @@ export default function Footer() {
                 Your all-in-one platform for discovering and hosting incredible experiences.
                 Official + Unofficial events, all in one place.
               </p>
-              {/* Social Links */}
+              
               <div className="flex space-x-4">
                 {socialLinks.map((social) => (
                   <a
@@ -83,7 +83,7 @@ export default function Footer() {
             </motion.div>
           </div>
 
-          {/* Links Columns */}
+          
           {Object.entries(footerLinks).map(([key, section], index) => (
             <motion.div
               key={key}
@@ -111,7 +111,7 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Newsletter */}
+        
         <motion.div
           className="bg-black border border-white/20 rounded-2xl p-8 md:p-12"
           initial={{ opacity: 0, y: 20 }}
@@ -144,7 +144,7 @@ export default function Footer() {
         </motion.div>
       </div>
 
-      {/* Bottom Section */}
+      
       <div className="border-t border-white/10">
         <div className="container-custom py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
@@ -179,7 +179,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Decorative Elements - subtle mustard glow */}
+      
       <div className="absolute top-0 left-0 w-64 h-64 bg-[#D4A017]/5 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#D4A017]/5 rounded-full blur-3xl -z-10" />
     </footer>

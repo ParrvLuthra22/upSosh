@@ -14,7 +14,7 @@ export default function TermsPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {/* Header */}
+            
             <div className="mb-12">
               <div className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full text-sm font-semibold mb-4">
                 Terms & Conditions
@@ -31,7 +31,7 @@ export default function TermsPage() {
               </div>
             </div>
 
-            {/* Introduction */}
+            
             <div className="glass-card mb-8">
               <p className="mb-4">
                 These Terms & Conditions ("Terms") govern your use of the upSosh mobile application, website, and all related services ("Platform"), owned and operated by upSosh Technologies ("Company", "we", "us", "our").
@@ -45,10 +45,10 @@ export default function TermsPage() {
               </div>
             </div>
 
-            {/* Main Content */}
+            
             <div className="space-y-8 text-light-secondary dark:text-dark-slate">
               
-              {/* Definitions */}
+              
               <section className="glass-card" id="definitions">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">1. Definitions</h2>
                 <p className="mb-6">For the purpose of these Terms:</p>
@@ -112,7 +112,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Nature of Platform */}
+              
               <section className="glass-card" id="nature">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">2. Nature of the Platform</h2>
                 <p className="mb-6">upSosh is a technology intermediary that allows Hosts to publish events and Users to discover and purchase tickets.</p>
@@ -135,7 +135,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Account Creation */}
+              
               <section className="glass-card" id="account">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">3. Account Creation & User Eligibility</h2>
                 
@@ -158,7 +158,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Host Registration */}
+              
               <section className="glass-card" id="host-registration">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">4. Host Registration & Obligations</h2>
                 
@@ -186,7 +186,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* User Responsibilities */}
+              
               <section className="glass-card" id="user-responsibilities">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">5. User Responsibilities</h2>
                 
@@ -212,7 +212,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* FMC Framework */}
+              
               <section className="glass-card" id="fmc">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">6. Fixed Minimal Cost (FMC) Framework</h2>
                 <p className="mb-6">FMC is the minimum cost declared by Hosts to cover event expenses.</p>
@@ -249,7 +249,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Tickets & Payments */}
+              
               <section className="glass-card" id="payments">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">7. Tickets, Payments & Fees</h2>
                 
@@ -287,7 +287,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Cancellations & Refunds */}
+              
               <section className="glass-card" id="cancellations">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">8. Cancellations, Refunds & Rescheduling</h2>
                 
@@ -320,7 +320,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Safety, Risk & Liability */}
+              
               <section className="glass-card" id="liability">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">9. Safety, Risk, & Liability</h2>
                 
@@ -367,7 +367,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Prohibited Actions */}
+              
               <section className="glass-card" id="prohibited">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">10. Prohibited Actions</h2>
                 <p className="mb-6">Users and Hosts must NOT:</p>
@@ -408,7 +408,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Privacy & Data Protection */}
+              
               <section className="glass-card" id="privacy">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">11. Privacy & Data Protection</h2>
                 
@@ -426,7 +426,7 @@ export default function TermsPage() {
                 <p className="text-sm italic">Full details are in the <a href="/privacy" className="text-primary hover:underline font-semibold">Privacy Policy</a>.</p>
               </section>
 
-              {/* Intellectual Property */}
+              
               <section className="glass-card" id="ip">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">12. Intellectual Property</h2>
                 
@@ -454,7 +454,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Suspension & Termination */}
+              
               <section className="glass-card" id="suspension">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">13. Suspension & Termination</h2>
                 
@@ -480,7 +480,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Indemnity */}
+              
               <section className="glass-card" id="indemnity">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">14. Indemnity</h2>
                 
@@ -511,7 +511,7 @@ export default function TermsPage() {
                 <p className="mt-4 text-sm italic">...arising from their actions or events.</p>
               </section>
 
-              {/* Dispute Resolution */}
+              
               <section className="glass-card" id="disputes">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">15. Dispute Resolution & Governing Law</h2>
                 
@@ -533,7 +533,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Amendments */}
+              
               <section className="glass-card" id="amendments">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">16. Amendments</h2>
                 
@@ -544,7 +544,7 @@ export default function TermsPage() {
                 </div>
               </section>
 
-              {/* Contact Information */}
+              
               <section className="glass-card" id="contact">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">17. Contact Information</h2>
                 

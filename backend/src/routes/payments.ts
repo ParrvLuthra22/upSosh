@@ -1,12 +1,10 @@
-// DODO PAYMENTS INTEGRATION
-// Documentation: https://docs.dodopayments.com
+
 
 import { Router, Request, Response } from 'express';
 import DodoPayments from 'dodopayments';
 
 const router = Router();
 
-// Lazy initialization of Dodo Payments client to prevent startup crashes
 let dodo: DodoPayments | null = null;
 
 function getDodoClient(): DodoPayments {
@@ -15,8 +13,8 @@ function getDodoClient(): DodoPayments {
         if (!apiKey) {
             throw new Error('DODO_PAYMENTS_API_KEY is not configured');
         }
-        // ALWAYS use test_mode unless explicitly set to 'live'
-        // Default to test_mode for safety
+        
+        
         const modeEnv = process.env.DODO_PAYMENTS_MODE?.toLowerCase();
         const mode = modeEnv === 'live' ? 'live_mode' : 'test_mode';
         console.log(`[DodoPayments] Initializing with mode: ${mode} (env: ${modeEnv || 'not set, defaulting to test'})`);
@@ -29,20 +27,18 @@ function getDodoClient(): DodoPayments {
     return dodo;
 }
 
-// Get or create a default product for event tickets
 async function getOrCreateProductId(): Promise<string> {
-    // If product ID is set in env, use it
+    
     const envProductId = process.env.DODO_PRODUCT_ID;
     if (envProductId && envProductId.trim() !== '') {
         return envProductId;
     }
     
-    // Otherwise, create a one-time payment link dynamically
-    // For test mode, we'll use payment links instead of products
+    
+    
     throw new Error('DODO_PRODUCT_ID not configured. Please create a product in DodoPayments dashboard and set the product ID in environment variables.');
 }
 
-// Health check endpoint
 router.get('/health', (req: Request, res: Response) => {
     const apiKeySet = !!process.env.DODO_PAYMENTS_API_KEY;
     const productIdSet = !!process.env.DODO_PRODUCT_ID && process.env.DODO_PRODUCT_ID.trim() !== '';
@@ -64,7 +60,6 @@ router.get('/health', (req: Request, res: Response) => {
     });
 });
 
-// Create a checkout session for payment
 router.post('/create-checkout', async (req: Request, res: Response): Promise<any> => {
     try {
         const { items, customer, returnUrl } = req.body;
@@ -79,17 +74,17 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
             return res.status(400).json({ error: 'Customer email is required' });
         }
 
-        // Calculate total amount and quantity
+        
         const totalQuantity = items.reduce((sum: number, item: any) => sum + item.qty, 0);
         const totalAmount = items.reduce((sum: number, item: any) => sum + (item.price * item.qty), 0);
         
-        // Check if DodoPayments is properly configured
+        
         const apiKey = process.env.DODO_PAYMENTS_API_KEY;
         const productId = process.env.DODO_PRODUCT_ID;
         
         if (!apiKey) {
             console.log('DodoPayments not configured, using manual payment flow');
-            // Return a response that tells frontend to use manual payment
+            
             return res.json({
                 success: true,
                 useManualPayment: true,
@@ -112,11 +107,11 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
 
         console.log('Using product ID:', productId, 'Quantity:', totalQuantity);
 
-        // Create checkout session with Dodo Payments
+        
         const client = getDodoClient();
         const session = await client.checkoutSessions.create({
             billing_address: {
-                country: 'IN', // India
+                country: 'IN', 
             },
             customer: {
                 email: customer.email,
@@ -140,7 +135,7 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
         console.error('Dodo Payments error:', error.message);
         console.error('Full error:', JSON.stringify(error, null, 2));
         
-        // If it's a configuration error, suggest manual payment
+        
         if (error.message?.includes('not configured') || error.message?.includes('API key')) {
             return res.json({
                 success: true,
@@ -156,19 +151,18 @@ router.post('/create-checkout', async (req: Request, res: Response): Promise<any
     }
 });
 
-// Webhook endpoint for Dodo Payments notifications
 router.post('/webhook', async (req: Request, res: Response): Promise<any> => {
     try {
         const payload = req.body;
         
-        // Log webhook event for debugging
+        
         console.log('Received webhook event:', payload.type);
         
-        // Handle different webhook events
+        
         switch (payload.type) {
             case 'payment.succeeded':
                 console.log('Payment succeeded:', payload.data?.payment_id);
-                // Update booking status in database
+                
                 break;
                 
             case 'payment.failed':
@@ -194,7 +188,6 @@ router.post('/webhook', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// Get payment status
 router.get('/status/:paymentId', async (req: Request, res: Response): Promise<any> => {
     try {
         const { paymentId } = req.params;

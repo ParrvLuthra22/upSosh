@@ -128,7 +128,7 @@ export const useBookingStore = create<BookingState>()(
 
                 let result = [...events];
 
-                // Search Filter
+                
                 if (searchQuery) {
                     const query = searchQuery.toLowerCase();
                     result = result.filter(
@@ -139,17 +139,17 @@ export const useBookingStore = create<BookingState>()(
                     );
                 }
 
-                // Type Filter
+                
                 if (filters.type !== 'all') {
                     result = result.filter((e) => e.type === filters.type);
                 }
 
-                // Superhost Filter
+                
                 if (filters.isSuperhost) {
                     result = result.filter((e) => e.isSuperhost);
                 }
 
-                // Date Filter
+                
                 if (filters.dateRange.start) {
                     result = result.filter((e) => e.date >= filters.dateRange.start!);
                 }
@@ -157,17 +157,17 @@ export const useBookingStore = create<BookingState>()(
                     result = result.filter((e) => e.date <= filters.dateRange.end!);
                 }
 
-                // Sorting
+                
                 result.sort((a, b) => {
                     if (filters.sort === 'price_asc') return a.price - b.price;
                     if (filters.sort === 'price_desc') return b.price - a.price;
-                    // Default to date (newest first)
+                    
                     return new Date(b.date).getTime() - new Date(a.date).getTime();
                 });
 
-                // Pagination Calculation
+                
                 const totalPages = Math.ceil(result.length / pagination.itemsPerPage);
-                const currentPage = 1; // Reset to first page on filter change
+                const currentPage = 1; 
                 const startIndex = 0;
                 const endIndex = pagination.itemsPerPage;
                 const paginatedEvents = result.slice(startIndex, endIndex);
@@ -189,7 +189,7 @@ export const useBookingStore = create<BookingState>()(
         }),
         {
             name: 'booking-storage',
-            partialize: (state) => ({ cart: state.cart }), // Only persist cart
+            partialize: (state) => ({ cart: state.cart }), 
         }
     )
 );

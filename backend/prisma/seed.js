@@ -6,15 +6,15 @@ async function main() {
         console.log('Database ready for production use.');
         console.log('No seed data - all events and bookings will be created by real users.');
         
-        // Check if any users exist
+        
         const userCount = await prisma.user.count();
         console.log(`Current users in database: ${userCount}`);
         
-        // Check if any events exist
+        
         const eventCount = await prisma.event.count();
         console.log(`Current events in database: ${eventCount}`);
         
-        // Check if any hosts exist
+        
         const hostCount = await prisma.host.count();
         console.log(`Current hosts in database: ${hostCount}`);
 

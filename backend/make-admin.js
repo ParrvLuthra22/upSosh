@@ -17,7 +17,6 @@ async function makeAdmin(email) {
   }
 }
 
-// Get email from command line argument
 const email = process.argv[2];
 
 if (!email) {

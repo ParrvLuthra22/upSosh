@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
         setStatus('resetting');
         setMessage('');
 
-        // Validation
+        
         if (newPassword.length < 8) {
             setStatus('error');
             setMessage('Password must be at least 8 characters long');
@@ -38,14 +38,14 @@ export default function ForgotPasswordPage() {
             setStatus('success');
             setMessage('Your password has been reset successfully!');
             
-            // Redirect to login after 2 seconds
+            
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
         } catch (error: any) {
             setStatus('error');
             
-            // Better error messages
+            
             if (error.message.includes('Cannot connect to server') || 
                 error.message.includes('Backend server is not responding')) {
                 setMessage('Cannot connect to the server. The backend service may be starting up. Please wait a moment and try again.');

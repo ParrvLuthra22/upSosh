@@ -7,7 +7,7 @@ import Container from './ui/Container';
 export default function DownloadCTASection() {
   return (
     <Section className="relative overflow-hidden bg-black border-t border-white/10">
-      {/* Animated Background Elements - mustard accent */}
+      
       <div className="absolute inset-0">
         <motion.div
           className="absolute top-10 left-10 w-72 h-72 bg-[#D4A017]/10 rounded-full blur-3xl"
@@ -45,7 +45,7 @@ export default function DownloadCTASection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            {/* Badge - VT323 pixel font for accent */}
+            
             <motion.div
               className="inline-block mb-6 px-6 py-2 border border-white/20 rounded-full text-white"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -62,7 +62,7 @@ export default function DownloadCTASection() {
               🚀 AVAILABLE ON iOS & ANDROID
             </motion.div>
 
-            {/* Headline - Playfair Display */}
+            
             <motion.h2
               className="text-5xl md:text-7xl font-bold mb-6 text-white"
               initial={{ opacity: 0, y: 20 }}
@@ -85,7 +85,7 @@ export default function DownloadCTASection() {
               Our app is coming soon. Stay tuned for the ultimate event experience!
             </motion.p>
 
-            {/* Coming Soon Badge */}
+            
             <motion.div
               className="flex flex-col items-center justify-center mb-12"
               initial={{ opacity: 0, y: 20 }}
@@ -112,7 +112,7 @@ export default function DownloadCTASection() {
               </p>
             </motion.div>
 
-            {/* Trust Badges */}
+            
             <motion.div
               className="flex flex-wrap justify-center gap-8 mt-12 text-white/60 text-sm font-body"
               initial={{ opacity: 0 }}

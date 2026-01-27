@@ -32,7 +32,7 @@ export default function AdminPaymentsPage() {
         return;
       }
 
-      // Use the same API_URL logic as in api.ts
+      
       const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
         ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
         : 'https://upsosh-production.up.railway.app/api';
@@ -90,7 +90,7 @@ export default function AdminPaymentsPage() {
       }
       
       alert('Payment approved! User can now access their tickets.');
-      fetchPendingBookings(); // Refresh list
+      fetchPendingBookings(); 
     } catch (error: any) {
       console.error('Error approving payment:', error);
       alert(`Failed to approve payment: ${error.message}`);
@@ -124,7 +124,7 @@ export default function AdminPaymentsPage() {
       }
       
       alert('Payment rejected.');
-      fetchPendingBookings(); // Refresh list
+      fetchPendingBookings(); 
     } catch (error: any) {
       console.error('Error rejecting payment:', error);
       alert(`Failed to reject payment: ${error.message}`);
@@ -264,7 +264,7 @@ export default function AdminPaymentsPage() {
         )}
       </div>
 
-      {/* Payment Proof Modal */}
+      
       {selectedProof && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"

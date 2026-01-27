@@ -18,15 +18,15 @@ export default function ConfirmationContent() {
     
     useEffect(() => {
         const confirmBooking = async () => {
-            // Get booking ID from URL or sessionStorage
+            
             const pendingBookingId = bookingId || sessionStorage.getItem('pendingBookingId');
             
-            // Check payment status from URL params
+            
             const isPaymentSuccess = paymentStatus === 'succeeded' || paymentStatus === 'success' || paymentId;
             
             if (isPaymentSuccess && pendingBookingId) {
                 try {
-                    // Update the booking status to confirmed
+                    
                     const token = localStorage.getItem('token');
                     const response = await fetch(`${API_URL}/bookings/${pendingBookingId}/confirm-payment`, {
                         method: 'PATCH',
@@ -43,17 +43,17 @@ export default function ConfirmationContent() {
                     
                     if (response.ok) {
                         setStatus('success');
-                        // Clear session storage
+                        
                         sessionStorage.removeItem('pendingBookingId');
                         sessionStorage.removeItem('pendingBookingItems');
                     } else {
-                        // Even if update fails, show success since payment was made
+                        
                         console.warn('Failed to update booking status, but payment succeeded');
                         setStatus('success');
                     }
                 } catch (error) {
                     console.error('Error confirming booking:', error);
-                    // Still show success since payment was made
+                    
                     setStatus('success');
                 }
             } else if (paymentStatus === 'failed') {
@@ -61,7 +61,7 @@ export default function ConfirmationContent() {
             } else if (paymentStatus === 'pending') {
                 setStatus('pending');
             } else if (paymentId) {
-                // Payment ID exists, assume success
+                
                 setStatus('success');
             } else {
                 setStatus('pending');

@@ -3,7 +3,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = Router();
 
-// Lazy initialization
 let genAI: GoogleGenerativeAI | null = null;
 
 function getGenAI() {

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import SearchBar from '@/src/components/booking/SearchBar';
 import Filters from '@/src/components/booking/Filters';
 import EventGrid from '@/src/components/booking/EventGrid';
+import HorizontalEventSlider from '@/src/components/booking/HorizontalEventSlider';
 import Pagination from '@/src/components/booking/Pagination';
 import FormalInformalToggle from '@/src/components/FormalInformalToggle';
 import { useBookingStore } from '@/src/store/bookingStore';
@@ -20,9 +21,8 @@ const CheckoutModal = dynamic(() => import('@/src/components/booking/CheckoutMod
 export default function BookingPage() {
     const { isFormal } = useAppStore();
     const { setEvents, setFilters, filteredEvents, cart, toggleCart, isCheckoutOpen, toggleCheckout } = useBookingStore();
-    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-    // Sync global mode with booking filters
+    
     useEffect(() => {
         setFilters({ type: isFormal ? 'formal' : 'informal' });
     }, [isFormal, setFilters]);
@@ -39,16 +39,25 @@ export default function BookingPage() {
         loadEvents();
     }, [setEvents]);
 
+    
+    const recommendedEvents = filteredEvents.slice(0, 5);
+    const weekendEvents = filteredEvents.filter(e => e.date.toLowerCase().includes('sat') || e.date.toLowerCase().includes('sun')).slice(0, 5);
+    
+    const popularEvents = weekendEvents.length > 0 ? weekendEvents : filteredEvents.slice(5, 10);
+
+    
+    const allEvents = filteredEvents; 
+
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4 md:px-8 bg-background">
+        <div className="min-h-screen pt-20 pb-12 bg-white">
             <EventDetailsModal />
             <CartDrawer />
             <CheckoutModal isOpen={isCheckoutOpen} onClose={() => toggleCheckout(false)} />
 
-            {/* Floating Cart Button */}
+            
             <button
                 onClick={() => toggleCart(true)}
-                className="fixed bottom-8 right-8 z-40 bg-foreground text-background p-4 rounded-full shadow-lg hover:opacity-90 transition-opacity"
+                className="fixed bottom-8 right-8 z-40 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-900 transition-colors"
                 aria-label="Open cart"
             >
                 <div className="relative">
@@ -56,24 +65,30 @@ export default function BookingPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                     {cart.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-background text-foreground text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border border-foreground">
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                             {cart.reduce((acc, item) => acc + item.qty, 0)}
                         </span>
                     )}
                 </div>
             </button>
 
-            <div className="container mx-auto">
-                <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-12 text-center text-foreground">
-                    Find Your Next Experience
-                </h1>
+            <div className="container mx-auto max-w-7xl px-4 md:px-8">
+                
+                <div className="py-8">
+                    <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-6">
+                        {isFormal ? 'Professional Networking' : 'Social Gatherings'}
+                    </h1>
+                    <div className="flex flex-col md:flex-row gap-6 justify-between items-center mb-8">
+                        <div className="w-full md:w-2/3">
+                            <SearchBar />
+                        </div>
+                        <div className="w-full md:w-auto">
+                            <FormalInformalToggle />
+                        </div>
+                    </div>
+                </div>
 
-                {/* Formal/Informal Toggle */}
-                <FormalInformalToggle />
-
-                <SearchBar />
-
-                {/* Structured Data for Events */}
+                
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
@@ -81,28 +96,38 @@ export default function BookingPage() {
                     }}
                 />
 
-                <div className="flex flex-col lg:flex-row gap-12">
-                    {/* Mobile Filter Toggle */}
-                    <button
-                        className="lg:hidden w-full py-3 px-4 bg-background border border-border rounded-lg font-medium text-foreground mb-4"
-                        onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                    >
-                        {isMobileFiltersOpen ? 'Hide Filters' : 'Show Filters'}
-                    </button>
+                <div className="space-y-4">
+                    
+                    <HorizontalEventSlider
+                        title="Recommended for You"
+                        events={recommendedEvents}
+                    />
 
-                    {/* Filters Sidebar */}
-                    <aside
-                        className={`lg:w-1/4 ${isMobileFiltersOpen ? 'block' : 'hidden'
-                            } lg:block transition-all duration-300`}
-                    >
-                        <Filters />
-                    </aside>
+                    
+                    <HorizontalEventSlider
+                        title={weekendEvents.length > 0 ? "This Weekend" : "Trending Now"}
+                        events={popularEvents}
+                    />
 
-                    {/* Event Grid */}
-                    <main className="lg:w-3/4">
-                        <EventGrid />
-                        <Pagination />
-                    </main>
+                    
+                    <section className="py-8 border-t border-gray-100 mt-8">
+                        <div className="flex flex-col lg:flex-row gap-8">
+                            
+                            <aside className="lg:w-1/4">
+                                <h3 className="text-xl font-bold mb-6 text-gray-900">Filters</h3>
+                                <Filters />
+                            </aside>
+
+                            
+                            <main className="lg:w-3/4">
+                                <h3 className="text-2xl font-bold mb-6 text-gray-900">All Events</h3>
+                                <EventGrid />
+                                <div className="mt-8">
+                                    <Pagination />
+                                </div>
+                            </main>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>

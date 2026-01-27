@@ -24,10 +24,10 @@ export const downloadQRCode = (svgId: string, filename: string) => {
 };
 
 export const generateICS = (event: Event) => {
-    // Basic ICS format
-    // Note: Dates should be formatted properly (YYYYMMDDTHHMMSSZ)
-    // For simplicity, we'll assume event.date is YYYY-MM-DD and event.time is HH:MM
-    // We'll construct a basic start time.
+    
+    
+    
+    
 
     const formatDate = (dateStr: string, timeStr: string) => {
         const date = new Date(`${dateStr}T${timeStr}`);
@@ -35,11 +35,11 @@ export const generateICS = (event: Event) => {
     };
 
     const startTime = formatDate(event.date, event.time);
-    const endTime = formatDate(event.date, '23:59'); // Default to end of day or +2 hours if we had duration
+    const endTime = formatDate(event.date, '23:59'); 
 
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//UpSosh//Booking//EN
+PRODID:-
 BEGIN:VEVENT
 UID:${event.id}@upsosh.com
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'}

@@ -21,66 +21,51 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
     return (
         <div
             onClick={onClick}
-            className="group cursor-pointer space-y-4 p-4 rounded-xl transition-all duration-500 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 hover:shadow-lg hover:-translate-y-1"
+            className="group cursor-pointer flex flex-col h-full bg-white border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md hover:border-gray-300"
         >
-            {/* Minimalist Image Container */}
-            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800 shadow-sm">
+            
+            <div className="relative aspect-[16/9] overflow-hidden bg-gray-100">
                 <Image
                     src={event.image || '/placeholder-event.jpg'}
                     alt={event.title}
                     fill
-                    className="object-cover transition-all duration-700 ease-editorial group-hover:scale-105 filter grayscale-[100%] group-hover:grayscale-0"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
-                {/* Minimal Status Badge - Top Left */}
+                
                 <div className="absolute top-3 left-3">
-                    <span className="inline-block px-3 py-1 text-[10px] font-semibold uppercase tracking-widest bg-background/90 text-foreground backdrop-blur-md border border-border/50 shadow-sm rounded-full">
+                    <span className="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/95 text-black backdrop-blur-sm rounded-sm shadow-sm">
                         {event.type}
                     </span>
                 </div>
             </div>
 
-            {/* Content - Clean Typography */}
-            <div className="space-y-2">
-                <div className="flex justify-between items-start gap-4">
-                    <h3 className="text-xl font-semibold leading-tight text-foreground tracking-tight transition-colors group-hover:text-foreground/80">
-                        {event.title}
-                    </h3>
-                    <span className="shrink-0 text-base font-medium text-foreground">
+            
+            <div className="p-4 flex flex-col grow space-y-3">
+                <h3 className="text-lg font-semibold leading-tight text-gray-900 group-hover:text-black line-clamp-2">
+                    {event.title}
+                </h3>
+
+                <div className="space-y-1 text-sm text-gray-500">
+                    <p className="flex items-center gap-1.5">
+                        <span className="font-medium text-gray-700">{event.date}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-300" />
+                        <span>{event.time}</span>
+                    </p>
+                    <p className="line-clamp-1">{event.venue}</p>
+                </div>
+
+                <div className="mt-auto pt-3 flex items-center justify-between border-t border-gray-100">
+                    <span className="text-base font-semibold text-gray-900">
                         {event.price === 0 ? 'Free' : `₹${event.price}`}
                     </span>
-                </div>
-
-                <div className="flex flex-col gap-1.5 text-sm text-foreground/60 font-light">
-                    <div className="flex items-center gap-2">
-                        <span>{event.date}</span>
-                        <span className="w-1 h-1 rounded-full bg-foreground/40" />
-                        <span>{event.time}</span>
-                    </div>
-
-                    <div className="flex items-start gap-1.5 transition-colors group-hover:text-foreground/80">
-                        <svg
-                            className="w-4 h-4 mt-0.5 shrink-0 opacity-70"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="line-clamp-1">{event.venue}</span>
-                    </div>
-                </div>
-
-                {/* Micro Host Info */}
-                {host && (
-                    <div className="pt-3 border-t border-border/50 flex items-center gap-2">
-                        <span className="text-xs text-foreground/50 uppercase tracking-widest font-medium">
-                            Hosted by {host.name}
+                    {host && (
+                        <span className="text-xs text-gray-500 truncate max-w-[50%]">
+                            by {host.name}
                         </span>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -16,13 +16,13 @@ export default function ContactPage() {
         const subject = formData.get('subject') as string;
         const message = formData.get('message') as string;
 
-        // Create email body
+        
         const emailBody = `Name: ${firstName} ${lastName}%0D%0AEmail: ${email}%0D%0ASubject: ${subject}%0D%0A%0D%0AMessage:%0D%0A${encodeURIComponent(message)}`;
         
-        // Open user's email client with pre-filled information
+        
         window.location.href = `mailto:support@upsosh.app?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
         
-        // Show success message
+        
         setTimeout(() => {
             setStatus('success');
             setTimeout(() => setStatus('idle'), 3000);
@@ -40,7 +40,7 @@ export default function ContactPage() {
 
             <div className="container mx-auto px-4">
                 <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
-                    {/* Contact Info */}
+                    
                     <div className="lg:w-1/3 space-y-8">
                         <div className="bg-surface p-8 rounded-3xl border border-white/10">
                             <h3 className="text-xl font-bold mb-4">Contact Information</h3>
@@ -62,7 +62,7 @@ export default function ContactPage() {
 
                     </div>
 
-                    {/* Contact Form */}
+                    
                     <div className="lg:w-2/3">
                         <form onSubmit={handleSubmit} className="bg-surface p-8 md:p-10 rounded-3xl border border-white/10 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

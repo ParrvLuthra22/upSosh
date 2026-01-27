@@ -14,7 +14,7 @@ export default function PrivacyPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {/* Header */}
+            
             <div className="mb-12">
               <div className="inline-block px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-semibold mb-4">
                 India-Compliant Privacy Policy
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
               </div>
             </div>
 
-            {/* Introduction */}
+            
             <div className="glass-card mb-8">
               <p className="mb-4">
                 upSosh Technologies ("Company", "we", "our", "us") operates the upSosh mobile application, website, platform, and services ("Platform"). This Privacy Policy explains how we collect, use, store, share, and protect your personal data.
@@ -45,10 +45,10 @@ export default function PrivacyPage() {
               </div>
             </div>
 
-            {/* Main Content */}
+            
             <div className="space-y-8 text-light-secondary dark:text-dark-slate">
               
-              {/* Scope & Legal Compliance */}
+              
               <section className="glass-card" id="scope">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">1. Scope & Legal Compliance</h2>
                 <p className="mb-4">This Privacy Policy is drafted to comply fully with:</p>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Types of Data Collected */}
+              
               <section className="glass-card" id="data-types">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">2. Types of Personal Data We Collect</h2>
                 <p className="mb-6">We collect personal and sensitive personal data as defined under Indian law:</p>
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Purpose of Data Collection */}
+              
               <section className="glass-card" id="purpose">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">3. Purpose of Data Collection</h2>
                 <p className="mb-6">We use your information for:</p>
@@ -191,7 +191,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Legal Basis */}
+              
               <section className="glass-card" id="legal-basis">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">4. Legal Basis for Processing Personal Data</h2>
                 <p className="mb-4">As required under the DPDP Act, upSosh processes data under:</p>
@@ -215,7 +215,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Data Sharing */}
+              
               <section className="glass-card" id="sharing">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">5. Data Sharing & Disclosure</h2>
                 
@@ -263,7 +263,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Storage & Retention */}
+              
               <section className="glass-card" id="storage">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">6. Storage & Retention</h2>
                 <p className="mb-4">We store data on secure servers that use:</p>
@@ -296,7 +296,7 @@ export default function PrivacyPage() {
                 <p className="text-sm italic">After this, data is securely deleted or anonymized.</p>
               </section>
 
-              {/* Data Security */}
+              
               <section className="glass-card" id="security">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">7. Data Security Measures</h2>
                 <p className="mb-4">As required by the IT Act, SPDI Rules, and CERT-In:</p>
@@ -328,7 +328,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Children's Data */}
+              
               <section className="glass-card" id="children">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">8. Children's Data (DPDP Act Compliance)</h2>
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-6 rounded mb-4">
@@ -342,7 +342,7 @@ export default function PrivacyPage() {
                 <p className="text-sm italic">If we discover a minor using the service without consent, we will delete their data.</p>
               </section>
 
-              {/* User Rights */}
+              
               <section className="glass-card" id="rights">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">9. User Rights (DPDP Act, 2023)</h2>
                 <p className="mb-6">You have the legal right to:</p>
@@ -376,7 +376,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Cross-border Transfers */}
+              
               <section className="glass-card" id="transfers">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">10. Cross-Border Data Transfers</h2>
                 <p className="mb-4">Some services (hosting/backup/analytics) may store data outside India.</p>
@@ -388,7 +388,7 @@ export default function PrivacyPage() {
                 </ul>
               </section>
 
-              {/* Cookies */}
+              
               <section className="glass-card" id="cookies">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">11. Cookies (For Website Users)</h2>
                 <p className="mb-4">We use:</p>
@@ -400,7 +400,7 @@ export default function PrivacyPage() {
                 <p className="text-sm italic">You may disable cookies, but some features may not work.</p>
               </section>
 
-              {/* Third-party Links */}
+              
               <section className="glass-card" id="third-party">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">12. Third-Party Links</h2>
                 <p className="mb-4">upSosh is not responsible for:</p>
@@ -411,7 +411,7 @@ export default function PrivacyPage() {
                 <p className="text-sm italic">You must review those policies separately.</p>
               </section>
 
-              {/* Policy Updates */}
+              
               <section className="glass-card" id="updates">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">13. Updates to This Policy</h2>
                 <p className="mb-4">We may modify this Privacy Policy at any time.</p>
@@ -426,7 +426,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Grievance Officer */}
+              
               <section className="glass-card" id="grievance">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">14. Grievance Officer (Mandatory Under DPDP Act)</h2>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 p-6 rounded-xl">
@@ -443,7 +443,7 @@ export default function PrivacyPage() {
                 </div>
               </section>
 
-              {/* Contact */}
+              
               <section className="glass-card" id="contact">
                 <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">15. How to Contact Us</h2>
                 <div className="glass-card border-2 border-primary p-6">

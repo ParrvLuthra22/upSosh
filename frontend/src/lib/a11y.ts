@@ -1,10 +1,5 @@
 import { useEffect } from 'react';
 
-/**
- * Hook to trap focus within a container when active.
- * @param ref React ref to the container element
- * @param isActive Boolean indicating if the trap should be active
- */
 export const useFocusTrap = (ref: React.RefObject<HTMLElement | null>, isActive: boolean) => {
     useEffect(() => {
         if (!isActive || !ref.current) return;
@@ -33,7 +28,7 @@ export const useFocusTrap = (ref: React.RefObject<HTMLElement | null>, isActive:
 
         ref.current.addEventListener('keydown', handleTab);
 
-        // Focus the first element when activated
+        
         if (firstElement) {
             firstElement.focus();
         }
@@ -44,11 +39,6 @@ export const useFocusTrap = (ref: React.RefObject<HTMLElement | null>, isActive:
     }, [isActive, ref]);
 };
 
-/**
- * Hook to handle Escape key press.
- * @param handler Function to call when Escape is pressed
- * @param isActive Boolean indicating if the listener should be active
- */
 export const useEscapeKey = (handler: () => void, isActive: boolean = true) => {
     useEffect(() => {
         if (!isActive) return;

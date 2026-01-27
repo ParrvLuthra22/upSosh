@@ -85,7 +85,7 @@ const FeaturesSection = () => {
 
     return (
         <section ref={sectionRef} className="py-24 px-4 md:px-8 relative overflow-hidden">
-            {/* Background Elements */}
+            
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent pointer-events-none" />
 
             <div className="container mx-auto max-w-7xl">

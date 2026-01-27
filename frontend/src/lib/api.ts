@@ -33,7 +33,7 @@ export interface Booking {
     totalAmount: number;
     status: 'confirmed' | 'pending' | 'cancelled';
     paymentId?: string;
-    paymentProof?: string; // Base64 image for manual payment
+    paymentProof?: string; 
     customer?: {
         name: string;
         email: string;
@@ -168,7 +168,7 @@ export const api = {
 
         if (!res.ok) {
             const error = await res.json();
-            // Check for token expiration
+            
             if (res.status === 401 && error.reason?.includes('expired')) {
                 throw new Error('Session expired. Please log in again.');
             }
@@ -198,9 +198,9 @@ export const api = {
             console.log(`Calling PUT ${API_URL}/events/${eventId}`);
             console.log('Event data size:', JSON.stringify(event).length, 'bytes');
             
-            // Create abort controller for timeout
+            
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 30000); 
             
             const res = await fetch(`${API_URL}/events/${eventId}`, {
                 method: 'PUT',
@@ -245,7 +245,7 @@ export const api = {
     },
 
     getMe: async () => {
-        // Try to get token from localStorage
+        
         const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
         
@@ -274,7 +274,7 @@ export const api = {
                 credentials: 'include',
             });
             
-            // Check if response is JSON
+            
             const contentType = res.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Backend server is not responding. Please make sure the backend is running on https://upsosh-production.up.railway.app/api');
@@ -300,14 +300,14 @@ export const api = {
         hostBio?: string;
     }) => {
         try {
-            // Try to get token from localStorage as fallback
+            
             const storedUserData = localStorage.getItem('userData');
             let headers: Record<string, string> = { 'Content-Type': 'application/json' };
             
             if (storedUserData) {
                 try {
                     const userData = JSON.parse(storedUserData);
-                    // If we have a token stored, use it
+                    
                     const token = localStorage.getItem('token');
                     if (token) {
                         headers['Authorization'] = `Bearer ${token}`;
@@ -339,8 +339,8 @@ export const api = {
         }
     },
 
-    // DODO PAYMENTS INTEGRATION
-    // Creates a checkout session and returns the checkout URL
+    
+    
     createDodoCheckout: async (data: {
         items: Array<{ id: string; title: string; price: number; qty: number; }>;
         customer: { name: string; email: string; phone?: string; };
@@ -376,7 +376,7 @@ export const api = {
         return res.json();
     },
 
-    // Get payment status from Dodo
+    
     getDodoPaymentStatus: async (paymentId: string) => {
         const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};

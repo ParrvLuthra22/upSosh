@@ -40,12 +40,12 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
         const booking = await prisma.booking.create({
             data: {
-                userId: userId, // Use authenticated userId instead of from body
+                userId: userId, 
                 items: JSON.stringify(items || []),
                 totalAmount: Number(totalAmount),
                 status: status || 'pending',
                 paymentId,
-                paymentProof, // Add support for manual payment screenshot
+                paymentProof, 
                 customer: customer ? JSON.stringify(customer) : undefined
             }
         });
@@ -59,7 +59,6 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     }
 });
 
-// Confirm payment for a booking (after Dodo Payments success)
 router.patch('/:id/confirm-payment', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -70,14 +69,14 @@ router.patch('/:id/confirm-payment', authenticate, async (req: Request, res: Res
         const { id } = req.params;
         const { paymentId, status } = req.body;
 
-        // Find the booking and verify it belongs to the user
+        
         const existingBooking = await prisma.booking.findUnique({ where: { id } });
         
         if (!existingBooking) {
             return res.status(404).json({ error: 'Booking not found' });
         }
 
-        // Allow the booking owner or an admin to confirm
+        
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (existingBooking.userId !== userId && user?.role !== 'admin') {
             return res.status(403).json({ error: 'Not authorized to update this booking' });
@@ -99,7 +98,6 @@ router.patch('/:id/confirm-payment', authenticate, async (req: Request, res: Res
     }
 });
 
-// Get pending bookings (admin only)
 router.get('/pending', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -107,7 +105,7 @@ router.get('/pending', authenticate, async (req: Request, res: Response) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Get user and check if admin
+        
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user || user.role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });
@@ -118,15 +116,15 @@ router.get('/pending', authenticate, async (req: Request, res: Response) => {
             orderBy: { createdAt: 'desc' }
         });
 
-        // Parse items and remove large Base64 images from event data to reduce payload size
+        
         const sanitizedBookings = bookings.map(booking => {
             let items = [];
             try {
                 items = JSON.parse(booking.items);
-                // Remove or truncate large Base64 images from items
+                
                 items = items.map((item: any) => {
                     if (item.image && item.image.startsWith('data:image')) {
-                        // Replace with placeholder or truncate
+                        
                         return { ...item, image: '[Base64 Image Removed]' };
                     }
                     return item;
@@ -148,7 +146,6 @@ router.get('/pending', authenticate, async (req: Request, res: Response) => {
     }
 });
 
-// Approve payment (admin only)
 router.patch('/:id/approve', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -156,7 +153,7 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Check if admin
+        
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user || user.role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });
@@ -175,7 +172,6 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
     }
 });
 
-// Reject payment (admin only)
 router.patch('/:id/reject', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -183,7 +179,7 @@ router.patch('/:id/reject', authenticate, async (req: Request, res: Response) =>
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        // Check if admin
+        
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user || user.role !== 'admin') {
             return res.status(403).json({ error: 'Admin access required' });

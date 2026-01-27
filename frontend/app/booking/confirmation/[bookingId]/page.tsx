@@ -16,17 +16,17 @@ export default function ConfirmationPage() {
     useEffect(() => {
         const fetchBooking = async () => {
             try {
-                // In a real app, we'd fetch by ID. Since our mock API might not have a direct "get by ID" 
-                // that is efficient if we didn't implement it, we'll fetch all and find (or implement getBookingById).
-                // Actually, json-server supports /bookings/:id automatically.
+                
+                
+                
                 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://upsosh-production.up.railway.app';
                 const res = await fetch(`${API_URL}/api/bookings/${params.bookingId}`);
                 if (!res.ok) throw new Error('Booking not found');
                 const data = await res.json();
                 setBooking(data);
 
-                // Confetti Animation
-                // Simple particle system using GSAP
+                
+                
                 const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
                 const container = document.getElementById('confetti-container');
                 if (container) {
@@ -88,7 +88,7 @@ export default function ConfirmationPage() {
             <div id="confetti-container" className="absolute inset-0 pointer-events-none" />
 
             <div className="container mx-auto max-w-2xl text-center space-y-8 relative z-10">
-                {/* Success Icon - Different for pending vs confirmed */}
+                
                 <div className={`w-24 h-24 ${booking.status === 'confirmed' ? 'bg-green-500' : 'bg-yellow-500'} rounded-full flex items-center justify-center mx-auto shadow-xl ${booking.status === 'confirmed' ? 'shadow-green-500/30' : 'shadow-yellow-500/30'}`}>
                     {booking.status === 'confirmed' ? (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@ export default function ConfirmationPage() {
                     </p>
                 </div>
 
-                {/* Pending Approval Message */}
+                
                 {booking.status === 'pending' && (
                     <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 space-y-3">
                         <div className="flex items-center justify-center gap-2 text-yellow-500">

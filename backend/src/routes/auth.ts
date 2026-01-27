@@ -5,9 +5,6 @@ import prisma from '../lib/prisma';
 
 const router = Router();
 
-
-
-// Helper to generate token
 const generateToken = (userId: string) => {
     const JWT_SECRET = process.env.JWT_SECRET;
     if (!JWT_SECRET) {
@@ -45,9 +42,9 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true, // Always true for production
-            sameSite: 'none', // Required for cross-origin cookies
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            secure: true, 
+            sameSite: 'none', 
+            maxAge: 7 * 24 * 60 * 60 * 1000 
         });
 
         return res.status(201).json({
@@ -63,14 +60,14 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
                 hostBio: null,
                 hostVerified: false
             },
-            token, // Returning token in body for debugging visibility
+            token, 
             message: 'User created successfully'
         });
     } catch (error: any) {
         console.error('Signup error details:', {
             message: error.message,
             stack: error.stack,
-            code: error.code // Log Prisma error codes if available
+            code: error.code 
         });
         return res.status(500).json({ message: 'Internal server error', details: error.message });
 
@@ -112,9 +109,9 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
         console.log('Setting cookie...');
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true, // Always true for production
-            sameSite: 'none', // Required for cross-origin cookies
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            secure: true, 
+            sameSite: 'none', 
+            maxAge: 7 * 24 * 60 * 60 * 1000 
         });
         console.log('Cookie set');
 
@@ -132,7 +129,7 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
                 hostBio: null,
                 hostVerified: false
             },
-            token, // Returning token in body for debugging visibility
+            token, 
             message: 'Login successful'
         });
     } catch (error: any) {
@@ -151,10 +148,10 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
 
 router.get('/me', async (req: Request, res: Response): Promise<any> => {
     try {
-        // Try to get token from cookie first
+        
         let token = req.cookies.token;
         
-        // If no cookie, check Authorization header
+        
         if (!token && req.headers.authorization) {
             const authHeader = req.headers.authorization;
             if (authHeader.startsWith('Bearer ')) {
@@ -192,7 +189,7 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Return user with all fields from database
+        
         return res.json({ user });
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
@@ -201,10 +198,10 @@ router.get('/me', async (req: Request, res: Response): Promise<any> => {
 
 router.put('/me', async (req: Request, res: Response): Promise<any> => {
     try {
-        // Try to get token from cookie first
+        
         let token = req.cookies.token;
         
-        // If no cookie, check Authorization header
+        
         if (!token && req.headers.authorization) {
             const authHeader = req.headers.authorization;
             if (authHeader.startsWith('Bearer ')) {
@@ -224,7 +221,7 @@ router.put('/me', async (req: Request, res: Response): Promise<any> => {
 
         const { name, bio, avatar, isHost, hostName, hostBio } = req.body;
 
-        // Build update data with all provided fields
+        
         const updateData: any = {};
         if (name !== undefined) updateData.name = name;
         if (bio !== undefined) updateData.bio = bio;
@@ -251,7 +248,7 @@ router.put('/me', async (req: Request, res: Response): Promise<any> => {
             }
         });
 
-        // Return the updated user from database
+        
         return res.json({ user });
     } catch (error) {
         console.error('Update profile error:', error);
@@ -268,7 +265,7 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<any>
     try {
         const { email, newPassword, confirmPassword } = req.body;
 
-        // Validation
+        
         if (!email || !newPassword || !confirmPassword) {
             return res.status(400).json({ message: 'All fields are required' });
         }
@@ -281,7 +278,7 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<any>
             return res.status(400).json({ message: 'Password must be at least 8 characters long' });
         }
 
-        // Check if user exists
+        
         const user = await prisma.user.findUnique({
             where: { email },
         });
@@ -290,10 +287,10 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<any>
             return res.status(404).json({ message: 'User not found with this email address' });
         }
 
-        // Hash the new password
+        
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update the password using Prisma
+        
         await prisma.user.update({
             where: { email },
             data: { password: hashedPassword },

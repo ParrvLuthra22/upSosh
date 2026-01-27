@@ -1,4 +1,4 @@
-/// <reference types="react" />
+
 import { ThreeElements } from '@react-three/fiber'
 
 declare global {

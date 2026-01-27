@@ -28,7 +28,7 @@ export default async function Image() {
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    {/* Simple Logo Representation */}
+                    
                     <div style={{
                         width: '100px',
                         height: '100px',

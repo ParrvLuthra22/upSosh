@@ -70,7 +70,7 @@ export default function FeaturesSection() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {/* Content */}
+              
               <motion.div
                 className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
@@ -113,7 +113,7 @@ export default function FeaturesSection() {
                 </ul>
               </motion.div>
 
-              {/* Phone Mockup */}
+              
               <motion.div
                 className={`relative ${index % 2 === 1 ? 'lg:order-1' : ''}`}
                 style={{
@@ -130,12 +130,12 @@ export default function FeaturesSection() {
                   whileHover={{ scale: 1.05, rotateY: 5 }}
                   style={{ transformStyle: 'preserve-3d' }}
                 >
-                  {/* Phone Frame */}
+                  
                   <div className="relative bg-black border border-white/20 rounded-[3rem] p-3">
-                    {/* Notch */}
+                    
                     <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-full z-10" />
 
-                    {/* Screen */}
+                    
                     <div className="relative bg-black border border-white/10 rounded-[2.5rem] overflow-hidden aspect-[9/19.5]">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <motion.div
@@ -156,7 +156,7 @@ export default function FeaturesSection() {
                     </div>
                   </div>
 
-                  {/* Floating Elements - mustard accent */}
+                  
                   <motion.div
                     className="absolute -top-10 -right-10 w-24 h-24 bg-[#D4A017]/10 rounded-full blur-xl"
                     animate={{

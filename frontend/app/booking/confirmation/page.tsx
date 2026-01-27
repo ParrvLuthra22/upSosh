@@ -1,13 +1,11 @@
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import client component with no SSR
 const ConfirmationContent = dynamic(() => import('./ConfirmationContent'), {
     ssr: false,
     loading: () => <LoadingFallback />
 });
 
-// Loading fallback for Suspense
 function LoadingFallback() {
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">

@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
 function ResetPasswordContent() {
@@ -19,7 +18,7 @@ function ResetPasswordContent() {
     const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
-        // Get token and email from URL params
+        
         const tokenParam = searchParams.get('token');
         const emailParam = searchParams.get('email');
         
@@ -30,7 +29,7 @@ function ResetPasswordContent() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
+        
         if (password.length < 8) {
             setStatus('error');
             setMessage('Password must be at least 8 characters long');
@@ -46,20 +45,20 @@ function ResetPasswordContent() {
         setStatus('resetting');
 
         try {
-            // TODO: In production, this would call your backend API
-            // const response = await fetch('/api/auth/reset-password', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ token, email, password }),
-            // });
+            
+            
+            
+            
+            
+            
 
-            // For now, simulate success
+            
             await new Promise(resolve => setTimeout(resolve, 1500));
             
             setStatus('success');
             setMessage('Your password has been reset successfully!');
             
-            // Redirect to login after 2 seconds
+            
             setTimeout(() => {
                 router.push('/login');
             }, 2000);

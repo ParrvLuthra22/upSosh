@@ -23,7 +23,7 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
             const user = JSON.parse(userData);
             const allEvents = await api.getEvents();
             
-            // Filter events created by this user
+            
             const userEvents = allEvents.filter((event: Event) => event.hostId === user.id);
             setMyEvents(userEvents);
         } catch (error) {
@@ -39,7 +39,7 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
         try {
             await api.deleteEvent(eventId);
             alert('Event deleted successfully!');
-            loadMyEvents(); // Refresh list
+            loadMyEvents(); 
         } catch (error) {
             console.error('Failed to delete event:', error);
             alert('Failed to delete event');

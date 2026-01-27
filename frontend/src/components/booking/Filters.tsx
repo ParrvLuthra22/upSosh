@@ -14,7 +14,7 @@ const Filters = () => {
         <div className="bg-background border border-border p-6 space-y-8 sticky top-24">
             <h3 className="text-lg font-medium tracking-tight text-foreground">Filter Events</h3>
 
-            {/* Sort Dropdown */}
+            
             <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-wider text-foreground/50">Sort By</label>
                 <div className="relative">
@@ -35,7 +35,7 @@ const Filters = () => {
                 </div>
             </div>
 
-            {/* Type Filter */}
+            
             <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-wider text-foreground/50">Event Type</label>
                 <div className="flex flex-col gap-2">
@@ -60,7 +60,7 @@ const Filters = () => {
                 </div>
             </div>
 
-            {/* Superhost Toggle */}
+            
             <div className="flex items-center justify-between pt-4 border-t border-border">
                 <label className="text-sm font-medium text-foreground">Superhost Only</label>
                 <button
@@ -77,7 +77,7 @@ const Filters = () => {
                 </button>
             </div>
 
-            {/* Apply Button */}
+            
             <button
                 onClick={handleApply}
                 className="w-full py-3 px-4 bg-foreground text-background font-medium hover:opacity-90 transition-opacity"

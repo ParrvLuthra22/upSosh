@@ -8,7 +8,6 @@ import { api } from '@/src/lib/api';
 import { generateOrganizationSchema } from '@/src/lib/structuredData';
 import Link from 'next/link';
 
-// Simple text block component for editorial content
 const EditorialBlock = ({ title, children }: { title: string, children: React.ReactNode }) => (
   <div className="py-24 border-t border-border">
     <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
@@ -27,7 +26,7 @@ const EditorialBlock = ({ title, children }: { title: string, children: React.Re
 export default function Home() {
   const { setEvents } = useBookingStore();
 
-  // Load events on mount
+  
   useEffect(() => {
     const loadEvents = async () => {
       try {
@@ -49,7 +48,7 @@ export default function Home() {
 
       <Hero />
 
-      {/* Events Section - "Explore" */}
+      
       <section className="py-12 px-6">
         <div className="container mx-auto">
           <div className="mb-12 flex items-end justify-between border-b border-border pb-6">
@@ -69,7 +68,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Editorial Content Blocks - Replacing Features Grid */}
+      
       <section className="mt-12">
         <EditorialBlock title="Curated for Quality">
           <p>

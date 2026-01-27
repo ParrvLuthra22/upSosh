@@ -30,8 +30,8 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
         }
     }, [isOpen]);
 
-    // Assuming booking has items, we'll display the first item as the main ticket for now
-    // or iterate if multiple. For this demo, let's show the first event.
+    
+    
     const event = booking.items[0];
     const qrValue = JSON.stringify({ bookingId: booking.id, eventId: event.id, user: booking.customer?.email || 'guest' });
 
@@ -46,14 +46,14 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
                 ref={ticketRef}
                 className="relative w-full max-w-md bg-white text-black rounded-3xl shadow-2xl overflow-hidden transform perspective-1000"
             >
-                {/* Ticket Header */}
+                
                 <div className="bg-primary p-6 text-white text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
                     <h2 className="text-2xl font-heading font-bold relative z-10">Digital Ticket</h2>
                     <p className="text-sm opacity-80 relative z-10">Scan at entry</p>
                 </div>
 
-                {/* Ticket Body */}
+                
                 <div className="p-8 flex flex-col items-center space-y-6">
                     <div className="text-center space-y-2">
                         <h3 className="text-xl font-bold">{event.title}</h3>
@@ -104,7 +104,7 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
                     </div>
                 </div>
 
-                {/* Ticket Tear-off Effect */}
+                
                 <div className="relative h-6 bg-gray-50">
                     <div className="absolute -top-3 left-0 w-full h-6 bg-[radial-gradient(circle,transparent_0.5rem,white_0.5rem)] bg-[length:1rem_1rem] bg-repeat-x"></div>
                 </div>

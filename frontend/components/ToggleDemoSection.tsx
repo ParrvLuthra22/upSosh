@@ -12,7 +12,7 @@ export default function ToggleDemoSection() {
   const [mode, setMode] = useState<Mode>('informal');
 
   useEffect(() => {
-    // GSAP background transition
+    
     gsap.to('.toggle-background', {
       backgroundColor: mode === 'formal' ? '#0B1020' : '#E7F1FF',
       duration: 0.8,
@@ -63,7 +63,7 @@ export default function ToggleDemoSection() {
           </p>
         </motion.div>
 
-        {/* Toggle Switch - VT323 pixel font for labels */}
+        
         <motion.div
           className="flex justify-center mb-16"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -72,7 +72,7 @@ export default function ToggleDemoSection() {
           transition={{ delay: 0.2 }}
         >
           <div className="relative flex items-center bg-black border border-white/20 rounded-full p-1">
-            {/* Background slider */}
+            
             <motion.div
               className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#D4A017] rounded-full"
               animate={{
@@ -117,7 +117,7 @@ export default function ToggleDemoSection() {
           </div>
         </motion.div>
 
-        {/* Content Display */}
+        
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}
@@ -128,7 +128,7 @@ export default function ToggleDemoSection() {
             className="max-w-5xl mx-auto"
           >
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left - Content */}
+              
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -170,7 +170,7 @@ export default function ToggleDemoSection() {
                 </div>
               </motion.div>
 
-              {/* Right - Visual */}
+              
               <motion.div
                 className="relative"
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -178,7 +178,7 @@ export default function ToggleDemoSection() {
                 transition={{ delay: 0.3 }}
               >
                 <div className="relative aspect-square">
-                  {/* Central Circle */}
+                  
                   <motion.div
                     className={`absolute inset-0 rounded-full bg-gradient-to-br ${currentMode.color} opacity-20 blur-3xl`}
                     animate={{
@@ -192,7 +192,7 @@ export default function ToggleDemoSection() {
                     }}
                   />
 
-                  {/* Floating Cards */}
+                  
                   {[0, 1, 2, 3].map((i) => (
                     <motion.div
                       key={i}
@@ -224,7 +224,7 @@ export default function ToggleDemoSection() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Bottom Info */}
+        
         <motion.div
           className="text-center mt-20 glass-effect rounded-3xl p-8 max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 30 }}

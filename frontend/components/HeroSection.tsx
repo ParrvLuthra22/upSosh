@@ -9,7 +9,7 @@ export default function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Parallax effect
+    
     const handleMouseMove = (e: MouseEvent) => {
       if (!heroRef.current) return;
       const { clientX, clientY } = e;
@@ -33,7 +33,7 @@ export default function HeroSection() {
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-light-blue via-white to-light-blue dark:from-dark-navy dark:via-dark-black dark:to-dark-navy"
     >
-      {/* Animated Background Elements */}
+      
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="parallax-element absolute top-20 left-10 w-72 h-72 bg-light-primary/10 dark:bg-dark-neon/10 rounded-full blur-3xl"
@@ -63,7 +63,7 @@ export default function HeroSection() {
 
       <Container className="relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+          
           <motion.div
             className="text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
@@ -121,7 +121,7 @@ export default function HeroSection() {
               </Button>
             </motion.div>
 
-            {/* Stats */}
+            
             <motion.div
               className="mt-12 grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0"
               initial={{ opacity: 0, y: 20 }}
@@ -143,7 +143,7 @@ export default function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right Content - 3D Logo Placeholder */}
+          
           <motion.div
             className="relative flex items-center justify-center"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -151,7 +151,7 @@ export default function HeroSection() {
             transition={{ duration: 1, delay: 0.3 }}
           >
             <div className="relative w-full max-w-lg aspect-square">
-              {/* 3D Spline Integration Placeholder */}
+              
               <div className="absolute inset-0 flex items-center justify-center">
                 <motion.div
                   className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-blue-purple glow-effect flex items-center justify-center"
@@ -173,7 +173,7 @@ export default function HeroSection() {
                 </motion.div>
               </div>
 
-              {/* Floating Elements */}
+              
               <motion.div
                 className="absolute top-10 right-10 w-20 h-20 bg-light-indigo/20 dark:bg-dark-purple/20 rounded-2xl glass-effect"
                 animate={{
@@ -203,7 +203,7 @@ export default function HeroSection() {
         </div>
       </Container>
 
-      {/* Scroll Indicator */}
+      
       <motion.div
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
         initial={{ opacity: 0, y: -20 }}

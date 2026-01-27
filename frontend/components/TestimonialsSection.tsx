@@ -56,7 +56,7 @@ export default function TestimonialsSection() {
 
   return (
     <Section className="relative overflow-hidden bg-black">
-      {/* Parallax Background Layers */}
+      
       <div className="absolute inset-0">
         <motion.div
           className="absolute top-0 left-0 w-full h-full"
@@ -104,7 +104,7 @@ export default function TestimonialsSection() {
           </p>
         </motion.div>
 
-        {/* Carousel */}
+        
         <div className="relative max-w-5xl mx-auto">
           <div className="relative overflow-hidden">
             <motion.div
@@ -124,12 +124,12 @@ export default function TestimonialsSection() {
                     className="bg-black border border-white/20 rounded-2xl p-12 relative"
                     whileHover={{ scale: 1.02 }}
                   >
-                    {/* Quote Icon */}
+                    
                     <div className="absolute top-8 left-8 text-6xl text-[#D4A017]/20">
                       "
                     </div>
 
-                    {/* Stars */}
+                    
                     <div className="flex justify-center mb-6">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <motion.svg
@@ -146,12 +146,12 @@ export default function TestimonialsSection() {
                       ))}
                     </div>
 
-                    {/* Content */}
+                    
                     <p className="text-xl md:text-2xl text-center text-white mb-8 leading-relaxed font-body" style={{ fontFamily: 'var(--font-body)', lineHeight: '1.7' }}>
                       {testimonial.content}
                     </p>
 
-                    {/* Author */}
+                    
                     <div className="flex items-center justify-center space-x-4">
                       <motion.div
                         className="w-16 h-16 rounded-full bg-[#D4A017] flex items-center justify-center text-3xl"
@@ -175,7 +175,7 @@ export default function TestimonialsSection() {
             </motion.div>
           </div>
 
-          {/* Navigation Dots */}
+          
           <div className="flex justify-center mt-8 space-x-3">
             {testimonials.map((_, index) => (
               <motion.button
@@ -191,7 +191,7 @@ export default function TestimonialsSection() {
             ))}
           </div>
 
-          {/* Navigation Arrows */}
+          
           <motion.button
             onClick={() => setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)}
             className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-black border border-white/20 p-4 rounded-full hover:border-[#D4A017] text-white"
@@ -214,7 +214,7 @@ export default function TestimonialsSection() {
           </motion.button>
         </div>
 
-        {/* Stats */}
+        
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 30 }}

@@ -35,20 +35,20 @@ router.post('/', async (req: Request, res: Response) => {
     try {
         const { title, type, date, time, venue, price, description, image, tags, isSuperhost, hostId } = req.body;
         
-        // Validate required fields
+        
         if (!title || !type || !date || !time || !venue || !description) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
         
-        // Check if host exists, if not create from user data
+        
         let host = await prisma.host.findUnique({ where: { id: hostId } });
         
         if (!host) {
-            // Find user to get their details
+            
             const user = await prisma.user.findUnique({ where: { id: hostId } });
             
             if (user && user.isHost) {
-                // Create host profile from user data
+                
                 host = await prisma.host.create({
                     data: {
                         id: hostId,
@@ -66,7 +66,7 @@ router.post('/', async (req: Request, res: Response) => {
             }
         }
         
-        // Create event with real data
+        
         const event = await prisma.event.create({
             data: {
                 title,
@@ -101,7 +101,7 @@ router.put('/:id', async (req: Request, res: Response): Promise<any> => {
         const { id } = req.params;
         const { title, type, date, time, venue, price, description, image, tags, isSuperhost } = req.body;
 
-        // Check if event exists
+        
         const existingEvent = await prisma.event.findUnique({
             where: { id },
             include: { host: true }
@@ -111,7 +111,7 @@ router.put('/:id', async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        // Update event
+        
         const updatedEvent = await prisma.event.update({
             where: { id },
             data: {
@@ -145,7 +145,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
 
-        // Check if event exists
+        
         const existingEvent = await prisma.event.findUnique({
             where: { id }
         });
@@ -154,7 +154,7 @@ router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        // Delete event
+        
         await prisma.event.delete({
             where: { id }
         });

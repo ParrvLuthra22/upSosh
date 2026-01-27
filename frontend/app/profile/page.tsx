@@ -32,7 +32,7 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        // Check if user is logged in via localStorage
+        
         const storedUser = localStorage.getItem('user');
         if (!storedUser) {
             router.push('/login');
@@ -51,7 +51,7 @@ export default function ProfilePage() {
                 const user = userData.user;
                 setUser(user);
                 
-                // Update localStorage with fresh data
+                
                 localStorage.setItem('userData', JSON.stringify(user));
                 localStorage.setItem('user', user.name);
                 
@@ -66,10 +66,10 @@ export default function ProfilePage() {
                     hostVerified: user.hostVerified || false
                 });
             } else if (userData) {
-                // Direct user object
+                
                 setUser(userData);
                 
-                // Update localStorage
+                
                 localStorage.setItem('userData', JSON.stringify(userData));
                 localStorage.setItem('user', userData.name);
                 
@@ -84,7 +84,7 @@ export default function ProfilePage() {
                     hostVerified: userData.hostVerified || false
                 });
             } else {
-                // Fallback to localStorage data
+                
                 const storedUserData = localStorage.getItem('userData');
                 if (storedUserData) {
                     const storedUser = JSON.parse(storedUserData);
@@ -105,7 +105,7 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error('Failed to load user data:', error);
-            // Fallback to localStorage
+            
             const storedUserData = localStorage.getItem('userData');
             if (storedUserData) {
                 try {
@@ -151,7 +151,7 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error('Failed to load tickets:', error);
-            // Set empty array on error instead of crashing
+            
             setTickets([]);
         }
     };
@@ -170,14 +170,14 @@ export default function ProfilePage() {
             });
             
             if (result && result.user) {
-                // Update local state
+                
                 setUser(result.user);
                 
-                // Update localStorage with all user data
+                
                 localStorage.setItem('user', result.user.name);
                 localStorage.setItem('userData', JSON.stringify(result.user));
                 
-                // Update profile data state with the saved values
+                
                 setProfileData({
                     name: result.user.name || '',
                     email: result.user.email || '',
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                     hostVerified: result.user.hostVerified || false
                 });
                 
-                // Dispatch storage event to update UI components
+                
                 window.dispatchEvent(new Event('storage'));
             }
             
@@ -216,7 +216,7 @@ export default function ProfilePage() {
         
         setIsSaving(true);
         try {
-            // In a real app, this would call a password change API
+            
             alert('Password changed successfully!');
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (error: any) {
@@ -233,15 +233,15 @@ export default function ProfilePage() {
             console.error('Logout error:', error);
         }
         
-        // Clear all authentication data
+        
         localStorage.removeItem('user');
         localStorage.removeItem('userData');
         localStorage.removeItem('token');
         
-        // Dispatch storage event to update UI
+        
         window.dispatchEvent(new Event('storage'));
         
-        // Force full page reload to clear any cached state
+        
         window.location.replace('/');
     };
 
@@ -259,14 +259,14 @@ export default function ProfilePage() {
     return (
         <div className="min-h-screen pt-24 pb-12 px-4">
             <div className="container mx-auto max-w-6xl">
-                {/* Header */}
+                
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold mb-2">My Profile</h1>
                     <p className="text-text-secondary">Manage your account settings and preferences</p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Sidebar */}
+                    
                     <div className="lg:col-span-1">
                         <div className="bg-surface rounded-2xl p-6 border border-white/10 sticky top-24">
                             <div className="flex flex-col items-center mb-6">
@@ -333,9 +333,9 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Main Content */}
+                    
                     <div className="lg:col-span-3">
-                        {/* Profile Tab */}
+                        
                         {activeTab === 'profile' && (
                             <div className="bg-surface rounded-2xl p-8 border border-white/10">
                                 <div className="flex justify-between items-center mb-6">
@@ -351,7 +351,7 @@ export default function ProfilePage() {
                                 </div>
 
                                 <form onSubmit={handleProfileUpdate} className="space-y-6">
-                                    {/* Basic Info */}
+                                    
                                     <div>
                                         <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
                                         <div className="space-y-4">
@@ -389,7 +389,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
 
-                                    {/* Host Settings */}
+                                    
                                     <div className="border-t border-white/10 pt-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <div>
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                             </div>
                         )}
 
-                        {/* Tickets Tab */}
+                        
                         {activeTab === 'tickets' && (
                             <div className="bg-surface rounded-2xl p-8 border border-white/10">
                                 <h2 className="text-2xl font-bold mb-6">My Tickets</h2>
@@ -503,7 +503,7 @@ export default function ProfilePage() {
                                                     </span>
                                                 </div>
                                                 
-                                                {/* Pending approval message */}
+                                                
                                                 {ticket.status === 'pending' && (
                                                     <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                                                         <div className="flex items-center gap-2 text-yellow-500 text-sm">
@@ -528,7 +528,7 @@ export default function ProfilePage() {
                                                     <span className="text-xl font-bold text-primary">₹{ticket.totalAmount}</span>
                                                 </div>
                                                 
-                                                {/* View Ticket button - only for confirmed */}
+                                                
                                                 {ticket.status === 'confirmed' && (
                                                     <div className="mt-4">
                                                         <button
@@ -546,7 +546,7 @@ export default function ProfilePage() {
                             </div>
                         )}
 
-                        {/* My Events Tab */}
+                        
                         {activeTab === 'events' && (
                             <div className="bg-surface rounded-2xl p-8 border border-white/10">
                                 <h2 className="text-2xl font-bold mb-6">My Events</h2>
@@ -574,7 +574,7 @@ export default function ProfilePage() {
                                         </div>
                                         <MyEventsList 
                                             onEdit={(event: any) => {
-                                                // Navigate to host page with event data
+                                                
                                                 router.push(`/host?edit=${event.id}`);
                                             }}
                                         />
@@ -583,7 +583,7 @@ export default function ProfilePage() {
                             </div>
                         )}
 
-                        {/* Security Tab */}
+                        
                         {activeTab === 'security' && (
                             <div className="bg-surface rounded-2xl p-8 border border-white/10">
                                 <h2 className="text-2xl font-bold mb-6">Security Settings</h2>

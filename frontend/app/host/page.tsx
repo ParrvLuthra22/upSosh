@@ -7,7 +7,6 @@ import MyEventsList from '@/src/components/host/MyEventsList';
 import AIAssistant from '@/src/components/host/AIAssistant';
 import { api, Event } from '@/src/lib/api';
 
-// Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
 function HostPageContent() {
@@ -23,7 +22,7 @@ function HostPageContent() {
     }, []);
 
     useEffect(() => {
-        // Check if there's an edit parameter in the URL
+        
         const editId = searchParams?.get('edit');
         if (editId && isHost) {
             loadEventForEdit(editId);
@@ -45,17 +44,17 @@ function HostPageContent() {
 
     const checkHostStatus = async () => {
         try {
-            // First, check if user is logged in at all
+            
             const storedUser = localStorage.getItem('user');
             const storedUserData = localStorage.getItem('userData');
             
             if (!storedUser && !storedUserData) {
-                // Not logged in at all
+                
                 router.push('/login');
                 return;
             }
 
-            // Check localStorage first for host status
+            
             if (storedUserData) {
                 try {
                     const userData = JSON.parse(storedUserData);
@@ -64,7 +63,7 @@ function HostPageContent() {
                         setIsLoading(false);
                         return;
                     } else {
-                        // User is logged in but not a host
+                        
                         setIsHost(false);
                         setIsLoading(false);
                         return;
@@ -74,32 +73,32 @@ function HostPageContent() {
                 }
             }
 
-            // Try to fetch from API
+            
             try {
                 const result = await api.getMe();
                 if (result && result.user) {
-                    // Update localStorage with fresh data
+                    
                     localStorage.setItem('userData', JSON.stringify(result.user));
                     setIsHost(result.user.isHost || false);
                 } else {
-                    // API call failed but user is logged in locally
-                    // Default to not host if we can't verify
+                    
+                    
                     setIsHost(false);
                 }
             } catch (apiError) {
                 console.error('API error:', apiError);
-                // API failed, but user exists in localStorage
-                // Default to not host for safety
+                
+                
                 setIsHost(false);
             }
         } catch (error) {
             console.error('Failed to check host status:', error);
-            // If there's any error, check if user is at least logged in
+            
             const storedUser = localStorage.getItem('user');
             if (!storedUser) {
                 router.push('/login');
             } else {
-                // User is logged in, but default to not host
+                
                 setIsHost(false);
             }
         } finally {
@@ -177,7 +176,7 @@ function HostPageContent() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
-                    {/* Left Column: Event Creation Form */}
+                    
                     <div className="w-full">
                         <HostEventForm 
                             eventToEdit={editingEvent} 
@@ -196,13 +195,13 @@ function HostPageContent() {
                         )}
                     </div>
 
-                    {/* Right Column: AI Assistant */}
+                    
                     <div className="w-full sticky top-24">
                         <AIAssistant />
                     </div>
                 </div>
 
-                {/* My Events List */}
+                
                 <div className="mt-12">
                     <MyEventsList 
                         key={refreshKey}

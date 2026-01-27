@@ -45,7 +45,7 @@ export default function WhatIsUpSoshSection() {
 
   return (
     <Section id="what-is-upsosh" className="relative overflow-hidden bg-white dark:bg-dark-black">
-      {/* Background Gradient */}
+      
       <div className="absolute inset-0 bg-gradient-to-br from-light-blue/30 via-transparent to-light-blue/30 dark:from-dark-navy/50 dark:via-transparent dark:to-dark-purple/20" />
 
       <Container className="relative z-10">
@@ -105,12 +105,12 @@ export default function WhatIsUpSoshSection() {
                   perspective: '1000px',
                 }}
               >
-                {/* Gradient Background */}
+                
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${event.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
                 />
 
-                {/* Icon */}
+                
                 <motion.div
                   className="text-6xl mb-6"
                   animate={{
@@ -122,7 +122,7 @@ export default function WhatIsUpSoshSection() {
                   {event.icon}
                 </motion.div>
 
-                {/* Content */}
+                
                 <h3 className="text-2xl font-bold mb-4 text-light-text dark:text-dark-text">
                   {event.title}
                 </h3>
@@ -130,7 +130,7 @@ export default function WhatIsUpSoshSection() {
                   {event.description}
                 </p>
 
-                {/* Decorative Elements */}
+                
                 <motion.div
                   className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-light-primary/10 to-transparent dark:from-dark-neon/10 rounded-full blur-2xl"
                   animate={{
@@ -148,7 +148,7 @@ export default function WhatIsUpSoshSection() {
                   transition={{ duration: 0.3 }}
                 />
 
-                {/* Hover Arrow */}
+                
                 <motion.div
                   className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity"
                   initial={{ x: -10 }}
@@ -170,7 +170,7 @@ export default function WhatIsUpSoshSection() {
                 </motion.div>
               </motion.div>
 
-              {/* 3D Shadow Effect */}
+              
               <div
                 className={`absolute inset-0 bg-gradient-to-br ${event.color} opacity-20 blur-xl -z-10 transition-all duration-300 ${hoveredCard === index ? 'scale-110' : 'scale-100'
                   }`}
@@ -180,7 +180,7 @@ export default function WhatIsUpSoshSection() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
+        
         <motion.div
           className="text-center mt-16"
           initial={{ opacity: 0, y: 30 }}

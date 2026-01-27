@@ -326,7 +326,7 @@ export default function RefundPage() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white">
-            {/* Hero Section */}
+            
             <section className="pt-32 pb-16 px-4">
                 <div className="container mx-auto max-w-4xl text-center">
                     <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -341,7 +341,7 @@ export default function RefundPage() {
                 </div>
             </section>
 
-            {/* Content Sections */}
+            
             <section className="pb-20 px-4">
                 <div className="container mx-auto max-w-4xl space-y-12">
                     {sections.map((section, index) => (
@@ -358,14 +358,14 @@ export default function RefundPage() {
                         </div>
                     ))}
 
-                    {/* Agreement Notice */}
+                    
                     <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-3xl p-8 border border-purple-500/20">
                         <p className="text-gray-700 dark:text-gray-300 text-lg">
                             <strong>Agreement:</strong> By purchasing any ticket, listing events, or accessing our Platform, you ("User", "Attendee", "Host", "Organizer") agree to the terms outlined in this Refund & Cancellation Policy.
                         </p>
                     </div>
 
-                    {/* Contact Card */}
+                    
                     <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl p-8 text-white text-center">
                         <h3 className="text-2xl font-bold mb-4">Need Help with a Refund?</h3>
                         <p className="mb-6 text-purple-100">

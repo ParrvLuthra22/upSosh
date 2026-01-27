@@ -17,14 +17,14 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         venue: '',
         price: 0,
         description: '',
-        image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', // Default event image
+        image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', 
         menu: [] as string[],
     });
     const [menuItem, setMenuItem] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imagePreview, setImagePreview] = useState('https://images.unsplash.com/photo-1492684223066-81342ee5ff30');
 
-    // Load event data when editing
+    
     useEffect(() => {
         if (eventToEdit) {
             setFormData({
@@ -50,13 +50,13 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Validate file size (max 5MB)
+            
             if (file.size > 5 * 1024 * 1024) {
                 alert('Image size should be less than 5MB');
                 return;
             }
 
-            // Validate file type
+            
             if (!file.type.startsWith('image/')) {
                 alert('Please upload an image file');
                 return;
@@ -88,7 +88,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         setIsSubmitting(true);
         try {
             if (eventToEdit) {
-                // Update existing event
+                
                 console.log('Updating event:', eventToEdit.id, formData);
                 const updateData = {
                     ...formData,
@@ -101,7 +101,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 alert('Event updated successfully! 🎉');
                 if (onEventSaved) onEventSaved();
             } else {
-                // Create new event
+                
                 const userData = localStorage.getItem('userData');
                 if (!userData) {
                     throw new Error('Please log in to create events');
@@ -121,7 +121,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 console.log('Event created successfully:', response);
                 alert('Event created successfully! 🎉');
 
-                // Reset form
+                
                 setFormData({
                     title: '',
                     type: 'formal',
@@ -151,7 +151,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 {eventToEdit ? 'Edit Your Event' : 'Create Your Event'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Info */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-text-secondary">Event Title</label>
@@ -179,7 +179,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     </div>
                 </div>
 
-                {/* Date & Time */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-text-secondary">Date</label>
@@ -205,7 +205,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     </div>
                 </div>
 
-                {/* Venue & Price */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-text-secondary">Venue</label>
@@ -233,7 +233,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     </div>
                 </div>
 
-                {/* Description */}
+                
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-text-secondary">Description</label>
                     <textarea
@@ -247,11 +247,11 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     />
                 </div>
 
-                {/* Event Image Upload */}
+                
                 <div className="space-y-4">
                     <label className="text-sm font-medium text-text-secondary">Event Image</label>
                     <div className="flex flex-col gap-4">
-                        {/* Image Preview */}
+                        
                         <div className="relative w-full h-64 rounded-xl overflow-hidden bg-surface-highlight">
                             <img
                                 src={imagePreview}
@@ -260,7 +260,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             />
                         </div>
 
-                        {/* Upload Buttons */}
+                        
                         <div className="flex gap-4">
                             <label className="flex-1 cursor-pointer">
                                 <div className="w-full py-3 px-4 bg-surface-highlight text-text-primary font-medium rounded-xl hover:bg-primary hover:text-white transition-all text-center">
@@ -289,7 +289,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     </div>
                 </div>
 
-                {/* Menu Selection */}
+                
                 <div className="space-y-4">
                     <label className="text-sm font-medium text-text-secondary">Available Menu</label>
                     <div className="flex gap-2">

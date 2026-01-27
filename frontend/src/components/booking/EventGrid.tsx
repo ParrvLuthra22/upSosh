@@ -10,7 +10,7 @@ const EventGrid = () => {
     const gridRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Simulate loading for effect
+    
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 800);
         return () => clearTimeout(timer);

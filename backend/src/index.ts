@@ -11,7 +11,6 @@ import bookingRoutes from './routes/bookings';
 import paymentRoutes from './routes/payments';
 import aiRoutes from './routes/ai';
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
     process.exit(1);
@@ -24,9 +23,8 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.set('trust proxy', 1); // Trust first proxy (required for secure cookies on Railway)
+app.set('trust proxy', 1); 
 
-// Allow both production and development URLs
 const allowedOrigins = [
     'https://www.upsosh.app',
     'http://localhost:3000',
@@ -35,7 +33,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
@@ -49,7 +47,6 @@ app.use(cors({
 
 console.log('CORS Origins configured:', allowedOrigins);
 
-// Increase body size limit to handle Base64 image uploads (payment proofs)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
@@ -59,9 +56,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/hosts', hostRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/ai', aiRoutes); // Added AI routes usage
+app.use('/api/ai', aiRoutes); 
 
-// Health check endpoint for Railway
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -89,7 +85,6 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM received. Shutting down gracefully...');
     server.close(() => {

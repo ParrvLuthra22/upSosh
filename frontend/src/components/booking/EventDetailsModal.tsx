@@ -13,7 +13,7 @@ const EventDetailsModal = () => {
     const [qty, setQty] = useState(1);
     const [host, setHost] = useState<any>(null);
 
-    // Accessibility hooks
+    
     useFocusTrap(contentRef, !!selectedEvent);
     useEscapeKey(() => handleClose(), !!selectedEvent);
 
@@ -23,7 +23,7 @@ const EventDetailsModal = () => {
             setHost(null);
             api.getHostById(selectedEvent.hostId).then(setHost).catch(console.error);
 
-            // Animate in
+            
             gsap.timeline()
                 .to(modalRef.current, { opacity: 1, duration: 0.3, pointerEvents: 'auto' })
                 .fromTo(contentRef.current,
@@ -71,7 +71,7 @@ const EventDetailsModal = () => {
                 ref={contentRef}
                 className="relative w-full max-w-4xl bg-background border border-border overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[800px]"
             >
-                {/* Close Button */}
+                
                 <button
                     onClick={handleClose}
                     className="absolute top-4 right-4 z-20 p-2 text-foreground/50 hover:text-foreground transition-colors"
@@ -81,7 +81,7 @@ const EventDetailsModal = () => {
                     </svg>
                 </button>
 
-                {/* Image Section */}
+                
                 <div className="md:w-1/2 h-64 md:h-auto relative bg-neutral-100 dark:bg-neutral-900">
                     <img
                         src={selectedEvent.image}
@@ -90,7 +90,7 @@ const EventDetailsModal = () => {
                     />
                 </div>
 
-                {/* Details Section */}
+                
                 <div className="md:w-1/2 p-8 md:p-12 flex flex-col overflow-y-auto">
                     <div className="flex-1 space-y-8">
                         <div>
@@ -125,7 +125,7 @@ const EventDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* Host Info */}
+                        
                         {host && (
                             <div className="flex items-center gap-4 py-4 border-y border-border">
                                 <img src={host.avatar} alt={host.name} className="w-12 h-12 rounded-full grayscale" />
@@ -143,7 +143,7 @@ const EventDetailsModal = () => {
                         </div>
                     </div>
 
-                    {/* Footer / Actions */}
+                    
                     <div className="mt-8 pt-8 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="text-3xl font-medium text-foreground">

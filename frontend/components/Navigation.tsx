@@ -40,7 +40,7 @@ export default function Navigation() {
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          
           <motion.a
             href="/"
             className="text-2xl md:text-3xl font-bold text-[#D4A017] transition-opacity duration-300 hover:opacity-80"
@@ -49,7 +49,7 @@ export default function Navigation() {
             UpSosh
           </motion.a>
 
-          {/* Desktop Navigation */}
+          
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <a
@@ -63,14 +63,14 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Right Side Actions */}
+          
           <div className="flex items-center space-x-4">
-            {/* Download Button */}
+            
             <Button variant="primary" size="sm" className="hidden md:inline-flex" onClick={() => alert('Coming Soon! 🚀')}>
               Download App
             </Button>
 
-            {/* Mobile Menu Toggle */}
+            
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-lg border border-white/20 transition-all duration-300 ease-in-out hover:border-[#D4A017]/50"
@@ -86,7 +86,7 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div

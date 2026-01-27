@@ -12,33 +12,33 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Force dark mode regardless of preference or storage
-    setTheme('dark');
+    
+    setTheme('light');
   }, []);
 
   useEffect(() => {
     if (mounted) {
       const root = window.document.documentElement;
-      root.classList.remove('light');
-      root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
+      root.classList.remove('dark');
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
     }
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    // No-op: Light mode is disabled
-    setTheme('dark');
+    
+    setTheme('light');
   };
 
-  // Prevent hydration mismatch by only rendering after mount, 
-  // BUT we must provide the context even during SSR for useTheme to work.
-  // We'll use the default 'light' theme during SSR.
+  
+  
+  
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

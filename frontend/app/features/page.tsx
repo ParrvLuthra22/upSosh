@@ -33,7 +33,7 @@ export default function FeaturesPage() {
 
     return (
         <div className="min-h-screen pt-32 pb-24 bg-background text-foreground">
-            {/* Header */}
+            
             <div className="container mx-auto px-6 mb-24">
                 <div className="max-w-3xl">
                     <h1 className="text-display font-semibold tracking-tighter leading-[1] mb-8">
@@ -46,7 +46,7 @@ export default function FeaturesPage() {
                 </div>
             </div>
 
-            {/* Features Grid */}
+            
             <div className="container mx-auto px-6 mb-32">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
                     {features.map((feature, index) => (
@@ -63,7 +63,7 @@ export default function FeaturesPage() {
                 </div>
             </div>
 
-            {/* CTA Section - Minimal */}
+            
             <div className="container mx-auto px-6 border-t border-border pt-24">
                 <div className="flex flex-col md:flex-row items-baseline justify-between gap-8">
                     <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter">

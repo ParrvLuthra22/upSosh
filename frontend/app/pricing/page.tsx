@@ -12,10 +12,10 @@ export default function PricingPage() {
                 </p>
             </section>
 
-            {/* Pricing Cards */}
+            
             <section className="container mx-auto px-4 mb-24">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {/* Free Tier */}
+                    
                     <div className="bg-surface rounded-3xl p-8 border border-white/10 flex flex-col">
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-text-secondary mb-2">Starter</h3>
@@ -34,7 +34,7 @@ export default function PricingPage() {
                         </button>
                     </div>
 
-                    {/* Pro Tier */}
+                    
                     <div className="bg-surface-highlight rounded-3xl p-8 border border-primary/50 relative flex flex-col transform md:-translate-y-4 shadow-2xl shadow-primary/10">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-bold">
                             Most Popular
@@ -56,7 +56,7 @@ export default function PricingPage() {
                         </button>
                     </div>
 
-                    {/* Enterprise Tier */}
+                    
                     <div className="bg-surface rounded-3xl p-8 border border-white/10 flex flex-col">
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-text-secondary mb-2">Enterprise</h3>
@@ -77,7 +77,7 @@ export default function PricingPage() {
                 </div>
             </section>
 
-            {/* FAQ */}
+            
             <section className="container mx-auto px-4 max-w-3xl">
                 <h2 className="text-3xl font-heading font-bold text-center mb-12">Frequently Asked Questions</h2>
                 <div className="space-y-6">

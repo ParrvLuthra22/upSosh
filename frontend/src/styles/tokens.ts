@@ -1,10 +1,10 @@
 export const tokens = {
     colors: {
-        // Strict minimal palette - black, white, mustard ONLY
+        
         black: '#000000',
         white: '#FFFFFF',
         mustard: '#D4A017',
-        // Grays for text hierarchy (derived from black/white)
+        
         gray: {
             100: '#EEEEEE',
             200: '#CCCCCC',
@@ -16,7 +16,7 @@ export const tokens = {
             800: '#222222',
             900: '#111111',
         },
-        // Semantic mappings
+        
         background: '#000000',
         surface: '#000000',
         primary: '#D4A017',
@@ -67,11 +67,11 @@ export const tokens = {
         full: '9999px',
     },
     shadows: {
-        // No colored shadows - black only
+        
         sm: '0 1px 2px 0 rgb(0 0 0 / 0.1)',
         md: '0 4px 6px -1px rgb(0 0 0 / 0.2)',
         lg: '0 10px 15px -3px rgb(0 0 0 / 0.3)',
-        // Mustard glow for accent elements
+        
         glow: '0 0 20px rgba(212, 160, 23, 0.3)',
     },
 };

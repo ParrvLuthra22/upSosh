@@ -5,7 +5,7 @@ export default function AboutPage() {
     <div className="min-h-screen pt-24 pb-16 bg-black">
       <div className="max-w-5xl mx-auto px-4">
         
-        {/* Header Section */}
+        
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#D4A017]" style={{ fontFamily: 'var(--font-heading)' }}>
             About upSosh
@@ -15,7 +15,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Main Story */}
+        
         <div className="mb-16">
           <div 
             className="p-8 md:p-10 rounded-2xl mb-8 bg-black border border-white/10"
@@ -32,7 +32,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* How It Started */}
+        
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
             How It Started
@@ -55,7 +55,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* What We're Building */}
+        
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
             What We're Building
@@ -97,7 +97,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Our Vision */}
+        
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white" style={{ fontFamily: 'var(--font-heading)' }}>
             Our Vision
@@ -131,16 +131,16 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Founders Section */}
+        
         <div className="mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-white" style={{ fontFamily: 'var(--font-heading)' }}>
             Meet the Founders
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Aadit Vachher */}
+            
             <div className="p-8 rounded-2xl text-center bg-black border border-white/10 hover:border-[#D4A017]/30 transition-colors">
-              {/* Photo */}
+              
               <div className="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#D4A017]">
                 <img 
                   src="/assets/aadit-vachher.jpg" 
@@ -160,9 +160,9 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Parrv Luthra */}
+            
             <div className="p-8 rounded-2xl text-center bg-black border border-white/10 hover:border-[#D4A017]/30 transition-colors">
-              {/* Photo */}
+              
               <div className="w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#D4A017]">
                 <img 
                   src="/assets/parrv-luthra.jpg" 

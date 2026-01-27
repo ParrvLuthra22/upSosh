@@ -8,27 +8,42 @@ const FormalInformalToggle = () => {
 
     return (
         <div className="flex justify-center w-full my-8">
-            <div className="relative flex items-center bg-neutral-100 dark:bg-neutral-900 rounded-full p-1 border border-border">
-                {/* Background slider */}
+            <div className="relative flex items-center bg-black border border-white/20 rounded-full p-1">
+                
                 <div
-                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-background border border-border rounded-full shadow-sm transition-all duration-300 ease-editorial ${isFormal ? 'left-[calc(50%+2px)]' : 'left-1'
-                        }`}
+                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#D4A017] rounded-full transition-all duration-300 ease-out ${
+                        isFormal ? 'left-[calc(50%+2px)]' : 'left-1'
+                    }`}
                 />
 
-                {/* Informal button */}
+                
                 <button
                     onClick={() => !isFormal || toggleMode()}
-                    className={`relative z-10 px-8 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${!isFormal ? 'text-foreground' : 'text-foreground/50 hover:text-foreground/80'
-                        }`}
+                    className={`relative z-10 px-6 py-2 rounded-full transition-colors duration-300 ${
+                        !isFormal ? 'text-black' : 'text-white/70 hover:text-white'
+                    }`}
+                    style={{
+                        fontFamily: 'VT323, monospace',
+                        fontSize: '1.25rem',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase'
+                    }}
                 >
                     Informal
                 </button>
 
-                {/* Formal button */}
+                
                 <button
                     onClick={() => isFormal || toggleMode()}
-                    className={`relative z-10 px-8 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${isFormal ? 'text-foreground' : 'text-foreground/50 hover:text-foreground/80'
-                        }`}
+                    className={`relative z-10 px-6 py-2 rounded-full transition-colors duration-300 ${
+                        isFormal ? 'text-black' : 'text-white/70 hover:text-white'
+                    }`}
+                    style={{
+                        fontFamily: 'VT323, monospace',
+                        fontSize: '1.25rem',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase'
+                    }}
                 >
                     Formal
                 </button>

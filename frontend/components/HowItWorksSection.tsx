@@ -35,7 +35,7 @@ export default function HowItWorksSection() {
 
   return (
     <Section id="how-it-works" className="relative overflow-hidden bg-black">
-      {/* Floating Background Elements - mustard accent */}
+      
       <div className="absolute inset-0">
         <motion.div
           className="absolute top-20 left-10 w-64 h-64 rounded-full bg-[#D4A017]/10 blur-3xl"
@@ -95,7 +95,7 @@ export default function HowItWorksSection() {
         </motion.div>
 
         <div className="relative">
-          {/* Connecting Line */}
+          
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px bg-white/20" style={{ transform: 'translateY(-50%)' }} />
 
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
@@ -108,13 +108,13 @@ export default function HowItWorksSection() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.2, duration: 0.6 }}
               >
-                {/* Card */}
+                
                 <motion.div
                   className="relative bg-black border border-white/20 rounded-2xl p-8 text-center group hover:border-[#D4A017]/50"
                   whileHover={{ y: -10, scale: 1.05 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
-                  {/* Number Badge */}
+                  
                   <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                     <motion.div
                       className="w-16 h-16 rounded-full bg-[#D4A017] flex items-center justify-center text-2xl font-bold text-black"
@@ -125,7 +125,7 @@ export default function HowItWorksSection() {
                     </motion.div>
                   </div>
 
-                  {/* Icon */}
+                  
                   <motion.div
                     className="mt-8 mb-6 text-8xl relative"
                     animate={{
@@ -141,7 +141,7 @@ export default function HowItWorksSection() {
                     <div className="relative z-10">{step.icon}</div>
                   </motion.div>
 
-                  {/* Content */}
+                  
                   <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-[#D4A017] transition-all duration-300" style={{ fontFamily: 'var(--font-heading)' }}>
                     {step.title}
                   </h3>
@@ -150,7 +150,7 @@ export default function HowItWorksSection() {
                   </p>
                 </motion.div>
 
-                {/* Arrow Between Steps (Desktop) */}
+                
                 {index < steps.length - 1 && (
                   <motion.div
                     className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2 z-20"
@@ -179,7 +179,7 @@ export default function HowItWorksSection() {
           </div>
         </div>
 
-        {/* Bottom CTA */}
+        
         <motion.div
           className="text-center mt-20"
           initial={{ opacity: 0, y: 30 }}
