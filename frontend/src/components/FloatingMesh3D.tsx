@@ -2,14 +2,8 @@
 'use client';
 
 import React from 'react';
-import { Canvas, ThreeElements } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { Float, MeshTransmissionMaterial, Environment } from '@react-three/drei';
-
-declare global {
-    namespace JSX {
-        interface IntrinsicElements extends ThreeElements { }
-    }
-}
 
 const FloatingMesh3D = () => {
     return (
