@@ -397,4 +397,54 @@ export const api = {
 
         return res.json();
     },
+
+    // ─── Generic typed methods (used by new feature pages) ───────────────────
+    get: async <T>(path: string): Promise<T> => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(path, { credentials: 'include', headers });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error((err as any).message ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+    },
+
+    post: async <T>(path: string, body?: unknown): Promise<T> => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(path, { method: 'POST', headers, body: body ? JSON.stringify(body) : undefined, credentials: 'include' });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error((err as any).message ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+    },
+
+    patch: async <T>(path: string, body?: unknown): Promise<T> => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(path, { method: 'PATCH', headers, body: body ? JSON.stringify(body) : undefined, credentials: 'include' });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error((err as any).message ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+    },
+
+    delete: async <T>(path: string): Promise<T> => {
+        const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(path, { method: 'DELETE', headers, credentials: 'include' });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error((err as any).message ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+    },
 };
+

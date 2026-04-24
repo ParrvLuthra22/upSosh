@@ -5,9 +5,14 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  username?: string;
   photoUrl?: string;
   hostStatus?: 'none' | 'pending' | 'verified';
   onboardingComplete?: boolean;
+  bio?: string;
+  location?: string;
+  hostBio?: string;
+  isSuperhost?: boolean;
 }
 
 export async function signIn(

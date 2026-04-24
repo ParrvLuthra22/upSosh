@@ -1,666 +1,422 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { api } from '@/src/lib/api';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import MyEventsList from '@/src/components/host/MyEventsList';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { EASE_VERCEL } from '@/lib/motion';
+import { useAuth } from '@/store/authStore';
+import { api } from '@/lib/api';
+import { toast } from 'sonner';
+
+// ─── Avatar Upload ───────────────────────────────────────────────────────────
+
+function AvatarUpload({
+  currentUrl,
+  name,
+  onUpload,
+}: {
+  currentUrl?: string;
+  name?: string;
+  onUpload: (url: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | undefined>(currentUrl);
+
+  // Keep preview in sync with currentUrl
+  useEffect(() => { setPreview(currentUrl); }, [currentUrl]);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Local preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+
+    setUploading(true);
+    try {
+      // Try to upload to backend
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/users/me/avatar', {
+        method: 'POST',
+        body: formData,
+        headers,
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const url = data.avatarUrl ?? data.photoUrl ?? objectUrl;
+        setPreview(url);
+        onUpload(url);
+        toast.success('Profile photo updated.');
+      } else {
+        // Backend doesn't have upload endpoint — keep local preview, save as data URL
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          setPreview(dataUrl);
+          onUpload(dataUrl);
+          toast.success('Photo updated locally.');
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch {
+      // Fallback to base64 if network fails
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setPreview(dataUrl);
+        onUpload(dataUrl);
+        toast.success('Photo updated.');
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const initial = name?.[0]?.toUpperCase() ?? 'U';
+
+  return (
+    <div className="relative group w-28 h-28 flex-shrink-0">
+      <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-border bg-bg-secondary flex items-center justify-center">
+        {preview ? (
+          <img src={preview} alt={name ?? 'Avatar'} className="w-full h-full object-cover" />
+        ) : (
+          <span className="font-display text-4xl text-ink-muted">{initial}</span>
+        )}
+        {uploading && (
+          <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+            <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+        title="Change photo"
+      >
+        <span className="text-white text-xs font-sans">Change</span>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
+      />
+    </div>
+  );
+}
+
+// ─── Profile Form ─────────────────────────────────────────────────────────────
+
+function ProfileForm({ user, onSaved }: { user: any; onSaved: (u: any) => void }) {
+  const [form, setForm] = useState({
+    name: user.name ?? '',
+    bio: user.bio ?? '',
+    location: user.location ?? '',
+    photoUrl: user.photoUrl ?? user.avatar ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      // Try new endpoint first
+      let res: any;
+      try {
+        res = await api.patch<{ user: any }>('/api/users/me', form);
+        onSaved(res.user);
+      } catch {
+        // Fallback to legacy updateProfile
+        res = await api.updateProfile({ name: form.name, bio: form.bio, avatar: form.photoUrl });
+        onSaved({ ...user, ...form });
+      }
+      toast.success('Profile saved.');
+    } catch (err: any) {
+      toast.error(err.message ?? 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSave} className="space-y-5">
+      <div>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Display name</label>
+        <input
+          type="text"
+          value={form.name}
+          onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+        />
+      </div>
+      <div>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Location</label>
+        <input
+          type="text"
+          value={form.location}
+          onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+          placeholder="New Delhi, India"
+          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+        />
+      </div>
+      <div>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Bio</label>
+        <textarea
+          value={form.bio}
+          onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+          rows={4}
+          maxLength={500}
+          placeholder="Tell people a little about yourself…"
+          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none"
+        />
+        <p className="font-mono text-[10px] text-ink-muted text-right mt-1">{form.bio.length}/500</p>
+      </div>
+      <div className="flex justify-end pt-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-6 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
+        >
+          {saving ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Security Form ────────────────────────────────────────────────────────────
+
+function SecurityForm() {
+  const [pwd, setPwd] = useState({ current: '', newPwd: '', confirm: '' });
+  const [saving, setSaving] = useState(false);
+
+  async function handleChange(e: React.FormEvent) {
+    e.preventDefault();
+    if (pwd.newPwd !== pwd.confirm) { toast.error('Passwords do not match'); return; }
+    setSaving(true);
+    try {
+      await api.patch('/api/users/me/password', { currentPassword: pwd.current, newPassword: pwd.newPwd });
+      toast.success('Password updated.');
+      setPwd({ current: '', newPwd: '', confirm: '' });
+    } catch (err: any) {
+      toast.error(err.message ?? 'Password update failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleChange} className="space-y-4">
+      {[
+        { label: 'Current password', key: 'current', value: pwd.current },
+        { label: 'New password', key: 'newPwd', value: pwd.newPwd },
+        { label: 'Confirm new password', key: 'confirm', value: pwd.confirm },
+      ].map((f) => (
+        <div key={f.key}>
+          <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">{f.label}</label>
+          <input
+            type="password"
+            value={f.value}
+            onChange={(e) => setPwd((p) => ({ ...p, [f.key]: e.target.value }))}
+            required
+            className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+          />
+        </div>
+      ))}
+      <div className="flex justify-end pt-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-6 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
+        >
+          {saving ? 'Updating…' : 'Update password'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Main Profile Page ────────────────────────────────────────────────────────
+
+type Tab = 'profile' | 'security';
 
 export default function ProfilePage() {
-    const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'profile' | 'tickets' | 'events' | 'security'>('profile');
-    const [user, setUser] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [tickets, setTickets] = useState<any[]>([]);
-    
-    const [profileData, setProfileData] = useState({
-        name: '',
-        email: '',
-        bio: '',
-        avatar: '',
-        isHost: false,
-        hostName: '',
-        hostBio: '',
-        hostVerified: false
-    });
+  const { user: authUser, isAuth, loading, setUser } = useAuth();
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>('profile');
+  const [user, setLocalUser] = useState<any>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    });
+  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
 
-    useEffect(() => {
-        
-        const storedUser = localStorage.getItem('user');
-        if (!storedUser) {
-            router.push('/login');
-            return;
-        }
-        
-        loadUserData();
-        loadTickets();
-    }, []);
+  useEffect(() => {
+    if (!loading && !isAuth && !hasToken) router.push('/signin?from=/profile');
+  }, [loading, isAuth, hasToken, router]);
 
-    const loadUserData = async () => {
-        setIsLoading(true);
+  useEffect(() => {
+    // Use persisted user from store immediately
+    if (authUser) {
+      setLocalUser(authUser);
+      setDataLoading(false);
+    } else {
+      // Fetch from API
+      const load = async () => {
         try {
-            const userData = await api.getMe();
-            if (userData && userData.user) {
-                const user = userData.user;
-                setUser(user);
-                
-                
-                localStorage.setItem('userData', JSON.stringify(user));
-                localStorage.setItem('user', user.name);
-                
-                setProfileData({
-                    name: user.name || '',
-                    email: user.email || '',
-                    bio: user.bio || '',
-                    avatar: user.avatar || '',
-                    isHost: user.isHost || false,
-                    hostName: user.hostName || user.name || '',
-                    hostBio: user.hostBio || '',
-                    hostVerified: user.hostVerified || false
-                });
-            } else if (userData) {
-                
-                setUser(userData);
-                
-                
-                localStorage.setItem('userData', JSON.stringify(userData));
-                localStorage.setItem('user', userData.name);
-                
-                setProfileData({
-                    name: userData.name || '',
-                    email: userData.email || '',
-                    bio: userData.bio || '',
-                    avatar: userData.avatar || '',
-                    isHost: userData.isHost || false,
-                    hostName: userData.hostName || userData.name || '',
-                    hostBio: userData.hostBio || '',
-                    hostVerified: userData.hostVerified || false
-                });
-            } else {
-                
-                const storedUserData = localStorage.getItem('userData');
-                if (storedUserData) {
-                    const storedUser = JSON.parse(storedUserData);
-                    setUser(storedUser);
-                    setProfileData({
-                        name: storedUser.name || '',
-                        email: storedUser.email || '',
-                        bio: storedUser.bio || '',
-                        avatar: storedUser.avatar || '',
-                        isHost: storedUser.isHost || false,
-                        hostName: storedUser.hostName || storedUser.name || '',
-                        hostBio: storedUser.hostBio || '',
-                        hostVerified: storedUser.hostVerified || false
-                    });
-                } else {
-                    router.push('/login');
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load user data:', error);
-            
-            const storedUserData = localStorage.getItem('userData');
-            if (storedUserData) {
-                try {
-                    const storedUser = JSON.parse(storedUserData);
-                    setUser(storedUser);
-                    setProfileData({
-                        name: storedUser.name || '',
-                        email: storedUser.email || '',
-                        bio: storedUser.bio || '',
-                        avatar: storedUser.avatar || '',
-                        isHost: storedUser.isHost || false,
-                        hostName: storedUser.hostName || storedUser.name || '',
-                        hostBio: storedUser.hostBio || '',
-                        hostVerified: storedUser.hostVerified || false
-                    });
-                } catch (e) {
-                    console.error('Error parsing stored user data:', e);
-                    router.push('/login');
-                }
-            } else {
-                router.push('/login');
-            }
+          const data = await api.getMe();
+          const u = data?.user ?? data;
+          if (u) {
+            setLocalUser(u);
+            setUser(u);
+          }
+        } catch {
+          // use whatever is in localStorage
+          try {
+            const stored = localStorage.getItem('userData');
+            if (stored) setLocalUser(JSON.parse(stored));
+          } catch {}
         } finally {
-            setIsLoading(false);
+          setDataLoading(false);
         }
-    };
-
-    const loadTickets = async () => {
-        try {
-            console.log('Loading tickets...');
-            const bookings = await api.getBookings();
-            console.log('Bookings received:', bookings);
-            
-            if (Array.isArray(bookings)) {
-                setTickets(bookings);
-                console.log('Set tickets:', bookings.length);
-            } else if (bookings && (bookings as any).bookings && Array.isArray((bookings as any).bookings)) {
-                setTickets((bookings as any).bookings);
-                console.log('Set tickets from nested:', (bookings as any).bookings.length);
-            } else {
-                console.warn('No bookings found or invalid format');
-                setTickets([]);
-            }
-        } catch (error) {
-            console.error('Failed to load tickets:', error);
-            
-            setTickets([]);
-        }
-    };
-
-    const handleProfileUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            const result = await api.updateProfile({
-                name: profileData.name,
-                bio: profileData.bio,
-                avatar: profileData.avatar,
-                isHost: profileData.isHost,
-                hostName: profileData.hostName,
-                hostBio: profileData.hostBio
-            });
-            
-            if (result && result.user) {
-                
-                setUser(result.user);
-                
-                
-                localStorage.setItem('user', result.user.name);
-                localStorage.setItem('userData', JSON.stringify(result.user));
-                
-                
-                setProfileData({
-                    name: result.user.name || '',
-                    email: result.user.email || '',
-                    bio: result.user.bio || '',
-                    avatar: result.user.avatar || '',
-                    isHost: result.user.isHost || false,
-                    hostName: result.user.hostName || result.user.name || '',
-                    hostBio: result.user.hostBio || '',
-                    hostVerified: result.user.hostVerified || false
-                });
-                
-                
-                window.dispatchEvent(new Event('storage'));
-            }
-            
-            alert('Profile updated successfully!');
-            setIsEditing(false);
-        } catch (error: any) {
-            console.error('Profile update error:', error);
-            alert(error.message || 'Failed to update profile');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handlePasswordChange = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert('New passwords do not match!');
-            return;
-        }
-        if (passwordData.newPassword.length < 6) {
-            alert('Password must be at least 6 characters long');
-            return;
-        }
-        
-        setIsSaving(true);
-        try {
-            
-            alert('Password changed successfully!');
-            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error: any) {
-            alert(error.message || 'Failed to change password');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await api.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-        
-        
-        localStorage.removeItem('user');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('token');
-        
-        
-        window.dispatchEvent(new Event('storage'));
-        
-        
-        window.location.replace('/');
-    };
-
-    if (isLoading || !user) {
-        return (
-            <div className="min-h-screen pt-24 pb-12 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Loading profile...</p>
-                </div>
-            </div>
-        );
+      };
+      if (hasToken) load();
     }
+  }, [authUser]);
 
-    return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
-            <div className="container mx-auto max-w-6xl">
-                
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold mb-2">My Profile</h1>
-                    <p className="text-text-secondary">Manage your account settings and preferences</p>
-                </div>
+  function handleSaved(updatedUser: any) {
+    setLocalUser(updatedUser);
+    setUser(updatedUser);
+  }
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    
-                    <div className="lg:col-span-1">
-                        <div className="bg-surface rounded-2xl p-6 border border-white/10 sticky top-24">
-                            <div className="flex flex-col items-center mb-6">
-                                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-3xl font-bold text-white mb-3">
-                                    {profileData.name.charAt(0).toUpperCase()}
-                                </div>
-                                <h3 className="font-bold text-lg">{profileData.name}</h3>
-                                <p className="text-sm text-text-secondary">{profileData.email}</p>
-                                {profileData.isHost && (
-                                    <span className="mt-2 px-3 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full">
-                                        Host Account
-                                    </span>
-                                )}
-                            </div>
-                            
-                            <nav className="space-y-2">
-                                <button
-                                    onClick={() => setActiveTab('profile')}
-                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                        activeTab === 'profile' 
-                                            ? 'bg-primary text-white' 
-                                            : 'hover:bg-surface-highlight'
-                                    }`}
-                                >
-                                    Profile Info
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('tickets')}
-                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                        activeTab === 'tickets' 
-                                            ? 'bg-primary text-white' 
-                                            : 'hover:bg-surface-highlight'
-                                    }`}
-                                >
-                                    My Tickets
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('events')}
-                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                        activeTab === 'events' 
-                                            ? 'bg-primary text-white' 
-                                            : 'hover:bg-surface-highlight'
-                                    }`}
-                                >
-                                    My Events
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('security')}
-                                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                                        activeTab === 'security' 
-                                            ? 'bg-primary text-white' 
-                                            : 'hover:bg-surface-highlight'
-                                    }`}
-                                >
-                                    Security
-                                </button>
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full text-left px-4 py-3 rounded-lg hover:bg-red-500/20 text-red-500 transition-colors"
-                                >
-                                    Logout
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-
-                    
-                    <div className="lg:col-span-3">
-                        
-                        {activeTab === 'profile' && (
-                            <div className="bg-surface rounded-2xl p-8 border border-white/10">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold">Profile Information</h2>
-                                    {!isEditing && (
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity"
-                                        >
-                                            Edit Profile
-                                        </button>
-                                    )}
-                                </div>
-
-                                <form onSubmit={handleProfileUpdate} className="space-y-6">
-                                    
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">Full Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={profileData.name}
-                                                    onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                                                    disabled={!isEditing}
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">Email</label>
-                                                <input
-                                                    type="email"
-                                                    value={profileData.email}
-                                                    disabled
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 opacity-50 cursor-not-allowed"
-                                                />
-                                                <p className="text-xs text-text-muted mt-1">Email cannot be changed</p>
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">Bio</label>
-                                                <textarea
-                                                    value={profileData.bio}
-                                                    onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
-                                                    disabled={!isEditing}
-                                                    rows={3}
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
-                                                    placeholder="Tell us about yourself..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    
-                                    <div className="border-t border-white/10 pt-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h3 className="text-lg font-semibold">Host Profile</h3>
-                                                <p className="text-sm text-text-secondary">Settings for hosting events</p>
-                                            </div>
-                                            <label className="flex items-center gap-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={profileData.isHost}
-                                                    onChange={(e) => setProfileData({...profileData, isHost: e.target.checked})}
-                                                    disabled={!isEditing}
-                                                    className="w-5 h-5 rounded border-white/20 text-primary focus:ring-primary disabled:opacity-50"
-                                                />
-                                                <span className="text-sm font-medium">Enable Host Mode</span>
-                                            </label>
-                                        </div>
-
-                                        {profileData.isHost && (
-                                            <div className="space-y-4 mt-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-text-secondary mb-2">Host Display Name</label>
-                                                    <input
-                                                        type="text"
-                                                        value={profileData.hostName}
-                                                        onChange={(e) => setProfileData({...profileData, hostName: e.target.value})}
-                                                        disabled={!isEditing}
-                                                        className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
-                                                        placeholder="Name shown on your events"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-text-secondary mb-2">Host Bio</label>
-                                                    <textarea
-                                                        value={profileData.hostBio}
-                                                        onChange={(e) => setProfileData({...profileData, hostBio: e.target.value})}
-                                                        disabled={!isEditing}
-                                                        rows={4}
-                                                        className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
-                                                        placeholder="Describe your hosting experience and what makes your events special..."
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {isEditing && (
-                                        <div className="flex gap-4 pt-4">
-                                            <button
-                                                type="submit"
-                                                disabled={isSaving}
-                                                className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                                            >
-                                                {isSaving ? 'Saving...' : 'Save Changes'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsEditing(false);
-                                                    loadUserData();
-                                                }}
-                                                className="px-6 py-3 bg-surface-highlight text-text-secondary rounded-xl font-medium hover:bg-surface transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    )}
-                                </form>
-                            </div>
-                        )}
-
-                        
-                        {activeTab === 'tickets' && (
-                            <div className="bg-surface rounded-2xl p-8 border border-white/10">
-                                <h2 className="text-2xl font-bold mb-6">My Tickets</h2>
-                                {tickets.length === 0 ? (
-                                    <div className="text-center py-12">
-                                        <div className="text-6xl mb-4">🎫</div>
-                                        <h3 className="text-xl font-bold mb-2">No tickets yet</h3>
-                                        <p className="text-text-secondary mb-6">Start exploring events and book your first ticket!</p>
-                                        <button
-                                            onClick={() => router.push('/booking')}
-                                            className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                                        >
-                                            Browse Events
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {tickets.map((ticket) => (
-                                            <div key={ticket.id} className="bg-surface-highlight rounded-xl p-6 border border-white/5">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div>
-                                                        <h3 className="font-bold text-lg mb-1">Booking #{ticket.id.slice(-8)}</h3>
-                                                        <p className="text-sm text-text-secondary">
-                                                            {new Date(ticket.createdAt).toLocaleDateString('en-US', {
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                        ticket.status === 'confirmed' 
-                                                            ? 'bg-green-500/20 text-green-500' 
-                                                            : ticket.status === 'pending'
-                                                            ? 'bg-yellow-500/20 text-yellow-500'
-                                                            : 'bg-red-500/20 text-red-500'
-                                                    }`}>
-                                                        {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                                                    </span>
-                                                </div>
-                                                
-                                                
-                                                {ticket.status === 'pending' && (
-                                                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                                                        <div className="flex items-center gap-2 text-yellow-500 text-sm">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            <span className="font-medium">Payment under review (6-8 hours)</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                
-                                                <div className="space-y-2">
-                                                    {ticket.items?.map((item: any, idx: number) => (
-                                                        <div key={idx} className="flex justify-between text-sm">
-                                                            <span>{item.title} x{item.qty}</span>
-                                                            <span className="font-medium">₹{item.price * item.qty}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="border-t border-white/10 mt-4 pt-4 flex justify-between items-center">
-                                                    <span className="font-bold">Total Amount:</span>
-                                                    <span className="text-xl font-bold text-primary">₹{ticket.totalAmount}</span>
-                                                </div>
-                                                
-                                                
-                                                {ticket.status === 'confirmed' && (
-                                                    <div className="mt-4">
-                                                        <button
-                                                            onClick={() => router.push(`/booking/confirmation/${ticket.id}`)}
-                                                            className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                                                        >
-                                                            View Tickets
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        
-                        {activeTab === 'events' && (
-                            <div className="bg-surface rounded-2xl p-8 border border-white/10">
-                                <h2 className="text-2xl font-bold mb-6">My Events</h2>
-                                {!user?.isHost ? (
-                                    <div className="text-center py-12">
-                                        <div className="text-6xl mb-4">🎪</div>
-                                        <h3 className="text-xl font-bold mb-2">Host Account Required</h3>
-                                        <p className="text-text-secondary mb-6">Enable host mode in your profile to create and manage events.</p>
-                                        <button
-                                            onClick={() => setActiveTab('profile')}
-                                            className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                                        >
-                                            Enable Host Mode
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <div className="mb-6">
-                                            <button
-                                                onClick={() => router.push('/host')}
-                                                className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                                            >
-                                                Create New Event
-                                            </button>
-                                        </div>
-                                        <MyEventsList 
-                                            onEdit={(event: any) => {
-                                                
-                                                router.push(`/host?edit=${event.id}`);
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        
-                        {activeTab === 'security' && (
-                            <div className="bg-surface rounded-2xl p-8 border border-white/10">
-                                <h2 className="text-2xl font-bold mb-6">Security Settings</h2>
-                                
-                                <form onSubmit={handlePasswordChange} className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-4">Change Password</h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">Current Password</label>
-                                                <input
-                                                    type="password"
-                                                    value={passwordData.currentPassword}
-                                                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                                                    required
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">New Password</label>
-                                                <input
-                                                    type="password"
-                                                    value={passwordData.newPassword}
-                                                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                                                    required
-                                                    minLength={6}
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-text-secondary mb-2">Confirm New Password</label>
-                                                <input
-                                                    type="password"
-                                                    value={passwordData.confirmPassword}
-                                                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                                                    required
-                                                    minLength={6}
-                                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={isSaving}
-                                        className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                                    >
-                                        {isSaving ? 'Updating...' : 'Update Password'}
-                                    </button>
-                                </form>
-
-                                <div className="border-t border-white/10 mt-8 pt-8">
-                                    <h3 className="text-lg font-semibold mb-4 text-red-500">Danger Zone</h3>
-                                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                                        <h4 className="font-medium mb-2">Delete Account</h4>
-                                        <p className="text-sm text-text-secondary mb-4">
-                                            Once you delete your account, there is no going back. Please be certain.
-                                        </p>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-                                                    alert('Account deletion feature coming soon!');
-                                                }
-                                            }}
-                                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                        >
-                                            Delete My Account
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
+  function handleAvatarUpload(url: string) {
+    const updated = { ...user, photoUrl: url, avatar: url };
+    setLocalUser(updated);
+    setUser(updated);
+    // Try to persist to API
+    api.patch('/api/users/me', { photoUrl: url }).catch(() =>
+      api.updateProfile({ avatar: url }).catch(() => {})
     );
+  }
+
+  if (dataLoading && !user) return (
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+      <span className="w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!user) return null;
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'profile', label: 'Profile' },
+    { id: 'security', label: 'Security' },
+  ];
+
+  const rawUser = user as any;
+  const resolvedHostStatus = user.hostStatus || (rawUser.hostVerified || rawUser.isHost ? 'verified' : 'none');
+
+  return (
+    <div className="min-h-screen bg-bg-primary">
+      <div className="max-w-3xl mx-auto px-6 md:px-12 pt-28 pb-24">
+
+        {/* Header */}
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-3">[ PROFILE ]</p>
+
+        {/* Avatar + info */}
+        <div className="flex items-center gap-6 mb-10">
+          <AvatarUpload
+            currentUrl={user.photoUrl ?? user.avatar}
+            name={user.name}
+            onUpload={handleAvatarUpload}
+          />
+          <div>
+            <h1 className="font-display text-3xl text-ink-primary mb-1" style={{ letterSpacing: '-0.03em' }}>
+              {user.name ?? 'Your profile'}
+            </h1>
+            <p className="font-mono text-xs text-ink-muted mb-2">{user.email}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {resolvedHostStatus === 'verified' && (
+                <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-verified/10 text-verified border border-verified/20">
+                  ✓ Verified Host
+                </span>
+              )}
+              {resolvedHostStatus === 'pending' && (
+                <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">
+                  Verification pending
+                </span>
+              )}
+              {resolvedHostStatus === 'none' && (
+                <Link
+                  href="/become-a-host"
+                  className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full border border-border text-ink-muted hover:border-accent hover:text-accent transition-colors"
+                >
+                  Become a host →
+                </Link>
+              )}
+              <p className="font-mono text-[10px] text-ink-light">Hover your photo to change it</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab nav */}
+        <div className="flex gap-0 border-b border-border mb-8">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`relative px-5 py-3 font-sans text-sm transition-colors ${tab === t.id ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'}`}
+            >
+              {t.label}
+              {tab === t.id && (
+                <motion.span
+                  layoutId="profile-tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-px bg-accent"
+                  transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.22, ease: EASE_VERCEL }}
+          >
+            <div className="border border-border rounded-2xl p-6 bg-bg-primary">
+              {tab === 'profile' && <ProfileForm user={user} onSaved={handleSaved} />}
+              {tab === 'security' && <SecurityForm />}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Quick links */}
+        <div className="mt-8 grid grid-cols-2 gap-4">
+          <Link href="/my-bookings" className="border border-border rounded-xl p-4 hover:bg-bg-secondary transition-colors group">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1">Bookings</p>
+            <p className="font-display text-lg text-ink-primary group-hover:text-accent transition-colors">View tickets →</p>
+          </Link>
+          <Link href="/settings" className="border border-border rounded-xl p-4 hover:bg-bg-secondary transition-colors group">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1">Settings</p>
+            <p className="font-display text-lg text-ink-primary group-hover:text-accent transition-colors">Privacy & notifications →</p>
+          </Link>
+        </div>
+
+      </div>
+    </div>
+  );
 }

@@ -120,19 +120,13 @@ export default function HeroSection() {
           >
             <MagneticButton>
               <a
-                href="/signup"
-                data-cursor="JOIN"
+                href="/discover"
+                data-cursor="BROWSE"
                 className="font-sans text-sm font-medium bg-accent text-white px-6 py-3 rounded-full hover:bg-ink-primary transition-colors duration-300"
               >
-                Get early access
+                Browse events →
               </a>
             </MagneticButton>
-            <a
-              href="/booking"
-              className="font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors duration-300"
-            >
-              Browse events →
-            </a>
           </motion.div>
         </div>
       </div>

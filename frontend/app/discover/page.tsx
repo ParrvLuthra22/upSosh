@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DiscoverHero from '@/components/discover/DiscoverHero';
 import StickyFilterBar from '@/components/discover/StickyFilterBar';
 import Sidebar from '@/components/discover/Sidebar';
@@ -32,32 +32,49 @@ const DEFAULT_FILTERS: FilterState = {
   newHosts: false,
 };
 
-function applyFilters(
-  events: MockEvent[],
-  filters: FilterState,
-  searchQuery: string
-): MockEvent[] {
+function applyFilters(events: MockEvent[], filters: FilterState, searchQuery: string): MockEvent[] {
   return events.filter((ev) => {
-    // Search
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const searchable = [ev.title, ev.category, ev.location, ev.city, ...ev.tags].join(' ').toLowerCase();
       if (!searchable.includes(q)) return false;
     }
-
-    // Category
     if (filters.category !== 'All' && ev.category !== filters.category) return false;
-
-    // Price
     if (ev.price !== 'Free' && ev.price > filters.priceMax) return false;
-
-    // Host type filters
     if (filters.superhost && !ev.host.superhost) return false;
     if (filters.verified && !ev.host.verified) return false;
     if (filters.newHosts && !ev.host.newHost) return false;
-
     return true;
   });
+}
+
+// Normalise a raw API event into MockEvent shape
+function normaliseApiEvent(raw: any): MockEvent {
+  const d = raw.date ? new Date(raw.date) : null;
+  return {
+    id: raw.id ?? raw._id,
+    title: raw.title,
+    category: raw.category ?? 'Social',
+    host: {
+      name: raw.hostName ?? raw.host?.name ?? 'Host',
+      initials: (raw.hostName ?? raw.host?.name ?? 'H').slice(0, 2).toUpperCase(),
+      verified: raw.host?.verified ?? raw.hostVerified ?? false,
+      superhost: raw.host?.superhost ?? raw.isSuperhost ?? false,
+      newHost: raw.host?.newHost ?? false,
+    },
+    date: d ? d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+    dateShort: d ? d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
+    time: raw.time ?? (d ? d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''),
+    location: raw.location ?? '',
+    city: raw.city ?? raw.location?.split(',').pop()?.trim() ?? '',
+    price: raw.price === 0 || raw.isFree ? 'Free' : (raw.price ?? 'Free'),
+    spots: raw.capacity ?? 30,
+    spotsLeft: raw.spotsLeft ?? (raw.capacity ?? 30) - (raw.bookingsCount ?? 0),
+    going: raw.bookingsCount ?? 0,
+    image: raw.image ?? raw.coverImage ?? 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=560&fit=crop&q=80',
+    tags: raw.tags ?? [],
+    featured: raw.featured ?? false,
+  };
 }
 
 export default function DiscoverPage() {
@@ -66,22 +83,44 @@ export default function DiscoverPage() {
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [events, setEvents] = useState<MockEvent[]>(mockEvents);
+  const [apiLoading, setApiLoading] = useState(true);
+
+  // Fetch from real API, fall back to mock
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/events?limit=50', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          const rawList: any[] = data.events ?? data.data ?? [];
+          if (rawList.length > 0) {
+            setEvents(rawList.map(normaliseApiEvent));
+          }
+          // if 0 events returned keep mock data
+        }
+      } catch {
+        // network error — keep mock data
+      } finally {
+        setApiLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const filteredEvents = useMemo(
-    () => applyFilters(mockEvents, filters, searchQuery),
-    [filters, searchQuery]
+    () => applyFilters(events, filters, searchQuery),
+    [filters, searchQuery, events]
   );
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      {/* Hero / Search */}
       <DiscoverHero searchQuery={searchQuery} onSearch={setSearchQuery} />
 
-      {/* Sticky filter bar — categories, tonight, near me, view toggle */}
       <StickyFilterBar
         filters={filters}
         updateFilter={updateFilter}
@@ -90,7 +129,6 @@ export default function DiscoverPage() {
         onShowMobileFilters={() => setSidebarOpen(true)}
       />
 
-      {/* Content row: sidebar + feed */}
       <div className="flex min-h-0">
         <Sidebar
           filters={filters}
@@ -99,10 +137,12 @@ export default function DiscoverPage() {
           onClose={() => setSidebarOpen(false)}
         />
 
-        <EventFeed events={filteredEvents} view={view} />
+        <EventFeed
+          events={apiLoading ? [] : filteredEvents}
+          view={view}
+        />
       </div>
 
-      {/* Floating AI assist button */}
       <AIAssistButton isOpen={aiOpen} onToggle={() => setAiOpen((v) => !v)} />
     </div>
   );

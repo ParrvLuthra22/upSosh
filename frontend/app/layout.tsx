@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import CustomCursor from '@/components/ui/CustomCursor';
 import ConditionalHeader from '@/components/ConditionalHeader';
+import ConditionalFooter from '@/components/layout/ConditionalFooter';
 import AuthBootstrap from '@/components/AuthBootstrap';
 import { Toaster } from 'sonner';
 
@@ -87,6 +88,7 @@ export default function RootLayout({
             <main id="main-content" className="min-h-screen">
               {children}
             </main>
+            <ConditionalFooter />
           </SmoothScroll>
         </ThemeProvider>
         <Toaster
