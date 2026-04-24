@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  password             String
+  name                 String
+  photoUrl             String?
+  bio                  String?
+  role                 String    @default("user") // "user" | "host" | "admin"
+  hostStatus           String    @default("none") // "none" | "pending" | "verified"
+  onboardingComplete   Boolean   @default(false)
+
+  // Onboarding data
+  interests            String    @default("[]") // JSON array
+  city                 String?
+  groupSize            String?   // "intimate" | "larger"
+  vibe                 String?   // "chill" | "structured"
+  frequency            String?   // "weekly" | "occasional"
+  wantsToHost          Boolean   @default(false)
+
+  // Host profile
+  hostBio              String?
+  hostExperience       String?   // "first" | "few" | "experienced"
+  hostCategories       String    @default("[]") // JSON array
+  hostInstagram        String?
+  hostLinkedin         String?
+  hostWebsite          String?
+
+  // Password reset
+  resetToken           String?
+  resetTokenExpiry     DateTime?
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  events               Event[]
+  bookings             Booking[]
+  hostApplication      HostApplication?
+  uploads              Upload[]
+}
+
+model Host {
+  id       String  @id @default(cuid())
+  name     String
+  verified Boolean @default(false)
+  avatar   String
+  events   Event[]
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  type        String
+  category    String
+  date        DateTime
+  time        String
+  venue       String
+  city        String    @default("Delhi")
+  price       Float
+  isFree      Boolean   @default(false)
+  description String
+  image       String
+  tags        String    @default("[]") // JSON array
+  capacity    Int       @default(30)
+  attendees   Int       @default(0)
+  status      String    @default("draft") // "draft" | "live" | "full" | "past" | "cancelled"
+  isSuperhost Boolean   @default(false)
+
+  hostId      String?
+  host        Host?     @relation(fields: [hostId], references: [id])
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+
+  bookings    Booking[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Booking {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  eventId       String?
+  event         Event?    @relation(fields: [eventId], references: [id])
+
+  guestName     String
+  guestEmail    String
+  guestPhone    String
+  notes         String?
+
+  ticketPrice   Float
+  platformFee   Float     @default(25)
+  totalAmount   Float
+
+  status        String    @default("pending") // "pending" | "confirmed" | "cancelled" | "refunded"
+  paymentStatus String    @default("unpaid") // "unpaid" | "paid" | "refunded"
+  paymentId     String?
+  paymentMethod String?   // "razorpay" | "upi" | "free"
+
+  qrCode        String?   // ticket QR data
+
+  items         String    @default("[]") // JSON for legacy compat
+  paymentProof  String?
+  customer      String?   // JSON for legacy compat
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model HostApplication {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+
+  govIdUrl        String?
+  selfieUrl       String?
+  bio             String
+  experience      String
+  categories      String    @default("[]") // JSON
+  instagram       String?
+  linkedin        String?
+  website         String?
+
+  sampleEventTitle    String?
+  sampleEventCategory String?
+  sampleEventDesc     String?
+  sampleEventDate     String?
+  sampleEventTime     String?
+  sampleEventVenue    String?
+  sampleEventCity     String?
+  sampleEventCapacity Int?
+  sampleEventIsFree   Boolean @default(true)
+  sampleEventPrice    Float?
+
+  status          String    @default("pending") // "pending" | "approved" | "rejected"
+  reviewedAt      DateTime?
+  reviewNotes     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Upload {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  url       String
+  filename  String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+}

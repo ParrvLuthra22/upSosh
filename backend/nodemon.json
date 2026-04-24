@@ -1,0 +1,13 @@
+{
+  "watch": [
+    "src"
+  ],
+  "ext": "ts,json",
+  "ignore": [
+    "dist",
+    "node_modules",
+    "prisma"
+  ],
+  "exec": "node ./node_modules/ts-node/dist/bin.js src/index.ts",
+  "legacyWatch": true
+}
