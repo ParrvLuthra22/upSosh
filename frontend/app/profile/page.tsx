@@ -240,45 +240,14 @@ type Tab = 'profile' | 'security';
 
 import { withAuth } from '@/components/ProtectedRoute';
 function ProfilePage() {
-  const { user: authUser, isAuth, loading, setUser } = useAuth();
-  const router = useRouter();
+  const { user: authUser, setUser } = useAuth();
   const [tab, setTab] = useState<Tab>('profile');
-  const [user, setLocalUser] = useState<any>(null);
-  const [dataLoading, setDataLoading] = useState(true);
+  // Initialise directly from the auth store — no loading flash
+  const [user, setLocalUser] = useState<any>(authUser ?? null);
 
-  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
-
+  // Keep local state in sync if the store updates (e.g. after refresh())
   useEffect(() => {
-    if (!loading && !isAuth && !hasToken) router.push('/signin?from=/profile');
-  }, [loading, isAuth, hasToken, router]);
-
-  useEffect(() => {
-    // Use persisted user from store immediately
-    if (authUser) {
-      setLocalUser(authUser);
-      setDataLoading(false);
-    } else {
-      // Fetch from API
-      const load = async () => {
-        try {
-          const data = await api.get<{ user: any }>('/api/auth/me');
-          const u = data?.user ?? data;
-          if (u) {
-            setLocalUser(u);
-            setUser(u);
-          }
-        } catch {
-          // fall back to localStorage
-          try {
-            const stored = localStorage.getItem('userData');
-            if (stored) setLocalUser(JSON.parse(stored));
-          } catch {}
-        } finally {
-          setDataLoading(false);
-        }
-      };
-      if (hasToken) load();
-    }
+    if (authUser) setLocalUser(authUser);
   }, [authUser]);
 
   function handleSaved(updatedUser: any) {
@@ -294,30 +263,8 @@ function ProfilePage() {
     api.patch('/api/users/me', { photoUrl: url }).catch(() => {});
   }
 
-  if (dataLoading && !user) return (
-    <div className="min-h-screen bg-bg-primary">
-      <div className="max-w-3xl mx-auto px-6 md:px-12 pt-28 pb-24 animate-pulse">
-        <div className="h-3 w-20 bg-surface rounded mb-3" />
-        <div className="flex items-center gap-6 mb-10">
-          <div className="w-28 h-28 rounded-full bg-surface flex-shrink-0" />
-          <div className="space-y-3">
-            <div className="h-8 w-48 bg-surface rounded" />
-            <div className="h-3 w-32 bg-surface rounded" />
-            <div className="h-6 w-28 bg-surface rounded-full" />
-          </div>
-        </div>
-        <div className="h-10 w-40 bg-surface rounded mb-8" />
-        <div className="border border-border rounded-2xl p-6 space-y-5">
-          {[1,2,3].map(i => (
-            <div key={i} className="space-y-2">
-              <div className="h-3 w-24 bg-surface rounded" />
-              <div className="h-11 bg-surface rounded-xl" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  // withAuth guarantees user exists before rendering — this is a safety net only
+  if (!user) return null;
 
   if (!user) return null;
 

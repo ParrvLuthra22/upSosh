@@ -46,6 +46,7 @@ router.post(
 
       if (isCloudinaryConfigured) {
         // Upload to Cloudinary
+        const fileBuffer = (req as any).file!.buffer;
         const result = await new Promise<any>((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             {
@@ -54,12 +55,12 @@ router.post(
                 { width: 1200, height: 840, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
               ],
             },
-            (error, result) => {
+            (error: any, result: any) => {
               if (error) reject(error);
               else resolve(result);
             },
           );
-          stream.end(req.file!.buffer);
+          (stream as any).end(fileBuffer);
         });
         url = result.secure_url;
       } else {

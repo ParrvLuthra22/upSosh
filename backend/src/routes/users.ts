@@ -123,12 +123,13 @@ router.post(
       );
 
       if (isCloudinaryConfigured) {
+        const fileBuffer = (req as any).file!.buffer;
         const result = await new Promise<any>((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: 'upsosh/avatars', transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }] },
-            (err, result) => { if (err) reject(err); else resolve(result); },
+            (err: any, r: any) => { if (err) reject(err); else resolve(r); },
           );
-          stream.end(req.file!.buffer);
+          (stream as any).end(fileBuffer);
         });
         photoUrl = result.secure_url;
       } else {
