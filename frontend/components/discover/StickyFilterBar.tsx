@@ -65,7 +65,7 @@ export default function StickyFilterBar({
               return (
                 <motion.button
                   key={cat.value}
-                  onClick={() => updateFilter('category', cat.value)}
+                  onClick={() => updateFilter('category', cat.value as any)}
                   aria-pressed={active}
                   className={`relative flex-shrink-0 font-sans text-xs font-medium px-4 py-2 rounded-full transition-colors duration-200 ${
                     active

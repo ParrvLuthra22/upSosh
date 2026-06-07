@@ -1,79 +1,122 @@
 'use client';
 
+import { forwardRef, ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { ReactNode, ButtonHTMLAttributes } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { IconCheck } from '@tabler/icons-react';
+import { cn } from '@/lib/utils';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  href?: string;
-}
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 font-sans font-medium select-none disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime/40 relative',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-lime text-void font-semibold hover:bg-lime/90',
+        secondary: 'bg-surface-2 text-cream border border-border hover:bg-cream/5',
+        ghost: 'text-cream-dim hover:text-cream hover:bg-cream/5',
+        danger: 'border border-coral text-coral hover:bg-coral/10',
+      },
+      size: {
+        sm: 'h-9 px-4 text-[13px] rounded-lg',
+        md: 'h-11 px-6 text-[14px] rounded-xl',
+        lg: 'h-13 px-8 text-[15px] rounded-xl',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  },
+);
 
-export default function Button({
-  children,
-  variant = 'primary',
-  size = 'md',
-  onClick,
-  href,
-  className = '',
-  ...props
-}: ButtonProps) {
-  
-  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-full';
-  const fontStyle = { fontFamily: 'var(--font-heading)' };
-  
-  
-  const variantClasses = {
-    primary: 'bg-[#D4A017] text-black transition-all duration-300 ease-in-out hover:bg-[#E5B020] hover:shadow-[0_4px_20px_rgba(212,160,23,0.25)]',
-    secondary: 'border-2 border-[#D4A017] text-[#D4A017] transition-all duration-300 ease-in-out hover:bg-[#D4A017] hover:text-black',
-    ghost: 'text-white/60 transition-colors duration-300 ease-in-out hover:text-[#D4A017]',
-  };
-  
-  const sizeClasses = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-8 py-4 text-base',
-    lg: 'px-10 py-5 text-lg',
-  };
-
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-
-  
-  const hoverAnimation = {
-    y: -2,
-    transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }
-  };
-  
-  const tapAnimation = {
-    y: 0,
-    transition: { duration: 0.15, ease: 'easeOut' as const }
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof buttonVariants> & {
+    isLoading?: boolean;
+    isSuccess?: boolean;
+    leftIcon?: ReactNode;
+    rightIcon?: ReactNode;
+    href?: string;
   };
 
-  if (href) {
-    return (
-      <motion.a
-        href={href}
-        className={classes}
-        style={fontStyle}
-        whileHover={hoverAnimation}
-        whileTap={tapAnimation}
-      >
-        {children}
-      </motion.a>
+const SpinnerIcon = () => (
+  <svg
+    className="animate-spin h-4 w-4 absolute"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+    />
+  </svg>
+);
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      isLoading,
+      isSuccess,
+      leftIcon,
+      rightIcon,
+      children,
+      href,
+      disabled,
+      onClick,
+      ...props
+    },
+    ref,
+  ) => {
+    const classes = cn(buttonVariants({ variant, size }), className);
+
+    const content = (
+      <>
+        {isLoading && <SpinnerIcon />}
+        {isSuccess ? (
+          <IconCheck size={16} className="text-lime" />
+        ) : (
+          <span className={cn('inline-flex items-center gap-2', isLoading && 'opacity-0')}>
+            {leftIcon}
+            {children}
+            {rightIcon}
+          </span>
+        )}
+      </>
     );
-  }
 
-  return (
-    <motion.button
-      type={props.type}
-      disabled={props.disabled}
-      onClick={onClick}
-      className={classes}
-      style={fontStyle}
-      whileHover={hoverAnimation}
-      whileTap={tapAnimation}
-    >
-      {children}
-    </motion.button>
-  );
-}
+    if (href) {
+      return (
+        <motion.a
+          href={href}
+          className={classes}
+          whileTap={{ scale: 0.97 }}
+          transition={{ duration: 0.1 }}
+        >
+          {content}
+        </motion.a>
+      );
+    }
+
+    return (
+      <motion.button
+        ref={ref}
+        className={classes}
+        disabled={isLoading || disabled}
+        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.1 }}
+        onClick={onClick}
+        {...(props as React.ComponentPropsWithoutRef<typeof motion.button>)}
+      >
+        {content}
+      </motion.button>
+    );
+  },
+);
+
+Button.displayName = 'Button';
+export default Button;

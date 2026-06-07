@@ -4,10 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
+import { useAuth } from '@/lib/stores/auth';
 import {
-  mockHost,
-  mockStats,
-  mockHostEvents,
   mockActivity,
   revenueData,
   type HostEvent,
@@ -232,29 +230,41 @@ function Sidebar({
       </nav>
 
       {/* Host profile */}
-      <div className="px-4 py-4 border-t border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-border">
-            <img src={mockHost.photo} alt={mockHost.name} className="w-full h-full object-cover" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-sans text-sm font-medium text-ink-primary truncate">{mockHost.name}</p>
-            {mockHost.isSuperhost && (
-              <span
-                className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                style={{
-                  background: 'linear-gradient(135deg, #F0C96A22, #C9A84C22)',
-                  color: '#C9A84C',
-                  border: '1px solid #C9A84C33',
-                }}
-              >
-                ★ Superhost
-              </span>
-            )}
-          </div>
+      <SidebarProfile />
+    </aside>
+  );
+}
+
+function SidebarProfile() {
+  const { user } = useAuth();
+  const initials = (user?.name ?? 'H').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+  return (
+    <div className="px-4 py-4 border-t border-border">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-border bg-surface flex items-center justify-center">
+          {user?.photoUrl ? (
+            <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-mono text-xs text-cream font-bold">{initials}</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-sans text-sm font-medium text-ink-primary truncate">{user?.name ?? 'Host'}</p>
+          {user?.hostStatus === 'verified' && (
+            <span
+              className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, #F0C96A22, #C9A84C22)',
+                color: '#C9A84C',
+                border: '1px solid #C9A84C33',
+              }}
+            >
+              ★ Verified Host
+            </span>
+          )}
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -725,40 +735,80 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ─── API data helpers ─────────────────────────────────────────────────────────
+
+function apiEventToHostEvent(ev: any): HostEvent {
+  const d = ev.date ? new Date(ev.date) : null;
+  const revenue = (ev.price ?? 0) * (ev.attendees ?? 0);
+  return {
+    id: ev.id,
+    title: ev.title,
+    category: ev.category ?? 'Event',
+    image: ev.image ?? 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80&fit=crop',
+    status: (ev.status ?? 'draft') as HostEvent['status'],
+    attendees: ev.attendees ?? 0,
+    capacity: ev.capacity ?? 30,
+    date: d ? d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+    dateShort: d ? d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
+    day: d ? d.getDate().toString() : '--',
+    month: d ? d.toLocaleString('en-IN', { month: 'short' }) : '--',
+    time: ev.time ?? '',
+    revenue,
+  };
+}
+
+function eventsToStats(events: HostEvent[]) {
+  const now = new Date();
+  const upcomingEvents = events.filter((e) => e.status === 'live' || e.status === 'draft').length;
+  const totalAttendees = events.reduce((s, e) => s + e.attendees, 0);
+  const monthlyRevenue = events
+    .filter((e) => {
+      const d = new Date();
+      d.setDate(1);
+      return true; // approximate: include all for now
+    })
+    .reduce((s, e) => s + (e.revenue ?? 0), 0);
+  return [
+    { label: 'Upcoming events', value: upcomingEvents.toString(), rawValue: upcomingEvents, trend: 0 },
+    { label: 'Total revenue', value: `₹${monthlyRevenue.toLocaleString('en-IN')}`, rawValue: monthlyRevenue, trend: 0 },
+    { label: 'Total attendees', value: totalAttendees.toString(), rawValue: totalAttendees, trend: 0 },
+    { label: 'Events hosted', value: events.length.toString(), rawValue: events.length, trend: 0 },
+  ];
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-const STATS = [
-  {
-    label: 'Upcoming events',
-    value: mockStats.upcomingEvents.toString(),
-    rawValue: mockStats.upcomingEvents,
-    trend: mockStats.trends.upcomingEvents,
-  },
-  {
-    label: 'This month revenue',
-    value: `₹${mockStats.monthlyRevenue.toLocaleString('en-IN')}`,
-    rawValue: mockStats.monthlyRevenue,
-    trend: mockStats.trends.monthlyRevenue,
-  },
-  {
-    label: 'Total attendees',
-    value: mockStats.totalAttendees.toString(),
-    rawValue: mockStats.totalAttendees,
-    trend: mockStats.trends.totalAttendees,
-  },
-  {
-    label: 'Average rating',
-    value: `${mockStats.averageRating} ★`,
-    rawValue: mockStats.averageRating * 10,
-    trend: mockStats.trends.averageRating,
-  },
-];
-
-export default function HostDashboard() {
+import { withAuth } from '@/components/ProtectedRoute';
+function HostDashboard() {
   const [activeNav, setActiveNav] = useState('overview');
   const greeting = useGreeting();
+  const { user } = useAuth();
 
-  const upcomingCount = mockHostEvents.filter((e) => e.status === 'live' || e.status === 'draft').length;
+  const [hostEvents, setHostEvents] = useState<HostEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    async function fetchHostEvents() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const res = await fetch(`${apiUrl}/api/events/host/mine`, {
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHostEvents((data.events ?? []).map(apiEventToHostEvent));
+          return;
+        }
+      } catch { /* fall through */ }
+    }
+    fetchHostEvents().finally(() => setLoadingEvents(false));
+  }, []);
+
+  const stats = eventsToStats(hostEvents);
+  const upcomingCount = hostEvents.filter((e) => e.status === 'live' || e.status === 'draft').length;
+  const firstName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
     <div className="flex min-h-screen bg-bg-primary">
@@ -775,16 +825,20 @@ export default function HostDashboard() {
             transition={{ duration: 0.5, ease: EASE_VERCEL }}
           >
             <h1 className="font-display text-[clamp(2.2rem,4vw,3.2rem)] text-ink-primary tracking-tight leading-none mb-2">
-              Good {greeting}, {mockHost.firstName}.
+              Good {greeting}, {firstName}.
             </h1>
             <p className="font-sans text-base text-ink-muted">
-              You have <span className="text-ink-primary font-medium">{upcomingCount} events</span> this week.
+              {loadingEvents ? 'Loading your events…' : (
+                upcomingCount > 0
+                  ? <>You have <span className="text-ink-primary font-medium">{upcomingCount} upcoming event{upcomingCount > 1 ? 's' : ''}</span>.</>
+                  : 'No upcoming events yet. Create your first one!'
+              )}
             </p>
           </motion.div>
 
           {/* ── Stats Grid ────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {STATS.map((s, i) => (
+            {stats.map((s, i) => (
               <StatCard key={s.label} {...s} delay={0.1 + i * 0.07} />
             ))}
           </div>
@@ -792,35 +846,43 @@ export default function HostDashboard() {
           {/* ── Upcoming Events ───────────────────────────────────── */}
           <section>
             <div className="flex items-center justify-between mb-5">
-              <SectionHeading>Your next events</SectionHeading>
-              <button className="font-mono text-xs text-ink-muted hover:text-accent transition-colors">
+              <SectionHeading>Your events</SectionHeading>
+              <Link href="/host/events" className="font-mono text-xs text-ink-muted hover:text-accent transition-colors">
                 View all →
-              </button>
+              </Link>
             </div>
-            {/* Horizontal scroll */}
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
-              {mockHostEvents.map((ev, i) => (
-                <EventCard key={ev.id} event={ev} index={i} />
-              ))}
-              {/* Add event CTA */}
-              <motion.div
-                className="flex-shrink-0 w-[280px] border border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center hover:border-accent/40 hover:bg-accent/3 transition-colors duration-200 group cursor-none"
-                data-cursor="CREATE"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.45, duration: 0.4 }}
-              >
-                <div className="w-10 h-10 rounded-full border border-dashed border-border group-hover:border-accent/40 flex items-center justify-center transition-colors">
-                  <svg className="w-5 h-5 text-ink-light group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-sans text-sm font-medium text-ink-muted group-hover:text-ink-primary transition-colors">New event</p>
-                  <p className="font-mono text-[10px] text-ink-light mt-0.5">Plan with AI →</p>
-                </div>
-              </motion.div>
-            </div>
+            {loadingEvents ? (
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex-shrink-0 w-[280px] h-[240px] bg-surface border border-border rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {hostEvents.map((ev, i) => (
+                  <EventCard key={ev.id} event={ev} index={i} />
+                ))}
+                {/* Add event CTA */}
+                <Link href="/host/events/new">
+                  <motion.div
+                    className="flex-shrink-0 w-[280px] border border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center hover:border-accent/40 hover:bg-accent/3 transition-colors duration-200 group cursor-pointer"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.45, duration: 0.4 }}
+                  >
+                    <div className="w-10 h-10 rounded-full border border-dashed border-border group-hover:border-accent/40 flex items-center justify-center transition-colors">
+                      <svg className="w-5 h-5 text-ink-light group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-sans text-sm font-medium text-ink-muted group-hover:text-ink-primary transition-colors">New event</p>
+                      <p className="font-mono text-[10px] text-ink-light mt-0.5">Plan with AI →</p>
+                    </div>
+                  </motion.div>
+                </Link>
+              </div>
+            )}
           </section>
 
           {/* ── Revenue Chart ─────────────────────────────────────── */}
@@ -846,3 +908,5 @@ export default function HostDashboard() {
     </div>
   );
 }
+
+export default withAuth(HostDashboard);

@@ -1,31 +1,31 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import express from 'express';
+import { v2 as cloudinary } from 'cloudinary';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import prisma from '../lib/prisma';
 
 const router = Router();
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: UPLOAD_DIR,
-  filename: (_, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
-  },
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const isCloudinaryConfigured = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+// Use memory storage — we stream the buffer straight to Cloudinary
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (_, file, cb) => {
-    const allowedExt = /\.(jpeg|jpg|png|gif|webp)$/i;
     const allowedMime = /^image\/(jpeg|jpg|png|gif|webp)$/i;
-    if (allowedExt.test(file.originalname) && allowedMime.test(file.mimetype)) {
+    if (allowedMime.test(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Only image files (jpeg, jpg, png, gif, webp) are allowed'));
@@ -33,39 +33,59 @@ const upload = multer({
   },
 });
 
-// Serve uploaded files statically
-router.use('/files', express.static(UPLOAD_DIR));
-
 // POST /api/uploads — upload a file (requireAuth)
 router.post(
   '/',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requireAuth as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   upload.single('file') as any,
   async (req: AuthRequest, res): Promise<any> => {
-  try {
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    try {
+      if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
-    const url = `${backendUrl}/api/uploads/files/${req.file.filename}`;
+      let url: string;
 
-    await prisma.upload.create({
-      data: {
-        userId: req.user!.id,
-        url,
-        filename: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-      },
-    });
+      if (isCloudinaryConfigured) {
+        // Upload to Cloudinary
+        const result = await new Promise<any>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: 'upsosh',
+              transformation: [
+                { width: 1200, height: 840, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
+              ],
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            },
+          );
+          stream.end(req.file!.buffer);
+        });
+        url = result.secure_url;
+      } else {
+        // Fallback: return a placeholder if Cloudinary isn't configured
+        console.warn('[Upload] Cloudinary not configured — returning placeholder URL');
+        return res.status(503).json({
+          message: 'Image upload service not configured. Please set CLOUDINARY_* environment variables.',
+        });
+      }
 
-    return res.json({ url, filename: req.file.filename });
-  } catch (err: any) {
-    console.error('Upload error:', err.message);
-    return res.status(500).json({ message: err.message || 'Upload failed' });
-  }
-  }
+      await prisma.upload.create({
+        data: {
+          userId: req.user!.id,
+          url,
+          filename: req.file.originalname,
+          mimeType: req.file.mimetype,
+          size: req.file.size,
+        },
+      });
+
+      return res.json({ url, filename: req.file.originalname });
+    } catch (err: any) {
+      console.error('Upload error:', err.message);
+      return res.status(500).json({ message: err.message || 'Upload failed' });
+    }
+  },
 );
 
 export default router;

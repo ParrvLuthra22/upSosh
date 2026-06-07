@@ -39,7 +39,7 @@ model User {
   resetTokenExpiry     DateTime?
 
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  updatedAt            DateTime  @default(now()) @updatedAt
 
   events               Event[]
   bookings             Booking[]
@@ -58,9 +58,9 @@ model Host {
 model Event {
   id          String    @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String    @unique @default(cuid())
   type        String
-  category    String
+  category    String    @default("General")
   date        DateTime
   time        String
   venue       String
@@ -83,7 +83,7 @@ model Event {
   bookings    Booking[]
 
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  updatedAt   DateTime  @default(now()) @updatedAt
 }
 
 model Booking {
@@ -93,12 +93,12 @@ model Booking {
   eventId       String?
   event         Event?    @relation(fields: [eventId], references: [id])
 
-  guestName     String
-  guestEmail    String
-  guestPhone    String
+  guestName     String    @default("")
+  guestEmail    String    @default("")
+  guestPhone    String    @default("")
   notes         String?
 
-  ticketPrice   Float
+  ticketPrice   Float     @default(0)
   platformFee   Float     @default(25)
   totalAmount   Float
 
@@ -114,7 +114,7 @@ model Booking {
   customer      String?   // JSON for legacy compat
 
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model HostApplication {
@@ -147,7 +147,7 @@ model HostApplication {
   reviewNotes     String?
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  updatedAt       DateTime  @default(now()) @updatedAt
 }
 
 model Upload {

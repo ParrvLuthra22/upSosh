@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { sendPasswordResetEmail } from '../lib/email';
 
 const router = Router();
 
@@ -229,14 +230,16 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<any
       data: { resetToken: hashedToken, resetTokenExpiry: expiry },
     });
 
-    const resetUrl = `/reset/${rawToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://upsosh.app';
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`;
+
+    // Send email (works in both dev and prod — falls back gracefully if no API key)
+    sendPasswordResetEmail(trimmedEmail, resetUrl).catch(() => {});
 
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[ForgotPassword] Reset URL for ${trimmedEmail}: ${resetUrl}`);
-      return res.json({ message: 'Password reset link generated.', resetUrl });
     }
 
-    // In production, you would send an email here
     return res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
   } catch (err: any) {
     console.error('Forgot password error:', err.message);

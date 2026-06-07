@@ -1,28 +1,23 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, JetBrains_Mono } from 'next/font/google';
+import { Fraunces } from 'next/font/google';
 import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import CustomCursor from '@/components/ui/CustomCursor';
 import ConditionalHeader from '@/components/ConditionalHeader';
 import ConditionalFooter from '@/components/layout/ConditionalFooter';
-import AuthBootstrap from '@/components/AuthBootstrap';
+import AuthProvider from '@/components/providers/AuthProvider';
+import BookingFlow from '@/components/BookingFlow';
+import IntroScreen from '@/components/IntroScreen';
 import { Toaster } from 'sonner';
 
-const instrumentSerif = Instrument_Serif({
+const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
   style: ['normal', 'italic'],
   display: 'swap',
-  variable: '--font-display',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  display: 'swap',
-  variable: '--font-mono',
+  variable: '--font-fraunces',
 });
 
 export const metadata: Metadata = {
@@ -68,36 +63,43 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${instrumentSerif.variable} ${GeistSans.variable} ${jetbrainsMono.variable}`}
+      className={`${fraunces.variable} ${GeistSans.variable} ${GeistMono.variable}`}
+      style={
+        {
+          '--font-geist': GeistSans.style.fontFamily,
+          '--font-geist-mono': GeistMono.style.fontFamily,
+        } as React.CSSProperties
+      }
     >
-      <body className="bg-bg-primary text-ink-primary antialiased cursor-none md:cursor-none">
+      <body className="bg-void text-cream antialiased cursor-none md:cursor-none">
         <noscript>
-          <div style={{ padding: '20px', textAlign: 'center', background: '#FF5A1F', color: '#FAFAF7' }}>
+          <div style={{ padding: '20px', textAlign: 'center', background: '#D4FF3F', color: '#0A0A0B' }}>
             JavaScript is disabled. For the best experience, please enable JavaScript or download our mobile app.
           </div>
         </noscript>
-        <ThemeProvider>
-          <AuthBootstrap />
-          <SmoothScroll>
-            {/* Skip navigation for keyboard/screen-reader users */}
-            <a href="#main-content" className="skip-to-main">
-              Skip to main content
-            </a>
-            <CustomCursor />
-            <ConditionalHeader />
-            <main id="main-content" className="min-h-screen">
-              {children}
-            </main>
-            <ConditionalFooter />
-          </SmoothScroll>
-        </ThemeProvider>
+        <IntroScreen />
+        <AuthProvider>
+        <SmoothScroll>
+          <a href="#main-content" className="skip-to-main">
+            Skip to main content
+          </a>
+          <CustomCursor />
+          <ConditionalHeader />
+          <main id="main-content" className="min-h-screen">
+            {children}
+          </main>
+          <ConditionalFooter />
+        </SmoothScroll>
+        </AuthProvider>
+        {/* Global booking modal — controlled by useBookingStore */}
+        <BookingFlow />
         <Toaster
           position="top-right"
           toastOptions={{
             classNames: {
               toast: 'font-sans text-sm',
-              success: 'bg-[#1F5F3F] text-white border-0',
-              error: 'bg-red-600 text-white border-0',
+              success: 'bg-emerald-600 text-white border-0',
+              error: 'bg-coral text-white border-0',
             },
           }}
         />

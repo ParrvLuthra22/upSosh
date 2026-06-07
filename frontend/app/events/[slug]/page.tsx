@@ -1,354 +1,520 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { mockEvents, MockEvent } from '@/lib/mockEvents';
-import { EASE_VERCEL } from '@/lib/motion';
-import MagneticButton from '@/components/ui/MagneticButton';
-import ImageReveal from '@/components/ui/ImageReveal';
+import { useParams } from 'next/navigation';
+import { useBookingStore } from '@/lib/stores/booking';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useInView,
+} from 'framer-motion';
+import {
+  IconCalendar,
+  IconClock,
+  IconMapPin,
+  IconCheck,
+  IconShieldCheck,
+  IconLock,
+  IconRefresh,
+  IconRosetteDiscountCheck,
+  IconStar,
+  IconArrowRight,
+  IconMinus,
+  IconPlus,
+  IconShare,
+  IconBrandWhatsapp,
+  IconLink,
+} from '@tabler/icons-react';
+import { mockEvents, type MockEvent } from '@/lib/mockEvents';
+import { cn } from '@/lib/utils';
 
-// ─── Extended Mock Data ──────────────────────────────────────────────────────
+// ─── Constants & types ────────────────────────────────────────────────────────
 
-interface ExtendedEventData {
+const EASE = [0.22, 1, 0.36, 1] as const;
+const SPRING = { type: 'spring', stiffness: 340, damping: 30 } as const;
+
+interface ExtendedData {
   description: string;
-  pullQuote: string;
-  timeline: Array<{ time: string; title: string; desc: string }>;
+  included: string[];
   hostBio: string;
   hostRating: number;
   hostEvents: number;
   hostPhoto: string;
-  attendees: Array<{ name: string; initials: string; color: string }>;
-  duration: string;
+  attendees: Array<{ name: string; initials: string; bg: string; fg: string; shared: number }>;
 }
 
-const ACCENT_COLORS = ['#FF5A1F', '#1F5F3F', '#6B6B6B', '#0A0A0A', '#A8A29E'];
+// ─── Extended mock data ───────────────────────────────────────────────────────
 
-const DEFAULT_EXTENDED: ExtendedEventData = {
+const DEFAULT_EXTENDED: ExtendedData = {
   description: `This is a curated, intimate experience designed for people who value real connections over large crowds. Every detail — from the venue to the guest list — is hand-picked to create something worth showing up for.\n\nWhether you're coming alone or with a friend, you'll leave with new perspectives, a few good conversations, and hopefully, people you'll actually stay in touch with.`,
-  pullQuote: "\u201cThe best events aren\u2019t the biggest ones \u2014 they\u2019re the ones where everyone was glad they came.\u201d",
-  timeline: [
-    { time: '06:30', title: 'Arrival & Warm-up', desc: 'Meet your fellow participants. Light stretching, introductions, and a quick brief on the plan for the morning.' },
-    { time: '07:00', title: 'Main Activity', desc: 'The heart of the experience — curated, led by your host, and designed to be memorable.' },
-    { time: '08:30', title: 'Wind Down & Connect', desc: 'Grab a chai, swap numbers, and linger as long as you like. The best conversations often happen here.' },
+  included: [
+    'Chai and refreshments after the session',
+    'Host-led welcome and introductions',
+    'Digital entry ticket sent instantly',
+    'Access to the post-event community group',
+    'Personalised pace matching for run events',
   ],
-  hostBio: 'A passionate community builder who has been running curated events across India for the past 3 years. Known for creating spaces where strangers become friends.',
+  hostBio:
+    'A passionate community builder who has been running curated events across India for the past 3 years. Known for creating spaces where strangers become friends.',
   hostRating: 4.9,
-  hostEvents: 8,
-  hostPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&h=240&fit=crop&q=80',
+  hostEvents: 12,
+  hostPhoto:
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&q=80',
   attendees: [
-    { name: 'Priya S.', initials: 'PS', color: '#FF5A1F' },
-    { name: 'Rahul K.', initials: 'RK', color: '#1F5F3F' },
-    { name: 'Ananya M.', initials: 'AM', color: '#6B6B6B' },
-    { name: 'Dev C.', initials: 'DC', color: '#0A0A0A' },
-    { name: 'Shreya P.', initials: 'SP', color: '#A8A29E' },
-    { name: 'Vikram R.', initials: 'VR', color: '#FF5A1F' },
-    { name: 'Nisha T.', initials: 'NT', color: '#1F5F3F' },
-    { name: 'Arjun B.', initials: 'AB', color: '#6B6B6B' },
+    { name: 'Priya S.', initials: 'PS', bg: '#D4FF3F', fg: '#0A0A0B', shared: 3 },
+    { name: 'Rahul K.', initials: 'RK', bg: '#1C1C26', fg: '#F4F1EA', shared: 1 },
+    { name: 'Ananya M.', initials: 'AM', bg: '#FF6F61', fg: '#F4F1EA', shared: 2 },
+    { name: 'Dev C.', initials: 'DC', bg: '#34D399', fg: '#0A0A0B', shared: 0 },
+    { name: 'Shreya P.', initials: 'SP', bg: '#1C1C26', fg: '#F4F1EA', shared: 1 },
+    { name: 'Vikram R.', initials: 'VR', bg: '#D4FF3F', fg: '#0A0A0B', shared: 4 },
+    { name: 'Nisha T.', initials: 'NT', bg: '#1C1C26', fg: '#F4F1EA', shared: 0 },
+    { name: 'Arjun B.', initials: 'AB', bg: '#FF6F61', fg: '#F4F1EA', shared: 2 },
   ],
-  duration: '2 hours',
 };
 
-const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedEventData>>> = {
+const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedData>>> = {
   'evt-001': {
-    description: `Lodhi Garden at dawn is something else. The light filters through the Mughal domes while the city is still waking up — and you're moving through it with a group of people who chose to be somewhere beautiful instead of in bed.\n\nThis run club is for all paces. We keep together as a group, no one gets left behind, and we finish at our favourite chai spot nearby for an optional cool-down.`,
-    pullQuote: "\u201cRunning is the one hour of the day that\u2019s entirely yours.\u201d",
-    timeline: [
-      { time: '06:30', title: 'Meet at Gate 2', desc: 'Introductions, light dynamic stretching. Leave your ego at home — all paces welcome.' },
-      { time: '06:45', title: '5K Loop', desc: "Group run through the garden\u2019s heritage paths. Pacers at front and back to keep everyone together." },
-      { time: '07:30', title: 'Chai & Cool Down', desc: 'The real reason people come back. Street chai 200m from the gate. Stories are exchanged here.' },
+    description: `Lodhi Garden at dawn is something else. The light filters through the Mughal domes while the city is still waking up — and you're moving through it with a group of people who chose to be somewhere beautiful instead of in bed.\n\nThis run club is for all paces. We keep together as a group, no one gets left behind, and we finish at our favourite chai spot nearby.`,
+    included: [
+      'Warm-up led by the host',
+      'Group run with front and back pacers',
+      'Chai and snacks at the end',
+      'Digital run certificate',
+      'Access to the Delhi Runners WhatsApp group',
     ],
-    duration: '1.5 hours',
   },
   'evt-004': {
     description: `The Bombay Canteen is one of those rare spaces that earns its reputation quietly. We've reserved the private dining room for a gathering of 12 — founders, operators, and a few interesting wildcards.\n\nThis is not a networking dinner. There's no agenda, no pitches, no slide decks. Just good food, sharp conversation, and the kind of candour you only get at a small table.`,
-    pullQuote: '"The most valuable connections in your career happen off the record."',
-    timeline: [
-      { time: '20:00', title: 'Welcome drinks', desc: 'Arrive to seasonal cocktails and introductions. Don\'t be late — the magic happens in the first half-hour.' },
-      { time: '20:30', title: 'Dinner', desc: '5-course curated menu, wine pairings included. Chef\'s choice — allergies noted at booking.' },
-      { time: '22:30', title: 'Open conversation', desc: 'The table stays open as long as you want it to. Some evenings run till midnight.' },
+    included: [
+      '5-course curated menu by Chef Thomas Zacharias',
+      'Wine and cocktail pairings',
+      'Private dining room (no other guests)',
+      'Curated guest list — vetted by the host',
     ],
-    duration: '3–4 hours',
     hostEvents: 14,
     hostRating: 5.0,
   },
 };
 
-function getExtended(id: string): ExtendedEventData {
-  return { ...DEFAULT_EXTENDED, ...EXTENDED_OVERRIDES[id] };
+function getExtended(id: string): ExtendedData {
+  return { ...DEFAULT_EXTENDED, ...(EXTENDED_OVERRIDES[id] ?? {}) };
 }
 
-function getEvent(slug: string): MockEvent {
+function getMockEvent(slug: string): MockEvent {
   return (
-    mockEvents.find((e) => e.id === slug || e.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') === slug) ??
-    mockEvents[0]
+    mockEvents.find(
+      (e) =>
+        e.id === slug ||
+        e.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') === slug,
+    ) ?? mockEvents[0]
   );
 }
 
-// ─── Components ───────────────────────────────────────────────────────────────
-
-function CharReveal({ text, className }: { text: string; className?: string }) {
-  // Split by words to keep spaces correct, then animate each character
-  return (
-    <h1 className={className} aria-label={text}>
-      {Array.from(text).map((char, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 32, rotateX: -20 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
-          transition={{
-            duration: 0.5,
-            delay: 0.2 + i * 0.018,
-            ease: EASE_VERCEL,
-          }}
-          style={{
-            display: 'inline-block',
-            whiteSpace: char === ' ' ? 'pre' : 'normal',
-          }}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </h1>
-  );
+function apiEventToMock(raw: any): MockEvent {
+  const d = raw.date ? new Date(raw.date) : null;
+  const spotsLeft = (raw.capacity ?? 30) - (raw.attendees ?? 0);
+  return {
+    id:        raw.id,
+    title:     raw.title,
+    category:  raw.category ?? 'Social',
+    host: {
+      name:      raw.host?.name ?? raw.user?.name ?? 'Host',
+      initials:  (raw.host?.name ?? raw.user?.name ?? 'H').slice(0, 2).toUpperCase(),
+      verified:  raw.host?.verified ?? false,
+      superhost: raw.isSuperhost ?? false,
+      newHost:   false,
+    },
+    date:      d ? d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+    dateShort: d ? d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
+    time:      raw.time ?? '',
+    location:  raw.venue ?? '',
+    city:      raw.city ?? '',
+    price:     raw.isFree || raw.price === 0 ? 'Free' : (raw.price ?? 0),
+    spots:     raw.capacity ?? 30,
+    spotsLeft: Math.max(0, spotsLeft),
+    going:     raw.attendees ?? 0,
+    image:     raw.image ?? 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80&fit=crop',
+    tags:      Array.isArray(raw.tags) ? raw.tags : [],
+    featured:  false,
+  };
 }
 
-function MetaGrid({ event, extended }: { event: MockEvent; extended: ExtendedEventData }) {
-  const items = [
-    { label: 'Date', value: event.dateShort },
-    { label: 'Time', value: event.time },
-    { label: 'Location', value: event.location },
-    { label: 'Duration', value: extended.duration },
-  ];
+// ─── Small helpers ─────────────────────────────────────────────────────────────
+
+function fmtPrice(price: MockEvent['price']): string {
+  if (price === 'Free' || price === 0) return 'Free';
+  return `₹${(price as number).toLocaleString('en-IN')}`;
+}
+
+function numPrice(price: MockEvent['price']): number {
+  if (price === 'Free') return 0;
+  return price as number;
+}
+
+// ─── Section fade-up wrapper ──────────────────────────────────────────────────
+
+function FadeUp({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px 0px' });
   return (
     <motion.div
-      className="grid grid-cols-2 gap-x-8 gap-y-6 mt-8 pt-8 border-t border-border"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8, duration: 0.5, ease: EASE_VERCEL }}
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, ease: EASE, delay }}
     >
-      {items.map(({ label, value }) => (
-        <div key={label}>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">{label}</p>
-          <p className="font-sans text-[18px] text-ink-primary font-medium leading-snug">{value}</p>
-        </div>
-      ))}
+      {children}
     </motion.div>
   );
 }
 
-function TimelineSection({ items }: { items: ExtendedEventData['timeline'] }) {
+// ─── Section label ────────────────────────────────────────────────────────────
+
+function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <SectionEyebrow>What to expect</SectionEyebrow>
-      {/* Desktop: 3 columns */}
-      <div className="hidden md:grid grid-cols-3 gap-8 mt-8">
-        {items.map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, delay: i * 0.12, ease: EASE_VERCEL }}
-            className="relative"
-          >
-            {/* Connector line */}
-            {i < items.length - 1 && (
-              <div className="absolute top-[11px] left-full w-8 h-px bg-border" style={{ width: 'calc(100% - 100% + 2rem)' }} />
-            )}
-            <div className="flex items-center gap-3 mb-4">
-              <span className="font-mono text-xs text-accent">{item.time}</span>
-              <div className="w-2 h-2 rounded-full bg-accent flex-shrink-0" />
-              <div className="flex-1 h-px bg-border" />
-            </div>
-            <h3 className="font-display text-xl text-ink-primary mb-2">{item.title}</h3>
-            <p className="font-sans text-sm text-ink-muted leading-relaxed">{item.desc}</p>
-          </motion.div>
-        ))}
-      </div>
-      {/* Mobile: stacked with vertical line */}
-      <div className="md:hidden mt-8 relative">
-        <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
-        <div className="space-y-8 pl-8">
-          {items.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -12 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1, ease: EASE_VERCEL }}
-            >
-              <div className="absolute left-[3px] w-4 h-4 rounded-full bg-bg-primary border-2 border-accent" style={{ marginTop: '2px' }} />
-              <span className="font-mono text-xs text-accent">{item.time}</span>
-              <h3 className="font-display text-lg text-ink-primary mt-1 mb-1">{item.title}</h3>
-              <p className="font-sans text-sm text-ink-muted leading-relaxed">{item.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <p className="label text-lime mb-4">{children}</p>
   );
 }
 
-function SectionEyebrow({ children }: { children: React.ReactNode }) {
+// ─── Hero image with parallax ─────────────────────────────────────────────────
+
+function HeroImage({ src, alt }: { src: string; alt: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+  const rawY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const y = useSpring(rawY, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
   return (
-    <motion.p
-      className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
+    <div
+      ref={ref}
+      className="w-full overflow-hidden rounded-3xl"
+      style={{ aspectRatio: '16/10' }}
     >
-      {children}
-    </motion.p>
-  );
-}
-
-function AttendeeStack({ attendees, total }: { attendees: ExtendedEventData['attendees']; total: number }) {
-  const [hovered, setHovered] = useState<string | null>(null);
-  return (
-    <div className="flex items-center gap-4 mt-6">
-      <div className="flex">
-        {attendees.slice(0, 8).map((a, i) => (
-          <div
-            key={a.name}
-            className="relative"
-            style={{ marginLeft: i === 0 ? 0 : '-10px', zIndex: attendees.length - i }}
-            onMouseEnter={() => setHovered(a.name)}
-            onMouseLeave={() => setHovered(null)}
-          >
-            <div
-              className="w-9 h-9 rounded-full border-2 border-bg-primary flex items-center justify-center cursor-default"
-              style={{ background: a.color }}
-            >
-              <span className="font-mono text-[9px] text-white font-medium">{a.initials}</span>
-            </div>
-            <AnimatePresence>
-              {hovered === a.name && (
-                <motion.div
-                  className="absolute -top-9 left-1/2 -translate-x-1/2 bg-ink-primary text-bg-primary font-sans text-[11px] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none z-50"
-                  initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  {a.name}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-ink-primary" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </div>
-      {total > 8 && (
-        <span className="font-mono text-xs text-ink-muted">+ {total - 8} others</span>
-      )}
+      <motion.img
+        src={src}
+        alt={alt}
+        style={{ y, scale: 1.08 }}
+        className="w-full h-full object-cover"
+      />
     </div>
   );
 }
+
+// ─── Host card ────────────────────────────────────────────────────────────────
+
+function HostCard({
+  event,
+  ext,
+}: {
+  event: MockEvent;
+  ext: ExtendedData;
+}) {
+  return (
+    <FadeUp className="mt-10 bg-surface border border-border rounded-2xl p-6">
+      <div className="flex items-start gap-5">
+        {/* Avatar */}
+        <div className="w-[60px] h-[60px] rounded-full overflow-hidden flex-shrink-0">
+          <img
+            src={ext.hostPhoto}
+            alt={event.host.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 22, fontWeight: 400, color: '#F4F1EA', lineHeight: 1.2 }}>
+            {event.host.name}
+          </p>
+
+          {/* Badges */}
+          <div className="flex items-center gap-2 mt-1.5">
+            {event.host.superhost && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-coral border border-coral/30 bg-coral/10 px-2 py-0.5 rounded-full">
+                <IconStar size={9} /> Superhost
+              </span>
+            )}
+            {event.host.verified && (
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-lime border border-lime/30 bg-lime/10 px-2 py-0.5 rounded-full">
+                <IconRosetteDiscountCheck size={9} /> Verified
+              </span>
+            )}
+          </div>
+
+          <p className="font-sans text-[13px] text-cream-dim mt-2">
+            {ext.hostEvents} events hosted · {ext.hostRating} rating
+          </p>
+        </div>
+
+        {/* View profile */}
+        <Link
+          href={`/u/${encodeURIComponent(event.host.name.toLowerCase().replace(/\s+/g, '-'))}`}
+          className="flex-shrink-0 h-9 px-4 rounded-xl border border-border font-sans text-[13px] text-cream-dim hover:text-cream hover:border-border-strong transition-colors inline-flex items-center"
+        >
+          View profile
+        </Link>
+      </div>
+
+      {/* Bio */}
+      <p className="font-sans text-[14px] text-cream-dim leading-relaxed mt-4 pt-4 border-t border-border">
+        {ext.hostBio}
+      </p>
+    </FadeUp>
+  );
+}
+
+// ─── Attendee mini-card ────────────────────────────────────────────────────────
+
+function AttendeeCard({
+  name,
+  initials,
+  bg,
+  fg,
+  shared,
+}: ExtendedData['attendees'][0]) {
+  return (
+    <div className="bg-surface border border-border rounded-xl p-3 flex items-center gap-3">
+      <div
+        className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
+        style={{ backgroundColor: bg }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 700, color: fg, fontFamily: 'var(--font-fraunces, Georgia, serif)' }}>
+          {initials}
+        </span>
+      </div>
+      <div className="min-w-0">
+        <p className="font-sans text-[13px] text-cream leading-none truncate">{name}</p>
+        <p className="font-sans text-[11px] text-cream-faint mt-0.5">
+          {shared > 0 ? `${shared} shared event${shared > 1 ? 's' : ''}` : 'New member'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Google Maps embed ────────────────────────────────────────────────────────
+
+function MapEmbed({ location }: { location: string }) {
+  const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(location)}&output=embed`;
+  const openUrl = `https://maps.google.com/maps?q=${encodeURIComponent(location)}`;
+  return (
+    <div className="mt-4 rounded-2xl overflow-hidden border border-border" style={{ aspectRatio: '2/1' }}>
+      <iframe
+        src={mapsUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        title={`Map of ${location}`}
+      />
+      <a
+        href={openUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1.5 mt-2 font-mono text-[11px] text-cream-faint hover:text-lime transition-colors uppercase tracking-wider"
+      >
+        <IconMapPin size={11} /> Open in Google Maps
+      </a>
+    </div>
+  );
+}
+
+// ─── Share bar ────────────────────────────────────────────────────────────────
+
+function ShareBar({ title }: { title: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const waText = encodeURIComponent(`Check out this event: ${title} — ${typeof window !== 'undefined' ? window.location.href : ''}`);
+
+  return (
+    <div className="flex items-center gap-2 mt-3">
+      <span className="font-mono text-[11px] text-cream-faint uppercase tracking-wider mr-1">Share</span>
+      <a
+        href={`https://wa.me/?text=${waText}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-cream-dim hover:text-lime hover:border-lime/40 transition-colors"
+        title="Share on WhatsApp"
+      >
+        <IconBrandWhatsapp size={16} />
+      </a>
+      <button
+        onClick={copyLink}
+        className="w-9 h-9 rounded-full border border-border flex items-center justify-center text-cream-dim hover:text-lime hover:border-lime/40 transition-colors"
+        title="Copy link"
+      >
+        {copied ? <IconCheck size={14} className="text-lime" strokeWidth={2.5} /> : <IconLink size={15} />}
+      </button>
+    </div>
+  );
+}
+
+// ─── Booking card (desktop) ───────────────────────────────────────────────────
 
 function BookingCard({
   event,
-  extended,
-  onReserve,
-  reserving,
+  onBook,
 }: {
   event: MockEvent;
-  extended: ExtendedEventData;
-  onReserve: () => void;
-  reserving: boolean;
+  onBook: (guests: number) => void;
 }) {
-  const capacityPct = ((event.spots - event.spotsLeft) / event.spots) * 100;
+  const [guests, setGuests] = useState(1);
+  const maxGuests = Math.min(event.spotsLeft, 10);
+  const unitPrice = numPrice(event.price);
+  const subtotal = unitPrice * guests;
+  const serviceFee = Math.round(subtotal * 0.1);
+  const total = subtotal + serviceFee;
+  const isFree = unitPrice === 0;
 
   return (
     <motion.div
-      className="bg-bg-primary border border-border rounded-3xl p-6 shadow-xl shadow-ink-primary/5"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6, duration: 0.5, ease: EASE_VERCEL }}
+      className="bg-surface-2 border border-border-strong rounded-3xl p-7"
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={SPRING}
     >
       {/* Price */}
-      <div className="mb-5">
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-[2.5rem] text-ink-primary leading-none">
-            {event.price === 'Free' ? 'Free' : `₹${event.price.toLocaleString()}`}
-          </span>
-          {event.price !== 'Free' && (
-            <span className="font-mono text-xs text-ink-muted">per person</span>
-          )}
-        </div>
-      </div>
-
-      {/* Capacity meter */}
-      <div className="mb-5">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="font-mono text-[11px] text-ink-muted uppercase tracking-wider">Spots</span>
-          <span className="font-mono text-[11px] text-accent">{event.spotsLeft} left of {event.spots}</span>
-        </div>
-        <div className="h-1 bg-border rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-accent rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${capacityPct}%` }}
-            transition={{ delay: 0.9, duration: 0.8, ease: EASE_VERCEL }}
-          />
-        </div>
-      </div>
-
-      {/* Reserve button */}
-      <MagneticButton strength={6} radius={60} className="w-full">
-        <motion.button
-          onClick={onReserve}
-          disabled={reserving}
-          className="w-full bg-ink-primary text-bg-primary font-sans text-sm font-medium py-4 rounded-2xl flex items-center justify-center gap-2 relative overflow-hidden"
-          whileTap={{ scale: 0.98 }}
+      <div className="flex items-baseline gap-2 mb-6">
+        <span
+          style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 40, fontWeight: 400, color: '#D4FF3F', lineHeight: 1 }}
         >
-          <AnimatePresence mode="wait">
-            {reserving ? (
-              <motion.span
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <motion.span
-                  className="w-4 h-4 border-2 border-bg-primary/30 border-t-bg-primary rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                />
-                Reserving…
-              </motion.span>
-            ) : (
-              <motion.span
-                key="reserve"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                Reserve your spot →
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </MagneticButton>
+          {isFree ? 'Free' : `₹${unitPrice.toLocaleString('en-IN')}`}
+        </span>
+        {!isFree && (
+          <span className="font-sans text-[14px] text-cream-dim">/person</span>
+        )}
+      </div>
 
-      {/* Fine print */}
-      <p className="font-mono text-[10px] text-ink-light text-center mt-3 leading-relaxed">
-        Free cancellation up to 48h before · No hidden fees
-      </p>
+      {/* Date + time */}
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-3 font-sans text-[14px] text-cream-dim">
+          <IconCalendar size={15} className="text-lime flex-shrink-0" />
+          {event.dateShort}
+        </div>
+        <div className="flex items-center gap-3 font-sans text-[14px] text-cream-dim">
+          <IconClock size={15} className="text-lime flex-shrink-0" />
+          {event.time}
+        </div>
+        <div className="flex items-center gap-3 font-sans text-[14px] text-cream-dim">
+          <IconMapPin size={15} className="text-lime flex-shrink-0" />
+          <span className="truncate">{event.location}</span>
+        </div>
+      </div>
 
-      {/* Event quick meta */}
-      <div className="mt-5 pt-5 border-t border-border space-y-2.5">
+      <div className="border-t border-border my-5" />
+
+      {/* Guest stepper */}
+      <div className="flex items-center justify-between mb-5">
+        <span className="font-sans text-[14px] text-cream">Guests</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setGuests((g) => Math.max(1, g - 1))}
+            disabled={guests <= 1}
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-cream-dim hover:text-cream hover:border-border-strong disabled:opacity-30 transition-colors"
+          >
+            <IconMinus size={14} />
+          </button>
+          <motion.span
+            key={guests}
+            initial={{ scale: 1.3, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 24, fontWeight: 400, color: '#F4F1EA', minWidth: 24, textAlign: 'center', display: 'inline-block' }}
+          >
+            {guests}
+          </motion.span>
+          <button
+            onClick={() => setGuests((g) => Math.min(maxGuests, g + 1))}
+            disabled={guests >= maxGuests}
+            className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-cream-dim hover:text-cream hover:border-border-strong disabled:opacity-30 transition-colors"
+          >
+            <IconPlus size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Total breakdown */}
+      {!isFree && (
+        <div className="bg-cream/5 rounded-xl p-4 mb-5 space-y-2">
+          <div className="flex justify-between font-sans text-[13px] text-cream-dim">
+            <span>Subtotal ({guests} × ₹{unitPrice.toLocaleString('en-IN')})</span>
+            <span>₹{subtotal.toLocaleString('en-IN')}</span>
+          </div>
+          <div className="flex justify-between font-sans text-[13px] text-cream-dim">
+            <span>Service fee (10%)</span>
+            <span>₹{serviceFee.toLocaleString('en-IN')}</span>
+          </div>
+          <div className="flex justify-between items-baseline border-t border-border pt-2 mt-2">
+            <span className="font-sans text-[14px] text-cream font-medium">Total</span>
+            <motion.span
+              key={total}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: '#D4FF3F' }}
+            >
+              ₹{total.toLocaleString('en-IN')}
+            </motion.span>
+          </div>
+        </div>
+      )}
+
+      {/* Spots urgency */}
+      {event.spotsLeft > 0 && event.spotsLeft <= 3 && (
+        <motion.p
+          className="font-mono text-[12px] text-coral text-center mb-4 uppercase tracking-wider"
+          animate={{ opacity: [1, 0.5, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+        >
+          Only {event.spotsLeft} spot{event.spotsLeft > 1 ? 's' : ''} left
+        </motion.p>
+      )}
+
+      {/* CTA */}
+      <motion.button
+        onClick={() => onBook(guests)}
+        whileTap={{ scale: 0.97 }}
+        className="w-full rounded-full font-sans font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+        style={{ height: 56, backgroundColor: '#D4FF3F', color: '#0A0A0B', fontSize: 16 }}
+      >
+        Book now
+        <IconArrowRight size={16} strokeWidth={2.5} />
+      </motion.button>
+
+      {/* Trust row */}
+      <div className="flex items-center justify-around border-t border-border mt-5 pt-5">
         {[
-          { icon: '📅', text: event.dateShort },
-          { icon: '⏰', text: event.time },
-          { icon: '📍', text: event.location },
-        ].map(({ icon, text }) => (
-          <div key={text} className="flex items-center gap-2.5">
-            <span className="text-base">{icon}</span>
-            <span className="font-sans text-sm text-ink-muted">{text}</span>
+          { Icon: IconShieldCheck, label: 'Secure' },
+          { Icon: IconLock,        label: 'Private' },
+          { Icon: IconRefresh,     label: 'Free cancel' },
+        ].map(({ Icon, label }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5">
+            <Icon size={16} className="text-cream-faint" />
+            <span className="font-sans text-[11px] text-cream-faint">{label}</span>
           </div>
         ))}
       </div>
@@ -356,341 +522,263 @@ function BookingCard({
   );
 }
 
-function MobileBookingBar({
-  event,
-  onReserve,
-  reserving,
-}: {
-  event: MockEvent;
-  onReserve: () => void;
-  reserving: boolean;
-}) {
-  const [expanded, setExpanded] = useState(false);
+// ─── Mobile bottom bar — triggers the global BookingFlow modal ───────────────
 
+function MobileBar({ event, onOpen }: { event: MockEvent; onOpen: () => void }) {
   return (
-    <motion.div
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ delay: 0.4, duration: 0.5, ease: EASE_VERCEL }}
+    <div
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 border-t border-border"
+      style={{ backgroundColor: 'rgba(10,10,11,0.95)', backdropFilter: 'blur(20px)' }}
     >
-      {/* Expand overlay */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 z-[-1]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setExpanded(false)}
-          />
+      <div>
+        <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: '#D4FF3F' }}>
+          {fmtPrice(event.price)}
+        </span>
+        {event.price !== 'Free' && event.price !== 0 && (
+          <span className="font-sans text-[13px] text-cream-dim ml-1">/person</span>
         )}
-      </AnimatePresence>
-
-      <div className="bg-bg-primary border-t border-border">
-        {/* Expanded details */}
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              className="px-6 pt-6 pb-2"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: EASE_VERCEL }}
-            >
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {[
-                  { label: 'Date', value: event.dateShort },
-                  { label: 'Time', value: event.time },
-                  { label: 'Location', value: event.city },
-                  { label: 'Spots left', value: `${event.spotsLeft}` },
-                ].map(({ label, value }) => (
-                  <div key={label}>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-0.5">{label}</p>
-                    <p className="font-sans text-sm text-ink-primary">{value}</p>
-                  </div>
-                ))}
-              </div>
-              {/* Capacity bar */}
-              <div className="h-0.5 bg-border rounded-full overflow-hidden mb-4">
-                <div
-                  className="h-full bg-accent rounded-full"
-                  style={{ width: `${((event.spots - event.spotsLeft) / event.spots) * 100}%` }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Always-visible bar */}
-        <div className="flex items-center gap-4 px-6 py-4">
-          <button onClick={() => setExpanded((v) => !v)} className="flex-1 text-left">
-            <span className="font-display text-2xl text-ink-primary">
-              {event.price === 'Free' ? 'Free' : `₹${event.price.toLocaleString()}`}
-            </span>
-            <p className="font-mono text-[10px] text-ink-muted">{expanded ? 'Tap to collapse' : 'Tap for details'}</p>
-          </button>
-          <button
-            onClick={onReserve}
-            disabled={reserving}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-6 py-3.5 rounded-2xl flex items-center gap-2 flex-shrink-0"
-          >
-            {reserving ? (
-              <motion.span
-                className="w-4 h-4 border-2 border-bg-primary/30 border-t-bg-primary rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-              />
-            ) : (
-              'Reserve →'
-            )}
-          </button>
-        </div>
       </div>
-    </motion.div>
+      <button
+        onClick={onOpen}
+        className="h-12 px-7 rounded-full font-sans font-semibold flex items-center gap-2"
+        style={{ backgroundColor: '#D4FF3F', color: '#0A0A0B', fontSize: 15 }}
+      >
+        Book now <IconArrowRight size={15} strokeWidth={2.5} />
+      </button>
+    </div>
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Page skeleton ────────────────────────────────────────────────────────────
+
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen bg-void pb-24 lg:pb-0 animate-pulse">
+      <div className="max-w-7xl mx-auto px-6 mt-24">
+        <div className="lg:grid lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-8 space-y-8">
+            <div className="w-full rounded-3xl bg-surface" style={{ aspectRatio: '16/10' }} />
+            <div className="space-y-3 mt-12">
+              <div className="h-3 bg-surface rounded w-1/4" />
+              <div className="h-12 bg-surface rounded w-3/4" />
+            </div>
+            <div className="h-28 bg-surface rounded-2xl" />
+          </div>
+          <div className="hidden lg:block lg:col-span-4">
+            <div className="h-96 bg-surface rounded-3xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EventDetailPage() {
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string);
-  const router = useRouter();
-  const [reserving, setReserving] = useState(false);
 
-  const event = getEvent(slug);
-  const extended = getExtended(event.id);
+  const [event, setEvent] = useState<MockEvent | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleReserve = async () => {
-    setReserving(true);
-    await new Promise((r) => setTimeout(r, 500));
-    router.push(`/events/${slug}/book`);
-  };
+  useEffect(() => {
+    async function fetchEvent() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await fetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setEvent(apiEventToMock(data));
+          return;
+        }
+      } catch {
+        // fall through to mock
+      }
+      // Fall back to mock data (for demo events)
+      setEvent(getMockEvent(slug));
+    }
+    fetchEvent().finally(() => setLoading(false));
+  }, [slug]);
 
-  const descParagraphs = extended.description.split('\n\n').filter(Boolean);
+  const ext = getExtended(event?.id ?? slug);
+  const openBooking = useBookingStore((s) => s.open);
+
+  function handleBook(guests: number) {
+    if (!event) return;
+    openBooking(event.id, {
+      id:          event.id,
+      title:       event.title,
+      image:       event.image,
+      dateShort:   event.dateShort,
+      time:        event.time,
+      price:       event.price,
+      currency:    'INR',
+      spotsLeft:   event.spotsLeft,
+      location:    event.location,
+      category:    event.category,
+    }, guests);
+  }
+
+  if (loading) return <PageSkeleton />;
+  if (!event) return <PageSkeleton />;
 
   return (
-    <motion.div
-      className="min-h-screen bg-bg-primary pb-32 lg:pb-0"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, filter: 'blur(8px)' }}
-      transition={{ duration: 0.4, ease: EASE_VERCEL }}
-    >
-      {/* ── Back nav ──────────────────────────────────────────────── */}
-      <div className="px-6 md:px-10 pt-24 pb-2">
-        <motion.div
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <Link
-            href="/discover"
-            className="font-mono text-xs text-ink-muted hover:text-ink-primary transition-colors inline-flex items-center gap-2 group"
-          >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-            Back to discover
-          </Link>
-        </motion.div>
-      </div>
+    <div className="min-h-screen bg-void pb-24 lg:pb-0">
 
-      {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="px-6 md:px-10 pt-8 pb-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-[55%_45%] gap-12 lg:gap-16 items-start">
-            {/* Left */}
-            <div>
-              {/* Category eyebrow */}
-              <motion.p
-                className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-5"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.4, ease: EASE_VERCEL }}
-              >
-                {event.category}
-              </motion.p>
+      {/* ── Page content ───────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-6 mt-24">
+        <div className="lg:grid lg:grid-cols-12 gap-12">
 
-              {/* Title */}
-              <CharReveal
-                text={event.title}
-                className="font-display text-[clamp(2.5rem,5.5vw,5.5rem)] text-ink-primary leading-[1.02] tracking-[-0.03em] mb-6"
-              />
+          {/* ── LEFT COLUMN ────────────────────────────────────────────────── */}
+          <div className="lg:col-span-8">
 
-              {/* Host line */}
-              <motion.div
-                className="flex items-center gap-3"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.4, ease: EASE_VERCEL }}
-              >
-                <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-                  <span className="font-mono text-[9px] text-accent">{event.host.initials}</span>
-                </div>
-                <span className="font-sans text-sm text-ink-muted">
-                  Hosted by{' '}
-                  <span className="text-ink-primary font-medium">{event.host.name}</span>
+            {/* 1 — Hero image with parallax */}
+            <HeroImage src={event.image} alt={event.title} />
+
+            {/* 2 — Pill row + H1 + Share */}
+            <FadeUp className="mt-12" delay={0.05}>
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-cream-dim bg-cream/8 px-3 py-1.5 rounded-full border border-border">
+                  {event.category}
                 </span>
-                {event.host.verified && (
-                  <span className="font-mono text-[10px] text-verified border border-verified/20 px-2 py-0.5 rounded-full">
-                    ✓ Verified
-                  </span>
-                )}
+                <span className="font-mono text-[11px] uppercase tracking-wider text-cream-dim bg-cream/8 px-3 py-1.5 rounded-full border border-border">
+                  {event.dateShort} · {event.time}
+                </span>
                 {event.host.superhost && (
-                  <span className="font-mono text-[10px] text-accent border border-accent/20 px-2 py-0.5 rounded-full">
-                    ★ Superhost
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-coral bg-coral/10 border border-coral/25 px-3 py-1.5 rounded-full">
+                    Superhost event
                   </span>
                 )}
-              </motion.div>
+              </div>
 
-              {/* Meta grid */}
-              <MetaGrid event={event} extended={extended} />
-            </div>
-
-            {/* Right: image */}
-            <div className="relative lg:pt-4 order-first lg:order-last">
-              <ImageReveal direction="bottom" delay={0.3} duration={1} className="w-full aspect-[4/5] rounded-3xl overflow-hidden">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-full object-cover"
-                />
-              </ImageReveal>
-
-              {/* Spots badge */}
-              <motion.div
-                className="absolute top-4 left-4"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.1, duration: 0.4, ease: EASE_VERCEL }}
+              <h1
+                className="display-lg text-cream text-balance"
+                style={{ maxWidth: '90%' }}
               >
-                <div className="bg-bg-primary/90 backdrop-blur-sm border border-border rounded-full px-3.5 py-1.5 flex items-center gap-2 shadow-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  <span className="font-mono text-[11px] text-ink-primary">
-                    {event.spotsLeft} of {event.spots} spots left
-                  </span>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
+                {event.title}
+              </h1>
 
-      {/* ── Content + Sticky card ────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="lg:grid lg:grid-cols-[1fr_360px] gap-16">
+              <ShareBar title={event.title} />
+            </FadeUp>
 
-          {/* Left: content */}
-          <div className="space-y-20">
+            {/* 3 — Host card */}
+            <HostCard event={event} ext={ext} />
 
-            {/* About */}
-            <motion.section
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: EASE_VERCEL }}
-            >
-              <SectionEyebrow>About this event</SectionEyebrow>
-              <div className="mt-6 space-y-5 max-w-[640px]">
-                {descParagraphs.map((para, i) => (
-                  <p key={i} className="font-sans text-[18px] text-ink-primary leading-[1.7]">
+            {/* Divider */}
+            <div className="border-t border-border my-16" />
+
+            {/* 4 — About */}
+            <FadeUp>
+              <Label>01 — about</Label>
+              <h3
+                className="text-cream mt-3 mb-5"
+                style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 32, fontWeight: 400, lineHeight: 1.15 }}
+              >
+                What you're signing up for
+              </h3>
+              <div className="space-y-4">
+                {(event.tags?.length ? event.tags.join('. ') + '.' : ext.description).split('\n\n').map((para, i) => (
+                  <p
+                    key={i}
+                    className="text-cream-dim max-w-2xl"
+                    style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}
+                  >
+                    {para}
+                  </p>
+                ))}
+                {/* Always show ext.description for the full experience text */}
+                {ext.description.split('\n\n').map((para, i) => (
+                  <p
+                    key={`ext-${i}`}
+                    className="text-cream-dim max-w-2xl"
+                    style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}
+                  >
                     {para}
                   </p>
                 ))}
               </div>
-              {/* Pull quote */}
-              <blockquote className="mt-10 pl-5 border-l-2 border-accent">
-                <p className="font-display text-2xl text-ink-muted italic leading-snug">
-                  {extended.pullQuote}
-                </p>
-              </blockquote>
-            </motion.section>
+            </FadeUp>
 
-            {/* Timeline */}
-            <motion.section
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: EASE_VERCEL }}
-            >
-              <TimelineSection items={extended.timeline} />
-            </motion.section>
-
-            {/* Host */}
-            <motion.section
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: EASE_VERCEL }}
-            >
-              <SectionEyebrow>The host</SectionEyebrow>
-              <div className="mt-6 flex gap-6 items-start">
-                <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border border-border">
-                  <img
-                    src={extended.hostPhoto}
-                    alt={event.host.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="font-display text-2xl text-ink-primary">{event.host.name}</h3>
-                    {event.host.superhost && (
-                      <span className="font-mono text-[9px] text-accent border border-accent/20 px-1.5 py-0.5 rounded-full">★ Superhost</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 mb-3">
-                    <span className="font-mono text-xs text-ink-muted">
-                      {extended.hostEvents} events hosted
+            {/* 5 — What's included */}
+            <FadeUp className="mt-16" delay={0.05}>
+              <Label>02 — included</Label>
+              <ul className="mt-4 space-y-3">
+                {ext.included.map((item, i) => (
+                  <motion.li
+                    key={i}
+                    className="flex items-start gap-3"
+                    initial={{ opacity: 0, x: -12 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.5, ease: EASE, delay: i * 0.07 }}
+                  >
+                    <IconCheck size={16} className="text-lime flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                    <span
+                      className="text-cream"
+                      style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 16 }}
+                    >
+                      {item}
                     </span>
-                    <span className="w-1 h-1 rounded-full bg-border" />
-                    <span className="font-mono text-xs text-ink-muted">
-                      {extended.hostRating} ★ rating
-                    </span>
-                  </div>
-                  <p className="font-sans text-sm text-ink-muted leading-relaxed mb-4">{extended.hostBio}</p>
-                  <button className="font-mono text-xs text-ink-muted hover:text-ink-primary transition-colors underline underline-offset-4">
-                    See host's profile →
-                  </button>
-                </div>
-              </div>
-            </motion.section>
+                  </motion.li>
+                ))}
+              </ul>
+            </FadeUp>
 
-            {/* Attendees */}
-            <motion.section
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: EASE_VERCEL }}
-              className="pb-16"
-            >
-              <SectionEyebrow>Who's going</SectionEyebrow>
-              <AttendeeStack
-                attendees={extended.attendees}
-                total={event.going}
-              />
-              <p className="font-mono text-[10px] text-ink-light mt-3">
-                Names revealed after you book
+            {/* 6 — Where */}
+            <FadeUp className="mt-16">
+              <Label>03 — where</Label>
+              <p
+                className="text-cream mt-3"
+                style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 28, fontWeight: 400 }}
+              >
+                {event.location.split(',')[0]}
               </p>
-            </motion.section>
+              <p
+                className="text-cream-dim mt-1"
+                style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 15 }}
+              >
+                {event.location}
+              </p>
+              <MapEmbed location={event.location} />
+            </FadeUp>
+
+            {/* 7 — Who's coming */}
+            <FadeUp className="mt-16">
+              <Label>04 — who's coming</Label>
+              <p
+                className="text-cream mt-3 mb-6"
+                style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 28, fontWeight: 400 }}
+              >
+                {event.going} attending
+              </p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {ext.attendees.map((a, i) => (
+                  <motion.div
+                    key={a.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-30px' }}
+                    transition={{ duration: 0.45, ease: EASE, delay: i * 0.06 }}
+                  >
+                    <AttendeeCard {...a} />
+                  </motion.div>
+                ))}
+              </div>
+            </FadeUp>
           </div>
 
-          {/* Right: sticky booking card (desktop only) */}
-          <aside className="hidden lg:block">
+          {/* ── RIGHT COLUMN — sticky booking card ─────────────────────────── */}
+          <div className="hidden lg:block lg:col-span-4">
             <div className="sticky top-24">
-              <BookingCard
-                event={event}
-                extended={extended}
-                onReserve={handleReserve}
-                reserving={reserving}
-              />
+              <BookingCard event={event} onBook={handleBook} />
             </div>
-          </aside>
+          </div>
         </div>
       </div>
 
-      {/* Mobile booking bar */}
-      <MobileBookingBar event={event} onReserve={handleReserve} reserving={reserving} />
-    </motion.div>
+      {/* ── Mobile bottom bar — opens global BookingFlow ──────────────────── */}
+      <MobileBar event={event} onOpen={() => handleBook(1)} />
+    </div>
   );
 }

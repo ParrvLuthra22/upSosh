@@ -1,6 +1,11 @@
-export { default as Button } from './Button';
+export { Button } from './Button';
 export { default as Container } from './Container';
 export { default as Section } from './Section';
 export { default as GlassCard } from './GlassCard';
-export { Input } from './input';
 export { Label } from './label';
+export { Input } from './input';
+export { Badge } from './Badge';
+export { Avatar, AvatarGroup } from './Avatar';
+export { Modal } from './Modal';
+export { Sheet } from './Sheet';
+export * from './Skeleton';

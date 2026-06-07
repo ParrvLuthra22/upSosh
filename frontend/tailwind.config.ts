@@ -8,66 +8,62 @@ const config: Config = {
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: ['class', '[data-theme="dark"]'],
+  // No darkMode: 'class' — we run dark-first unconditionally.
   theme: {
     extend: {
       colors: {
+        // ── New brand palette ─────────────────────────────────────────────
+        void:           '#0A0A0B',
+        surface:        '#13131B',
+        'surface-2':    '#1C1C26',
+        cream:          '#F4F1EA',
+        'cream-dim':    'rgba(244,241,234,0.55)',
+        'cream-faint':  'rgba(244,241,234,0.25)',
+        border:         'rgba(244,241,234,0.08)',
+        'border-strong':'rgba(244,241,234,0.16)',
+        lime:           '#D4FF3F',
+        'lime-dim':     '#A8CC32',
+        coral:          '#FF6F61',
+        emerald:        '#34D399',
+
+        // ── Legacy aliases — keep OLD pages/components compiling ──────────
+        // These map old class names to the nearest new token so existing
+        // components render reasonably until they're refactored.
+        'bg-primary':   '#0A0A0B',   // bg-bg-primary   → bg-void
+        'bg-secondary': '#13131B',   // bg-bg-secondary  → bg-surface
+        'bg-dark':      '#0A0A0B',   // bg-bg-dark       → bg-void
+        'ink-primary':  '#F4F1EA',   // text-ink-primary → text-cream
+        'ink-muted':    'rgba(244,241,234,0.55)',
+        'ink-light':    'rgba(244,241,234,0.25)',
+        accent:         '#D4FF3F',   // accent           → lime
+        'accent-soft':  'rgba(212,255,63,0.15)',
+        verified:       '#34D399',   // verified         → emerald
         bg: {
-          primary: '#FAFAF7',
-          secondary: '#F2EFE8',
-          dark: '#0A0A0A',
+          primary:   '#0A0A0B',
+          secondary: '#13131B',
+          dark:      '#0A0A0B',
         },
         ink: {
-          primary: '#0A0A0A',
-          muted: '#6B6B6B',
-          light: '#A8A29E',
+          primary: '#F4F1EA',
+          muted:   'rgba(244,241,234,0.55)',
+          light:   'rgba(244,241,234,0.25)',
         },
-        accent: {
-          DEFAULT: '#FF5A1F',
-          soft: '#FFE8DE',
-        },
-        verified: '#1F5F3F',
-        border: '#E8E4DC',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Georgia', 'serif'],
-        sans: ['var(--font-sans)', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['var(--font-mono)', 'Menlo', 'monospace'],
+        display: ['var(--font-fraunces)', 'Georgia', 'serif'],
+        sans:    ['var(--font-geist)', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono:    ['var(--font-geist-mono)', 'Menlo', 'monospace'],
+      },
+      height: {
+        '13': '3.25rem',
+        '18': '4.5rem',
       },
       fontSize: {
-        'display-hero': ['clamp(3.5rem, 9vw, 9rem)', { lineHeight: '0.95', fontWeight: '400', letterSpacing: '-0.04em' }],
-        'display-xl': ['clamp(3rem, 8vw, 6rem)', { lineHeight: '1.05', fontWeight: '700', letterSpacing: '-0.03em' }],
-        'display-lg': ['clamp(2.5rem, 6vw, 4.5rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.025em' }],
-        'display-md': ['clamp(2rem, 4vw, 3.5rem)', { lineHeight: '1.15', fontWeight: '600', letterSpacing: '-0.02em' }],
-        'h1': ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
-        'h2': ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.15', fontWeight: '600', letterSpacing: '-0.015em' }],
-        'h3': ['clamp(1.25rem, 2.5vw, 1.75rem)', { lineHeight: '1.3', fontWeight: '600', letterSpacing: '-0.01em' }],
-        'body-lg': ['1.125rem', { lineHeight: '1.75', fontWeight: '400' }],
-        'body': ['1rem', { lineHeight: '1.75', fontWeight: '400' }],
-        'body-sm': ['0.875rem', { lineHeight: '1.6', fontWeight: '400' }],
-        'ui-lg': ['1rem', { lineHeight: '1.5', fontWeight: '500' }],
-        'ui': ['0.9375rem', { lineHeight: '1.5', fontWeight: '500' }],
-        'ui-sm': ['0.8125rem', { lineHeight: '1.4', fontWeight: '500' }],
-        'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400' }],
-      },
-      letterSpacing: {
-        tighter: '-0.03em',
-        tight: '-0.02em',
-        normal: '0',
-        wide: '0.02em',
-        wider: '0.04em',
-        widest: '0.08em',
-      },
-      lineHeight: {
-        display: '1.05',
-        heading: '1.15',
-        body: '1.75',
-        ui: '1.5',
-      },
-      borderRadius: {
-        lg: '1rem',
-        md: '0.5rem',
-        sm: '0.25rem',
+        // Legacy display sizes referenced by old components
+        'display-hero': ['clamp(3.5rem, 9vw, 9rem)',   { lineHeight: '0.95', fontWeight: '300', letterSpacing: '-0.04em' }],
+        'display-xl':   ['clamp(3rem, 8vw, 6rem)',     { lineHeight: '1.05', fontWeight: '300', letterSpacing: '-0.04em' }],
+        'display-lg':   ['clamp(2.5rem, 6vw, 4.5rem)', { lineHeight: '1.0',  fontWeight: '300', letterSpacing: '-0.03em' }],
+        'display-md':   ['clamp(1.75rem, 4vw, 3rem)',  { lineHeight: '1.1',  fontWeight: '400', letterSpacing: '-0.02em' }],
       },
       transitionTimingFunction: {
         vercel: 'cubic-bezier(0.22, 1, 0.36, 1)',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
@@ -36,11 +36,38 @@ const DEFAULT: EventFormData = {
   image: '',
 };
 
-export default function NewEventPage() {
+import { withAuth } from '@/components/ProtectedRoute';
+function NewEventPage() {
   const { isAuth, user } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState<EventFormData>(DEFAULT);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageUpload(file: File) {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/uploads`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      update('image', data.url);
+      toast.success('Image uploaded!');
+    } catch (err: any) {
+      toast.error(err.message ?? 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+    }
+  }
 
   function update<K extends keyof EventFormData>(key: K, value: EventFormData[K]) {
     setForm((p) => ({ ...p, [key]: value }));
@@ -229,6 +256,41 @@ export default function NewEventPage() {
             {/* Image */}
             <div className="border border-border rounded-2xl p-6">
               <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-4">Cover image</p>
+
+              {/* Upload area */}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="w-full h-36 border border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-accent/50 hover:bg-accent/3 transition-colors mb-3"
+              >
+                {form.image ? (
+                  <img src={form.image} alt="preview" className="w-full h-full object-cover rounded-xl" />
+                ) : (
+                  <>
+                    <svg className="w-6 h-6 text-ink-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="font-mono text-xs text-ink-muted">
+                      {uploadingImage ? 'Uploading…' : 'Click to upload image'}
+                    </p>
+                    <p className="font-mono text-[10px] text-ink-light">JPG, PNG, WebP — max 10MB</p>
+                  </>
+                )}
+              </button>
+
+              {/* Or paste URL */}
+              <p className="font-mono text-[10px] text-ink-muted mb-2 text-center">or paste an image URL</p>
               <input
                 type="url"
                 value={form.image}
@@ -267,3 +329,4 @@ export default function NewEventPage() {
     </div>
   );
 }
+export default withAuth(NewEventPage);

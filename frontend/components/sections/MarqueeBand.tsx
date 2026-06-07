@@ -14,16 +14,16 @@ const ITEMS = [
 ];
 
 function Dot() {
-  return <span className="text-accent mx-2 md:mx-3 select-none">·</span>;
+  return <span className="text-lime mx-3 select-none opacity-60">·</span>;
 }
 
 export default function MarqueeBand() {
   return (
-    <div className="bg-bg-dark py-5 overflow-hidden border-y border-white/5">
+    <div className="bg-void py-5 overflow-hidden border-y border-border">
       <Marquee speed={35} gap={0}>
         {ITEMS.map((item) => (
           <span key={item} className="flex items-center">
-            <span className="font-display italic text-white text-3xl md:text-5xl whitespace-nowrap px-2 md:px-3 leading-none">
+            <span className="font-display italic text-cream text-3xl md:text-5xl whitespace-nowrap px-3 leading-none opacity-80">
               {item}
             </span>
             <Dot />

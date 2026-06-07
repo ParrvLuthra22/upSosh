@@ -4,320 +4,372 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
-import { signUp } from '@/lib/auth';
-import { useAuth } from '@/store/authStore';
-import MagneticButton from '@/components/ui/MagneticButton';
-import AuthLayout from '@/app/(auth)/layout';
+import {
+  IconUser,
+  IconMail,
+  IconLock,
+  IconEye,
+  IconEyeOff,
+  IconBrandApple,
+  IconCheck,
+  IconCalendarEvent,
+  IconMicrophone2,
+  IconSparkles,
+} from '@tabler/icons-react';
+import { useAuth } from '@/lib/stores/auth';
+import { cn } from '@/lib/utils';
 
-function FloatingInput({
-  label,
-  type = 'text',
-  error,
-  rightSlot,
-  ...props
-}: {
-  label: string;
-  type?: string;
-  error?: string;
-  rightSlot?: React.ReactNode;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
-  const [focused, setFocused] = useState(false);
-  const [hasValue, setHasValue] = useState(false);
-  const lifted = focused || hasValue;
+const EASE = [0.22, 1, 0.36, 1] as const;
+const BG_URL = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400&q=80&fit=crop';
 
-  return (
-    <div className="relative">
-      <div
-        className={`relative border-2 rounded-2xl transition-all duration-200 ${
-          error ? 'border-red-500' : focused ? 'border-accent' : 'border-border'
-        } ${focused ? 'bg-bg-primary' : 'bg-bg-secondary'}`}
-      >
-        <label
-          className={`absolute left-4 pointer-events-none transition-all duration-200 font-sans text-ink-muted ${
-            lifted ? 'top-2 text-[11px]' : 'top-1/2 -translate-y-1/2 text-sm'
-          }`}
-        >
-          {label}
-        </label>
-        <input
-          type={type}
-          className="w-full bg-transparent px-4 pt-6 pb-2 font-sans text-sm text-ink-primary outline-none rounded-2xl"
-          onFocus={() => setFocused(true)}
-          onBlur={(e) => {
-            setFocused(false);
-            setHasValue(e.target.value.length > 0);
-          }}
-          onChange={(e) => setHasValue(e.target.value.length > 0)}
-          {...props}
-        />
-        {rightSlot && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">{rightSlot}</div>
-        )}
-      </div>
-      <AnimatePresence>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0, x: [0, 8, -8, 8, -8, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="mt-1.5 font-mono text-xs text-red-500 pl-1"
-          >
-            {error}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+// ─── Password strength ────────────────────────────────────────────────────────
+
+function getStrength(pwd: string): { score: number; label: string; color: string } {
+  if (pwd.length === 0) return { score: 0, label: '', color: '' };
+  let score = 0;
+  if (pwd.length >= 6) score++;
+  if (pwd.length >= 10) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+  if (score <= 1) return { score: 20, label: 'Weak', color: 'bg-coral' };
+  if (score <= 2) return { score: 40, label: 'Fair', color: 'bg-coral' };
+  if (score <= 3) return { score: 60, label: 'Good', color: 'bg-emerald' };
+  if (score <= 4) return { score: 80, label: 'Strong', color: 'bg-emerald' };
+  return { score: 100, label: 'Excellent', color: 'bg-lime' };
 }
 
-function PasswordStrength({ password }: { password: string }) {
-  const checks = [
-    password.length >= 8,
-    /[A-Z]/.test(password),
-    /[0-9]/.test(password),
-    /[^A-Za-z0-9]/.test(password),
-  ];
-  const strength = checks.filter(Boolean).length;
-  const colors = ['', 'bg-red-500', 'bg-amber-500', 'bg-amber-400', 'bg-green-500'];
-  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-
+function StrengthBar({ password }: { password: string }) {
+  const { score, label, color } = getStrength(password);
   if (!password) return null;
-
   return (
-    <div className="mt-1.5 space-y-1">
-      <div className="h-1 bg-border rounded-full overflow-hidden">
+    <div className="mt-2">
+      <div className="h-1 w-full bg-surface-2 rounded-full overflow-hidden">
         <motion.div
-          className={`h-full rounded-full ${colors[strength]}`}
-          animate={{ width: `${(strength / 4) * 100}%` }}
-          transition={{ duration: 0.3 }}
+          className={cn('h-full rounded-full', color)}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 0.4, ease: EASE }}
         />
       </div>
-      <p className="font-mono text-[10px] text-ink-muted">{labels[strength]}</p>
-    </div>
-  );
-}
-
-function SignUpForm() {
-  const router = useRouter();
-  const { setUser, setToken } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [termsChecked, setTermsChecked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState('');
-
-  function validate(): boolean {
-    const newErrors: Record<string, string> = {};
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Enter a valid email';
-    }
-    if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords don't match";
-    }
-    if (!termsChecked) {
-      newErrors.terms = 'You must accept the terms';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validate()) return;
-    setIsLoading(true);
-    setServerError('');
-    try {
-      const result = await signUp(email, password, name || email.split('@')[0]);
-      setUser(result.user);
-      setToken(result.token);
-      router.push('/onboarding/step-1');
-    } catch (err) {
-      setServerError(err instanceof Error ? err.message : 'Sign up failed');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div className="space-y-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted">
-          [ GET STARTED ]
-        </p>
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
-          Create your account.
-        </h1>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.06, duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <FloatingInput
-            label="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.10, duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <FloatingInput
-            label="Email address"
-            type="email"
-            error={errors.email}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14, duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <FloatingInput
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            error={errors.password}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            rightSlot={
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="text-ink-muted hover:text-ink-primary transition-colors"
-                aria-label="Toggle password visibility"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </button>
-            }
-          />
-          <PasswordStrength password={password} />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <FloatingInput
-            label="Confirm password"
-            type={showConfirm ? 'text' : 'password'}
-            error={errors.confirmPassword}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            rightSlot={
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                className="text-ink-muted hover:text-ink-primary transition-colors"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </button>
-            }
-          />
-        </motion.div>
-
-        {/* Terms */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22, duration: 0.4, ease: EASE_VERCEL }}
-          className="flex items-start gap-3"
-        >
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={termsChecked}
-            onClick={() => setTermsChecked((v) => !v)}
-            className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors duration-200 ${
-              termsChecked ? 'bg-accent border-accent' : 'border-border bg-bg-secondary'
-            }`}
-          >
-            {termsChecked && (
-              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </button>
-          <p className="font-sans text-sm text-ink-muted">
-            I agree to the{' '}
-            <Link href="/terms" className="text-accent hover:opacity-80">Terms</Link>{' '}
-            &{' '}
-            <Link href="/privacy" className="text-accent hover:opacity-80">Privacy Policy</Link>
-          </p>
-        </motion.div>
-
-        <AnimatePresence>
-          {errors.terms && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-xs text-red-500">
-              {errors.terms}
-            </motion.p>
-          )}
-          {serverError && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-xs text-red-500">
-              {serverError}
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28, duration: 0.4, ease: EASE_VERCEL }}
-        >
-          <MagneticButton className="w-full">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#0A0A0A] text-white font-sans text-sm font-medium py-4 rounded-2xl hover:bg-accent transition-colors duration-300 flex items-center justify-center"
-            >
-              {isLoading ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                'Create account →'
-              )}
-            </button>
-          </MagneticButton>
-        </motion.div>
-      </form>
-
-      <p className="text-center font-sans text-sm text-ink-muted">
-        Already have an account?{' '}
-        <Link href="/signin" className="text-accent hover:opacity-80">
-          Sign in
-        </Link>
+      <p className={cn('font-mono text-[11px] mt-1', {
+        'text-coral': color === 'bg-coral',
+        'text-emerald': color === 'bg-emerald',
+        'text-lime': color === 'bg-lime',
+      })}>
+        {label}
       </p>
     </div>
   );
 }
 
-export default function SignupPage() {
+// ─── Field ────────────────────────────────────────────────────────────────────
+
+function Field({
+  type = 'text', value, onChange, error, leadingIcon, trailingSlot, placeholder, autoComplete,
+}: {
+  type?: string; value: string; onChange: (v: string) => void; error?: string;
+  leadingIcon: React.ReactNode; trailingSlot?: React.ReactNode;
+  placeholder?: string; autoComplete?: string;
+}) {
+  const [focused, setFocused] = useState(false);
   return (
-    <AuthLayout>
-      <SignUpForm />
-    </AuthLayout>
+    <div className={cn(
+      'relative flex items-center h-12 rounded-xl bg-surface border transition-all',
+      error ? 'border-coral ring-2 ring-coral/20' : focused ? 'border-lime ring-2 ring-lime/20' : 'border-border',
+    )}>
+      <span className="absolute left-4 text-cream-faint">{leadingIcon}</span>
+      <input
+        type={type} value={value} onChange={e => onChange(e.target.value)}
+        placeholder={placeholder} autoComplete={autoComplete}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        className="flex-1 bg-transparent pl-10 pr-10 h-full font-sans text-[15px] text-cream placeholder:text-cream-faint outline-none"
+      />
+      {trailingSlot && <div className="absolute right-4">{trailingSlot}</div>}
+    </div>
+  );
+}
+
+// ─── Role card ────────────────────────────────────────────────────────────────
+
+type Role = 'attendee' | 'host' | 'both';
+
+const ROLES: { id: Role; icon: React.ReactNode; label: string; desc: string }[] = [
+  { id: 'attendee', icon: <IconCalendarEvent size={20} />, label: 'Attend events', desc: 'Discover and book experiences' },
+  { id: 'host',     icon: <IconMicrophone2 size={20} />,  label: 'Host events',   desc: 'Create and manage your events' },
+  { id: 'both',     icon: <IconSparkles size={20} />,      label: 'Both',          desc: 'The full UpSosh experience' },
+];
+
+function RoleCard({ role, selected, onSelect }: { role: typeof ROLES[0]; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        'flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center',
+        selected
+          ? 'bg-lime/10 border-lime/40 text-lime'
+          : 'bg-surface border-border text-cream-dim hover:border-border-strong hover:text-cream',
+      )}
+    >
+      <div className={cn('transition-colors', selected ? 'text-lime' : 'text-cream-faint')}>
+        {role.icon}
+      </div>
+      <span className="font-sans text-[13px] font-medium">{role.label}</span>
+      <span className="font-mono text-[10px] leading-tight opacity-70">{role.desc}</span>
+      {selected && (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-lime">
+          <IconCheck size={14} />
+        </motion.div>
+      )}
+    </button>
+  );
+}
+
+// ─── Floating asterisk ────────────────────────────────────────────────────────
+
+function LimeAsterisk() {
+  return (
+    <motion.div
+      className="absolute bottom-10 right-10 select-none pointer-events-none z-20"
+      animate={{ rotate: -360 }}
+      transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+      aria-hidden="true"
+    >
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <rect key={i} x="27" y="4" width="6" height="52" rx="3" fill="#D4FF3F"
+            transform={`rotate(${i * 45} 30 30)`} />
+        ))}
+      </svg>
+    </motion.div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function SignUpPage() {
+  const router = useRouter();
+  const { register, isLoading } = useAuth();
+
+  const [name, setName]         = useState('');
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd]   = useState(false);
+  const [role, setRole]         = useState<Role>('attendee');
+  const [agreed, setAgreed]     = useState(false);
+  const [errors, setErrors]     = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState('');
+
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!name.trim()) e.name = 'Name is required';
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Enter a valid email';
+    if (password.length < 6) e.password = 'At least 6 characters';
+    if (!agreed) e.terms = 'You must agree to continue';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  async function handleSubmit(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (!validate()) return;
+    setServerError('');
+    try {
+      await register({ name, email, password, role });
+      router.push('/discover');
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : 'Registration failed. Try again.');
+    }
+  }
+
+  return (
+    <div className="min-h-screen lg:grid lg:grid-cols-2 bg-void">
+
+      {/* LEFT — photo panel */}
+      <div className="hidden lg:block relative overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('${BG_URL}')` }} />
+        <div className="absolute inset-0 bg-void/65" />
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: "url('/noise.svg')", backgroundSize: '200px 200px' }} />
+
+        <div className="relative z-10 h-full flex flex-col justify-between p-12">
+          <Link href="/" className="font-display italic text-[26px] text-cream tracking-tight w-fit">
+            UpSosh
+          </Link>
+
+          <div>
+            <blockquote className="display-md text-cream italic text-balance leading-[1.1] max-w-lg">
+              "Real events. Real people.<br />Worth showing up to."
+            </blockquote>
+            <p className="font-sans text-[13px] text-cream-dim mt-5">
+              — Across 40+ cities in India
+            </p>
+          </div>
+
+          {/* Stats strip */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { n: '2,400+', l: 'Hosts' },
+              { n: '18,000+', l: 'Attendees' },
+              { n: '6,200+', l: 'Events hosted' },
+            ].map(({ n, l }) => (
+              <div key={l} className="bg-[rgba(244,241,234,0.08)] backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4">
+                <p className="font-display text-[24px] text-cream leading-none">{n}</p>
+                <p className="font-mono text-[10px] text-cream-faint uppercase tracking-widest mt-1">{l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <LimeAsterisk />
+      </div>
+
+      {/* RIGHT — form */}
+      <div className="flex items-center justify-center p-8 min-h-screen lg:min-h-0">
+        <motion.div
+          className="w-full max-w-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: EASE }}
+        >
+          {/* Mobile wordmark */}
+          <Link href="/" className="font-display italic text-[22px] text-cream tracking-tight block lg:hidden mb-8">
+            UpSosh
+          </Link>
+
+          {/* Heading */}
+          <div className="mb-6">
+            <h1 className="display-md text-cream">Create account</h1>
+            <p className="font-sans text-[15px] text-cream-dim mt-2">
+              Your first event is one step away.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+            {/* Name */}
+            <div>
+              <Field type="text" value={name} onChange={setName}
+                error={errors.name} placeholder="Full name" autoComplete="name"
+                leadingIcon={<IconUser size={16} />} />
+              {errors.name && <p className="mt-1.5 font-mono text-[12px] text-coral">{errors.name}</p>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <Field type="email" value={email} onChange={setEmail}
+                error={errors.email} placeholder="Email address" autoComplete="email"
+                leadingIcon={<IconMail size={16} />} />
+              {errors.email && <p className="mt-1.5 font-mono text-[12px] text-coral">{errors.email}</p>}
+            </div>
+
+            {/* Password + strength bar */}
+            <div>
+              <Field
+                type={showPwd ? 'text' : 'password'} value={password} onChange={setPassword}
+                error={errors.password} placeholder="Password" autoComplete="new-password"
+                leadingIcon={<IconLock size={16} />}
+                trailingSlot={
+                  <button type="button" onClick={() => setShowPwd(v => !v)}
+                    className="text-cream-faint hover:text-cream transition-colors"
+                    aria-label={showPwd ? 'Hide' : 'Show'}>
+                    {showPwd ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+                  </button>
+                }
+              />
+              {errors.password && <p className="mt-1.5 font-mono text-[12px] text-coral">{errors.password}</p>}
+              <StrengthBar password={password} />
+            </div>
+
+            {/* Role selector */}
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-cream-faint mb-3">
+                I want to…
+              </p>
+              <div className="flex gap-2">
+                {ROLES.map(r => (
+                  <RoleCard key={r.id} role={r} selected={role === r.id} onSelect={() => setRole(r.id)} />
+                ))}
+              </div>
+            </div>
+
+            {/* Terms */}
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <button
+                  type="button"
+                  onClick={() => setAgreed(v => !v)}
+                  className={cn(
+                    'w-5 h-5 flex-shrink-0 mt-0.5 rounded border flex items-center justify-center transition-all',
+                    agreed ? 'bg-lime border-lime' : 'border-border group-hover:border-border-strong',
+                  )}
+                >
+                  <AnimatePresence>
+                    {agreed && (
+                      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                        className="text-void">
+                        <IconCheck size={12} strokeWidth={3} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+                <span className="font-sans text-[13px] text-cream-dim leading-relaxed">
+                  I agree to UpSosh's{' '}
+                  <Link href="/terms" className="text-lime hover:text-lime/80 transition-colors">Terms</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-lime hover:text-lime/80 transition-colors">Privacy Policy</Link>
+                </span>
+              </label>
+              {errors.terms && <p className="mt-1.5 font-mono text-[12px] text-coral">{errors.terms}</p>}
+            </div>
+
+            {serverError && <p className="font-mono text-[12px] text-coral">{serverError}</p>}
+
+            {/* CTA */}
+            <motion.button type="submit" disabled={isLoading} whileTap={{ scale: 0.97 }}
+              className="w-full h-12 bg-lime text-void rounded-full font-sans text-[15px] font-semibold hover:bg-lime/90 disabled:opacity-50 transition-colors flex items-center justify-center">
+              {isLoading
+                ? <span className="w-4 h-4 border-2 border-void/30 border-t-void rounded-full animate-spin" />
+                : 'Create account'}
+            </motion.button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-border" />
+            <span className="font-mono text-[11px] text-cream-faint">or</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          {/* Social */}
+          <div className="space-y-3">
+            <motion.button type="button" whileTap={{ scale: 0.97 }}
+              className="w-full h-12 rounded-full bg-cream text-void font-sans text-[14px] font-medium flex items-center justify-center gap-3 hover:bg-cream/90 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+                <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+              </svg>
+              Sign up with Google
+            </motion.button>
+            <motion.button type="button" whileTap={{ scale: 0.97 }}
+              className="w-full h-12 rounded-full bg-[rgba(244,241,234,0.10)] border border-[rgba(244,241,234,0.15)] text-cream font-sans text-[14px] font-medium flex items-center justify-center gap-3 hover:bg-[rgba(244,241,234,0.15)] transition-colors">
+              <IconBrandApple size={18} />
+              Sign up with Apple
+            </motion.button>
+          </div>
+
+          <p className="text-center font-sans text-[14px] text-cream-dim mt-6">
+            Already have an account?{' '}
+            <Link href="/signin" className="text-lime hover:text-lime/80 transition-colors font-medium">
+              Sign in
+            </Link>
+          </p>
+        </motion.div>
+      </div>
+    </div>
   );
 }

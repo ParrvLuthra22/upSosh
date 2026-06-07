@@ -1,16 +1,11 @@
 'use client';
-
-import { useEffect } from 'react';
-import { useAuth } from '@/store/authStore';
-
+/**
+ * components/AuthBootstrap.tsx
+ * ────────────────────────────
+ * Legacy shim — kept so any lingering imports don't break.
+ * Auth initialisation is now handled by AuthProvider.
+ * This component is a no-op.
+ */
 export default function AuthBootstrap() {
-  const { hydrated, initializeAuth } = useAuth();
-
-  useEffect(() => {
-    if (hydrated) {
-      void initializeAuth();
-    }
-  }, [hydrated, initializeAuth]);
-
   return null;
 }

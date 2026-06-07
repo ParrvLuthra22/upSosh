@@ -16,7 +16,7 @@ export function Skeleton({ className, circle, style }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden bg-bg-secondary',
+        'relative overflow-hidden bg-surface',
         circle ? 'rounded-full' : 'rounded-lg',
         className,
       )}
@@ -29,7 +29,55 @@ export function Skeleton({ className, circle, style }: SkeletonProps) {
   );
 }
 
-// ─── Compound variants ─────────────────────────────────────────────────────────
+// ─── Namespace sub-components ───────────────────────────────────────────────
+
+function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn('rounded-2xl border border-border bg-surface overflow-hidden p-5 space-y-3', className)}
+      aria-hidden="true"
+      role="presentation"
+    >
+      <Skeleton className="h-5 w-4/5" />
+      <Skeleton className="h-4 w-1/2" />
+      <div className="h-px bg-border" />
+      <div className="flex justify-between">
+        <Skeleton className="h-3.5 w-1/3" />
+        <Skeleton className="h-3.5 w-1/4" />
+      </div>
+    </div>
+  );
+}
+
+function SkeletonTextBlock({ lines = 1, className }: { lines?: number; className?: string }) {
+  return (
+    <div className={cn('space-y-2', className)} aria-hidden="true" role="presentation">
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton
+          key={i}
+          className={cn('h-4', i === lines - 1 && lines > 1 ? 'w-3/4' : 'w-full')}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SkeletonAvatarCircle({ size = 40, className }: { size?: number; className?: string }) {
+  return (
+    <Skeleton
+      circle
+      className={className}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+// Attach sub-components to namespace
+Skeleton.Card = SkeletonCard;
+Skeleton.Text = SkeletonTextBlock;
+Skeleton.Avatar = SkeletonAvatarCircle;
+
+// ─── Named compound variants (kept for backward compat) ─────────────────────
 
 export function SkeletonText({ lines = 1, className }: { lines?: number; className?: string }) {
   return (
@@ -90,7 +138,7 @@ export function SkeletonEventCard() {
 export function SkeletonStatCard() {
   return (
     <div
-      className="border border-border rounded-2xl p-6 bg-bg-primary"
+      className="border border-border rounded-2xl p-6 bg-void"
       aria-hidden="true"
       role="presentation"
     >

@@ -59,26 +59,13 @@ function AvatarUpload({
         onUpload(url);
         toast.success('Profile photo updated.');
       } else {
-        // Backend doesn't have upload endpoint — keep local preview, save as data URL
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          setPreview(dataUrl);
-          onUpload(dataUrl);
-          toast.success('Photo updated locally.');
-        };
-        reader.readAsDataURL(file);
+        const err = await res.json().catch(() => ({}));
+        setPreview(currentUrl); // revert preview
+        toast.error(err.message ?? 'Photo upload failed. Please try again.');
       }
     } catch {
-      // Fallback to base64 if network fails
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        setPreview(dataUrl);
-        onUpload(dataUrl);
-        toast.success('Photo updated.');
-      };
-      reader.readAsDataURL(file);
+      setPreview(currentUrl);
+      toast.error('Could not upload photo. Check your connection.');
     } finally {
       setUploading(false);
     }
@@ -134,16 +121,13 @@ function ProfileForm({ user, onSaved }: { user: any; onSaved: (u: any) => void }
     e.preventDefault();
     setSaving(true);
     try {
-      // Try new endpoint first
-      let res: any;
-      try {
-        res = await api.patch<{ user: any }>('/api/users/me', form);
-        onSaved(res.user);
-      } catch {
-        // Fallback to legacy updateProfile
-        res = await api.updateProfile({ name: form.name, bio: form.bio, avatar: form.photoUrl });
-        onSaved({ ...user, ...form });
-      }
+      const res = await api.patch<{ user: any }>('/api/users/me', {
+        name: form.name,
+        bio: form.bio,
+        city: form.location,
+        photoUrl: form.photoUrl,
+      });
+      onSaved(res.user ?? { ...user, ...form });
       toast.success('Profile saved.');
     } catch (err: any) {
       toast.error(err.message ?? 'Save failed');
@@ -254,7 +238,8 @@ function SecurityForm() {
 
 type Tab = 'profile' | 'security';
 
-export default function ProfilePage() {
+import { withAuth } from '@/components/ProtectedRoute';
+function ProfilePage() {
   const { user: authUser, isAuth, loading, setUser } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('profile');
@@ -276,14 +261,14 @@ export default function ProfilePage() {
       // Fetch from API
       const load = async () => {
         try {
-          const data = await api.getMe();
+          const data = await api.get<{ user: any }>('/api/auth/me');
           const u = data?.user ?? data;
           if (u) {
             setLocalUser(u);
             setUser(u);
           }
         } catch {
-          // use whatever is in localStorage
+          // fall back to localStorage
           try {
             const stored = localStorage.getItem('userData');
             if (stored) setLocalUser(JSON.parse(stored));
@@ -305,15 +290,32 @@ export default function ProfilePage() {
     const updated = { ...user, photoUrl: url, avatar: url };
     setLocalUser(updated);
     setUser(updated);
-    // Try to persist to API
-    api.patch('/api/users/me', { photoUrl: url }).catch(() =>
-      api.updateProfile({ avatar: url }).catch(() => {})
-    );
+    // Persist to API (avatar upload already saved it; this is a safety sync)
+    api.patch('/api/users/me', { photoUrl: url }).catch(() => {});
   }
 
   if (dataLoading && !user) return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-      <span className="w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
+    <div className="min-h-screen bg-bg-primary">
+      <div className="max-w-3xl mx-auto px-6 md:px-12 pt-28 pb-24 animate-pulse">
+        <div className="h-3 w-20 bg-surface rounded mb-3" />
+        <div className="flex items-center gap-6 mb-10">
+          <div className="w-28 h-28 rounded-full bg-surface flex-shrink-0" />
+          <div className="space-y-3">
+            <div className="h-8 w-48 bg-surface rounded" />
+            <div className="h-3 w-32 bg-surface rounded" />
+            <div className="h-6 w-28 bg-surface rounded-full" />
+          </div>
+        </div>
+        <div className="h-10 w-40 bg-surface rounded mb-8" />
+        <div className="border border-border rounded-2xl p-6 space-y-5">
+          {[1,2,3].map(i => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-24 bg-surface rounded" />
+              <div className="h-11 bg-surface rounded-xl" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
@@ -420,3 +422,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+export default withAuth(ProfilePage);

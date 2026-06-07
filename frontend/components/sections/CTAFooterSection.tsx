@@ -7,19 +7,39 @@ import MagneticButton from '@/components/ui/MagneticButton';
 const FOOTER_COLS = [
   {
     heading: 'Product',
-    links: ['Discover Events', 'Host an Event', 'AI Planner', 'Mobile App (Soon)'],
+    links: [
+      { label: 'Discover Events', href: '/discover' },
+      { label: 'Host an Event', href: '/become-a-host' },
+      { label: 'AI Planner', href: '/planner' },
+      { label: 'Pricing', href: '/pricing' },
+    ],
   },
   {
     heading: 'Company',
-    links: ['About', 'Blog', 'Careers', 'Press'],
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Features', href: '/features' },
+      { label: 'Safety', href: '/safety' },
+    ],
   },
   {
     heading: 'Legal',
-    links: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
+    links: [
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Refund Policy', href: '/refund' },
+      { label: 'Cookie Policy', href: '/privacy#cookies' },
+    ],
   },
   {
     heading: 'Socials',
-    links: ['Instagram', 'Twitter / X', 'LinkedIn', 'TikTok'],
+    links: [
+      { label: 'Instagram', href: 'https://www.instagram.com/upsosh.app/' },
+      { label: 'Twitter / X', href: 'https://twitter.com/upsosh' },
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/company/upsosh' },
+      { label: 'Sign up', href: '/signup' },
+    ],
   },
 ];
 
@@ -82,12 +102,14 @@ export default function CTAFooterSection() {
               </p>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <a
-                      href="#"
+                      href={link.href}
+                      target={link.href.startsWith('http') ? '_blank' : undefined}
+                      rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                       className="font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}

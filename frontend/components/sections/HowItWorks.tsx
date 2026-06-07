@@ -1,183 +1,302 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { motion, useInView } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { EASE_VERCEL, fadeInUp, staggerContainer } from '@/lib/motion';
+/**
+ * components/sections/HowItWorks.tsx
+ * ─────────────────────────────────────
+ * Three-step explainer — Discover → Book → Show up.
+ * Each step is a surface card with a large lime step number, an SVG
+ * illustration, and copy.
+ *
+ * Animations
+ *   • Cards stagger in (y:40 → 0, opacity:0 → 1) when the section enters
+ *     the viewport. Delay: 0 / 0.15 / 0.30s.
+ *   • Step numbers fade in 0.3s after their card.
+ *   • Illustrations react on card hover (extra transform / stroke draw).
+ */
 
-gsap.registerPlugin(ScrollTrigger);
+import { useRef, useState } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+// ─── SVG illustrations ────────────────────────────────────────────────────────
+
+/** Step 1 — three event cards fanning out, top card with lime border */
+function DiscoverIllustration({ hovered }: { hovered: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 100 80"
+      className="w-full"
+      style={{ height: 72 }}
+      fill="none"
+      aria-hidden="true"
+    >
+      {/* Back card */}
+      <motion.rect
+        x="8" y="16" width="44" height="56" rx="5"
+        fill="#1C1C26"
+        stroke="rgba(244,241,234,0.08)"
+        strokeWidth="1"
+        animate={{ rotate: hovered ? -14 : -10, x: hovered ? 4 : 8 }}
+        style={{ transformOrigin: '30px 80px' }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+      {/* Mid card */}
+      <motion.rect
+        x="20" y="10" width="44" height="56" rx="5"
+        fill="#13131B"
+        stroke="rgba(244,241,234,0.16)"
+        strokeWidth="1"
+        animate={{ rotate: hovered ? -5 : -3, x: hovered ? 0 : 0 }}
+        style={{ transformOrigin: '42px 80px' }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+      {/* Front card — lime border */}
+      <motion.rect
+        x="32" y="4" width="44" height="56" rx="5"
+        fill="#13131B"
+        stroke="#D4FF3F"
+        strokeWidth="1.5"
+        animate={{ rotate: hovered ? 3 : 0 }}
+        style={{ transformOrigin: '54px 80px' }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+      {/* Front card content lines */}
+      <rect x="39" y="14" width="20" height="2.5" rx="1.25" fill="#D4FF3F" opacity="0.7" />
+      <rect x="39" y="21" width="28" height="2" rx="1" fill="#F4F1EA" opacity="0.2" />
+      <rect x="39" y="27" width="20" height="2" rx="1" fill="#F4F1EA" opacity="0.15" />
+      <rect x="39" y="33" width="24" height="2" rx="1" fill="#F4F1EA" opacity="0.1" />
+    </svg>
+  );
+}
+
+/** Step 2 — phone outline with a ticket sliding out + lime checkmark */
+function BookIllustration({ hovered }: { hovered: boolean }) {
+  // Draw-on checkmark via stroke-dashoffset
+  const checkLen = 22;
+
+  return (
+    <svg
+      viewBox="0 0 100 80"
+      className="w-full"
+      style={{ height: 72 }}
+      fill="none"
+      aria-hidden="true"
+    >
+      {/* Phone shell */}
+      <rect x="28" y="4" width="36" height="64" rx="6" fill="#1C1C26" stroke="rgba(244,241,234,0.16)" strokeWidth="1.2" />
+      {/* Screen */}
+      <rect x="32" y="10" width="28" height="46" rx="3" fill="#13131B" />
+      {/* Home notch */}
+      <rect x="42" y="58" width="8" height="2" rx="1" fill="rgba(244,241,234,0.2)" />
+
+      {/* Ticket sliding out (lime card) */}
+      <motion.g
+        animate={{ y: hovered ? -6 : 0, opacity: hovered ? 1 : 0.85 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      >
+        <rect x="34" y="16" width="24" height="32" rx="3" fill="#13131B" stroke="#D4FF3F" strokeWidth="1.2" />
+        {/* Ticket perforation line */}
+        <line x1="34" y1="36" x2="58" y2="36" stroke="#D4FF3F" strokeWidth="0.8" strokeDasharray="2 2" opacity="0.5" />
+        {/* Ticket lines */}
+        <rect x="38" y="21" width="14" height="2" rx="1" fill="#D4FF3F" opacity="0.6" />
+        <rect x="38" y="26" width="10" height="1.5" rx="0.75" fill="#F4F1EA" opacity="0.2" />
+        {/* Lime checkmark — draws on hover */}
+        <motion.path
+          d="M38 42 L43 47 L55 35"
+          stroke="#D4FF3F"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={`${checkLen}`}
+          animate={{ strokeDashoffset: hovered ? 0 : checkLen }}
+          transition={{ duration: 0.45, ease: EASE }}
+        />
+      </motion.g>
+    </svg>
+  );
+}
+
+/** Step 3 — three overlapping circles (people) with lime sparkle at centre */
+function ShowUpIllustration({ hovered }: { hovered: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 100 80"
+      className="w-full"
+      style={{ height: 72 }}
+      fill="none"
+      aria-hidden="true"
+    >
+      {/* Three overlapping person circles */}
+      <motion.circle
+        cx="35" cy="42" r="18"
+        fill="#1C1C26"
+        stroke="rgba(244,241,234,0.16)"
+        strokeWidth="1.2"
+        animate={{ cx: hovered ? 31 : 35 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+      <motion.circle
+        cx="50" cy="40" r="18"
+        fill="#13131B"
+        stroke="rgba(244,241,234,0.24)"
+        strokeWidth="1.2"
+        animate={{ scale: hovered ? 1.06 : 1 }}
+        style={{ transformOrigin: '50px 40px' }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+      <motion.circle
+        cx="65" cy="42" r="18"
+        fill="#1C1C26"
+        stroke="rgba(244,241,234,0.16)"
+        strokeWidth="1.2"
+        animate={{ cx: hovered ? 69 : 65 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      />
+
+      {/* Head silhouettes */}
+      <circle cx="35" cy="38" r="5" fill="rgba(244,241,234,0.15)" />
+      <path d="M26 52 Q35 46 44 52" stroke="rgba(244,241,234,0.15)" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="50" cy="36" r="5" fill="rgba(244,241,234,0.2)" />
+      <path d="M41 50 Q50 44 59 50" stroke="rgba(244,241,234,0.2)" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="65" cy="38" r="5" fill="rgba(244,241,234,0.15)" />
+      <path d="M56 52 Q65 46 74 52" stroke="rgba(244,241,234,0.15)" strokeWidth="1.5" strokeLinecap="round" />
+
+      {/* Lime sparkle at intersection — rotates on hover */}
+      <motion.g
+        style={{ transformOrigin: '50px 40px' }}
+        animate={{ rotate: hovered ? 45 : 0, scale: hovered ? 1.25 : 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+      >
+        {/* 4-point star */}
+        <path
+          d="M50 33 L51.5 38 L57 40 L51.5 42 L50 47 L48.5 42 L43 40 L48.5 38 Z"
+          fill="#D4FF3F"
+          opacity={hovered ? 1 : 0.85}
+        />
+      </motion.g>
+    </svg>
+  );
+}
+
+// ─── Step data ────────────────────────────────────────────────────────────────
 
 const STEPS = [
   {
     num: '01',
     title: 'Discover',
-    description:
-      'Browse curated micro-events near you — filtered by vibe, format, and size. No noise, only signal.',
-    detail: 'From morning runs to intimate dinners, every event is vetted by our team for quality and intentionality.',
+    body: 'Browse curated micro-events near you — filtered by vibe, format, and size. No noise, only signal.',
+    Illustration: DiscoverIllustration,
   },
   {
     num: '02',
-    title: 'Book in seconds',
-    description:
-      'Reserve your spot with a single tap. Transparent pricing, instant confirmation, digital ticket in your pocket.',
-    detail: 'No account required to browse. One-click booking for returning members.',
+    title: 'Book',
+    body: 'Reserve your spot with a single tap. Transparent pricing, instant confirmation, digital ticket.',
+    Illustration: BookIllustration,
   },
   {
     num: '03',
-    title: 'Show up & belong',
-    description:
-      'Walk in as a stranger, leave as a regular. Every event is designed for real connection, not networking theatre.',
-    detail: 'Post-event groups, host ratings, and curated follow-up events keep the momentum alive.',
+    title: 'Show up',
+    body: 'Walk in as a stranger, leave as a regular. Every event designed for real connection.',
+    Illustration: ShowUpIllustration,
   },
-];
+] as const;
 
-export default function HowItWorks() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const leftRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeStep, setActiveStep] = useState(0);
-  const headingRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(headingRef, { once: true, margin: '-10% 0px' });
+// ─── Step card ────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mm = gsap.matchMedia();
-
-    mm.add('(min-width: 768px)', () => {
-      const ctx = gsap.context(() => {
-        ScrollTrigger.create({
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          pin: leftRef.current,
-          pinSpacing: false,
-        });
-
-        STEPS.forEach((_, i) => {
-          ScrollTrigger.create({
-            trigger: cardRefs.current[i],
-            start: 'top 55%',
-            end: 'bottom 45%',
-            onEnter: () => setActiveStep(i),
-            onEnterBack: () => setActiveStep(i),
-          });
-        });
-      }, sectionRef);
-
-      return () => ctx.revert();
-    });
-
-    return () => mm.revert();
-  }, []);
+function StepCard({
+  step,
+  delay,
+  inView,
+}: {
+  step: (typeof STEPS)[number];
+  delay: number;
+  inView: boolean;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const { Illustration } = step;
 
   return (
-    <section ref={sectionRef} className="bg-bg-primary border-t border-border">
-      {/* Section heading */}
-      <div ref={headingRef} className="px-6 md:px-16 pt-24 md:pt-32 pb-16 md:pb-0">
-        <motion.p
-          className="font-mono text-xs uppercase tracking-[0.2em] text-ink-muted mb-6"
-          initial={{ opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: EASE_VERCEL }}
-        >
-          [ 01 — THE FLOW ]
-        </motion.p>
-        <motion.h2
-          className="font-display text-display-lg text-ink-primary max-w-2xl leading-[1.05] tracking-tight"
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.1 }}
-        >
-          Three steps to your next great evening.
-        </motion.h2>
+    <motion.div
+      className="bg-surface border border-border rounded-3xl p-8 h-full flex flex-col"
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, ease: EASE, delay }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Step number */}
+      <motion.p
+        className="font-display leading-none text-lime select-none mb-6"
+        style={{ fontSize: 96, fontWeight: 300, lineHeight: 1 }}
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5, ease: EASE, delay: delay + 0.3 }}
+      >
+        {step.num}
+      </motion.p>
+
+      {/* SVG illustration */}
+      <div className="mb-8">
+        <Illustration hovered={hovered} />
       </div>
 
-      {/* Desktop: sticky left + scrolling right */}
-      <div className="hidden md:grid grid-cols-2 min-h-[300vh]">
-        {/* Left: pinned */}
-        <div ref={leftRef} className="h-screen flex flex-col justify-center px-16">
-          <motion.div
-            key={activeStep}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: EASE_VERCEL }}
-          >
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted block mb-4">
-              Step {STEPS[activeStep].num}
-            </span>
-            <p
-              className="font-display text-[clamp(5rem,10vw,9rem)] text-ink-primary leading-none tracking-[-0.04em] select-none"
-            >
-              {STEPS[activeStep].num}
-            </p>
-            <h3 className="font-display text-4xl text-ink-primary mt-4 mb-4 tracking-tight">
-              {STEPS[activeStep].title}
-            </h3>
-            <p className="font-sans text-base text-ink-muted leading-relaxed max-w-xs">
-              {STEPS[activeStep].detail}
-            </p>
-          </motion.div>
-        </div>
+      {/* Text */}
+      <div className="mt-auto">
+        <h3
+          className="font-display text-cream mb-3 leading-tight"
+          style={{ fontSize: 24, fontWeight: 400 }}
+        >
+          {step.title}
+        </h3>
+        <p
+          className="font-sans text-cream-dim"
+          style={{ fontSize: 15, lineHeight: 1.7 }}
+        >
+          {step.body}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
-        {/* Right: scrolling cards */}
-        <div className="py-32 px-8 flex flex-col gap-10 border-l border-border">
+// ─── Section ──────────────────────────────────────────────────────────────────
+
+export default function HowItWorks() {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-8% 0px' });
+
+  return (
+    <section
+      ref={ref}
+      className="bg-void border-t border-border py-24 md:py-32 px-6"
+    >
+      <div className="max-w-6xl mx-auto">
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: EASE }}
+        >
+          <p className="label text-lime mb-4">01 — THE FLOW</p>
+          <h2 className="display-md text-cream text-balance max-w-xl">
+            Three steps. One great evening.
+          </h2>
+        </motion.div>
+
+        {/* Card grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-16">
           {STEPS.map((step, i) => (
-            <div
+            <StepCard
               key={step.num}
-              ref={(el) => { cardRefs.current[i] = el; }}
-              className={`rounded-2xl border transition-all duration-500 p-10 min-h-[380px] flex flex-col justify-between ${
-                activeStep === i
-                  ? 'border-ink-primary bg-bg-secondary'
-                  : 'border-border bg-bg-primary'
-              }`}
-            >
-              <div>
-                <span className="font-mono text-xs text-ink-light tracking-widest uppercase">{step.num}</span>
-                <h3 className="font-display text-4xl text-ink-primary mt-3 mb-4 tracking-tight leading-tight">
-                  {step.title}
-                </h3>
-                <p className="font-sans text-base text-ink-muted leading-relaxed max-w-sm">
-                  {step.description}
-                </p>
-              </div>
-              {/* Mockup placeholder */}
-              <div className="mt-8 rounded-xl border border-border bg-bg-primary h-28 flex items-center justify-center">
-                <span className="font-mono text-xs text-ink-light tracking-wide">[ {step.title} · mockup ]</span>
-              </div>
-            </div>
+              step={step}
+              delay={i * 0.15}
+              inView={inView}
+            />
           ))}
         </div>
       </div>
-
-      {/* Mobile: vertical stack */}
-      <motion.div
-        className="md:hidden px-6 pb-24 flex flex-col gap-6 mt-8"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-10% 0px' }}
-      >
-        {STEPS.map((step) => (
-          <motion.div
-            key={step.num}
-            variants={fadeInUp}
-            className="rounded-2xl border border-border bg-bg-secondary p-8"
-          >
-            <span className="font-mono text-xs text-ink-light tracking-widest uppercase">{step.num}</span>
-            <h3 className="font-display text-3xl text-ink-primary mt-3 mb-3 tracking-tight">
-              {step.title}
-            </h3>
-            <p className="font-sans text-base text-ink-muted leading-relaxed">
-              {step.description}
-            </p>
-            <div className="mt-6 rounded-xl border border-border bg-bg-primary h-20 flex items-center justify-center">
-              <span className="font-mono text-xs text-ink-light">[ {step.title} · mockup ]</span>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
     </section>
   );
 }

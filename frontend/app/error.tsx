@@ -1,32 +1,67 @@
 'use client';
 
-export default function GlobalError({
+/**
+ * app/error.tsx  —  Route-level error boundary for all top-level routes.
+ * Rendered inside the root layout (inherits fonts, global CSS).
+ */
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+export default function RouteError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[UpSosh error boundary]', error);
+    }
+  }, [error]);
+
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#FAFAF7] flex flex-col items-center justify-center px-6 text-center font-sans">
-        <p className="text-xs uppercase tracking-[0.2em] text-[#6B6B6B] mb-6">[ 500 ]</p>
-        <h1
-          className="text-[#0A0A0A] mb-4"
-          style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(3rem,7vw,6rem)', letterSpacing: '-0.04em', lineHeight: 1 }}
-        >
-          Something broke.
-        </h1>
-        <p className="text-lg text-[#6B6B6B] max-w-md mb-10">
-          An unexpected error occurred. Our team has been notified.
+    <div className="min-h-screen bg-void flex flex-col items-center justify-center px-6 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: EASE }}
+        className="max-w-md"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-faint mb-6">
+          [ Something went wrong ]
         </p>
-        <button
-          onClick={reset}
-          className="text-sm font-medium bg-[#FF5A1F] text-white px-6 py-3 rounded-full hover:bg-[#0A0A0A] transition-colors duration-300"
-        >
-          Try again
-        </button>
-      </body>
-    </html>
+        <h1 className="font-display text-[32px] text-cream leading-tight mb-4">
+          Something went wrong.
+        </h1>
+        <p className="font-sans text-[15px] text-cream-dim leading-relaxed mb-10">
+          An unexpected error occurred. You can try again — if it keeps
+          happening, we're already on it.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <motion.button
+            onClick={reset}
+            whileTap={{ scale: 0.97 }}
+            className="h-11 px-8 bg-lime text-void rounded-xl font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors"
+          >
+            Try again
+          </motion.button>
+          <Link
+            href="/"
+            className="h-11 px-8 flex items-center justify-center border border-border rounded-xl font-sans text-[14px] text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors"
+          >
+            Go home
+          </Link>
+        </div>
+        {error.digest && process.env.NODE_ENV !== 'production' && (
+          <p className="mt-8 font-mono text-[10px] text-cream-faint">
+            digest: {error.digest}
+          </p>
+        )}
+      </motion.div>
+    </div>
   );
 }

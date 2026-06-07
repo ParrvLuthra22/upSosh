@@ -1,13 +1,14 @@
 import { Router, Response } from 'express';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { sendBookingConfirmation } from '../lib/email';
 
 const router = Router();
 
 // POST /api/bookings — create booking (requireAuth)
 router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
-    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod } = req.body;
+    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod, ticketPrice: reqTicketPrice } = req.body;
 
     if (!guestName || !guestEmail || !guestPhone) {
       return res.status(400).json({ message: 'guestName, guestEmail, and guestPhone are required' });
@@ -16,7 +17,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
     let ticketPrice = 0;
     let isFreeEvent = true;
 
-    if (eventId) {
+    if (eventId && !String(eventId).startsWith('evt-')) {
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: 'Event not found' });
       if (event.attendees >= event.capacity) {
@@ -24,6 +25,10 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
       }
       ticketPrice = event.price;
       isFreeEvent = event.isFree || event.price === 0;
+    } else if (eventId && String(eventId).startsWith('evt-')) {
+      // Mock event handling
+      ticketPrice = reqTicketPrice ? Number(reqTicketPrice) : 0;
+      isFreeEvent = ticketPrice === 0;
     }
 
     const platformFee = 25;
@@ -32,7 +37,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
     const booking = await prisma.booking.create({
       data: {
         userId: req.user!.id,
-        eventId: eventId ?? null,
+        eventId: (eventId && !String(eventId).startsWith('evt-')) ? eventId : null,
         guestName: String(guestName).trim(),
         guestEmail: String(guestEmail).trim().toLowerCase(),
         guestPhone: String(guestPhone).trim(),
@@ -54,13 +59,28 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
       include: { event: true },
     });
 
-    // Increment attendees if event exists
-    if (eventId) {
+    // Increment attendees if event exists in DB
+    if (eventId && !String(eventId).startsWith('evt-')) {
       await prisma.event.update({
         where: { id: eventId },
         data: { attendees: { increment: 1 } },
       });
     }
+
+    // Send confirmation email (fire-and-forget — don't block the response)
+    const event = updatedBooking.event;
+    sendBookingConfirmation({
+      guestName: updatedBooking.guestName,
+      guestEmail: updatedBooking.guestEmail,
+      eventTitle: event?.title ?? 'your event',
+      eventDate: event?.date ? new Date(event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+      eventTime: event?.time ?? '',
+      eventVenue: event?.venue ?? '',
+      bookingId: updatedBooking.id,
+      totalAmount: updatedBooking.totalAmount,
+      qrCode: updatedBooking.qrCode ?? updatedBooking.id,
+      isFree: isFreeEvent,
+    }).catch(() => {});
 
     return res.status(201).json({ booking: updatedBooking, message: 'Booking created successfully' });
   } catch (err: any) {

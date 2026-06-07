@@ -276,6 +276,13 @@ function AvatarDropdown({
 
 // ─── Mobile Menu ──────────────────────────────────────────────────────────────
 
+const MOBILE_NAV = [
+  { name: 'Discover', href: '/discover' },
+  { name: 'Planner',  href: '/planner' },
+  { name: 'About',    href: '/about' },
+  { name: 'Sign in',  href: '/signin' },
+];
+
 function MobileMenu({
   isOpen,
   onClose,
@@ -295,91 +302,92 @@ function MobileMenu({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 bg-bg-primary/95 backdrop-blur-xl flex flex-col"
-          initial={{ opacity: 0, x: '100%' }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: '100%' }}
-          transition={{ duration: 0.35, ease: EASE_VERCEL }}
+          className="fixed inset-0 z-50 bg-void flex flex-col"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: EASE_VERCEL }}
         >
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-border">
-            <Link href="/" onClick={onClose} className="font-mono text-sm font-medium tracking-widest text-ink-primary uppercase">
+          {/* Top bar — close X right, wordmark center */}
+          <div className="relative flex items-center justify-center px-6 h-16 border-b border-[rgba(244,241,234,0.08)]">
+            <Link href="/" onClick={onClose}
+              className="font-display italic text-[20px] text-cream tracking-tight">
               UpSosh
             </Link>
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-ink-muted hover:text-ink-primary">
+            <button
+              onClick={onClose}
+              aria-label="Close menu"
+              className="absolute right-6 w-9 h-9 flex items-center justify-center text-cream-dim hover:text-cream transition-colors rounded-lg hover:bg-[rgba(244,241,234,0.06)]"
+            >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Nav links — stagger in */}
-          <nav className="flex-1 flex flex-col justify-center px-8 gap-1">
-            {NAV_LINKS.map((link, i) => (
+          {/* Nav links — center-stacked, stagger in */}
+          <nav className="flex-1 flex flex-col items-center justify-center gap-2 px-8">
+            {(isAuth
+              ? [
+                  { name: 'Discover',  href: '/discover' },
+                  { name: 'Planner',   href: '/planner' },
+                  { name: 'About',     href: '/about' },
+                  ...(user?.hostStatus === 'verified'
+                    ? [{ name: 'Dashboard', href: '/dashboard' }]
+                    : []),
+                ]
+              : MOBILE_NAV
+            ).map((link, i) => (
               <motion.div
                 key={link.name}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 + i * 0.06, duration: 0.4, ease: EASE_VERCEL }}
+                transition={{ delay: 0.06 + i * 0.07, duration: 0.45, ease: EASE_VERCEL }}
+                className="w-full text-center"
               >
                 <Link
                   href={link.href}
                   onClick={onClose}
-                  className={`block font-display text-5xl leading-tight tracking-tight mb-2 transition-colors ${
-                    pathname.startsWith(link.href) ? 'text-accent' : 'text-ink-primary hover:text-accent'
+                  className={`block font-display text-[36px] leading-tight tracking-tight py-1 transition-colors ${
+                    pathname.startsWith(link.href) && link.href !== '/'
+                      ? 'text-lime'
+                      : 'text-cream hover:text-lime'
                   }`}
                 >
                   {link.name}
                 </Link>
               </motion.div>
             ))}
-
-            {user?.hostStatus === 'verified' && (
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.23, duration: 0.4, ease: EASE_VERCEL }}
-              >
-                <Link href="/host/dashboard" onClick={onClose} className="block font-display text-5xl leading-tight tracking-tight mb-2 text-ink-primary hover:text-accent transition-colors">
-                  Dashboard
-                </Link>
-              </motion.div>
-            )}
           </nav>
 
-          {/* Bottom auth area */}
+          {/* Bottom CTA */}
           <motion.div
-            className="px-8 pb-10 pt-6 border-t border-border"
-            initial={{ opacity: 0, y: 16 }}
+            className="px-8 pb-10 pt-6 border-t border-[rgba(244,241,234,0.08)] flex flex-col items-center gap-3"
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4, ease: EASE_VERCEL }}
+            transition={{ delay: 0.32, duration: 0.4, ease: EASE_VERCEL }}
           >
             {isAuth && user ? (
-              <div className="flex items-center justify-between">
+              <div className="w-full flex items-center justify-between">
                 <div>
-                  <p className="font-sans text-sm font-medium text-ink-primary">{user.name}</p>
-                  <p className="font-mono text-[11px] text-ink-muted">{user.email}</p>
+                  <p className="font-sans text-[14px] font-medium text-cream">{user.name}</p>
+                  <p className="font-mono text-[11px] text-cream-dim">{user.email}</p>
                 </div>
                 <button
                   onClick={() => { onClose(); onSignOut(); }}
-                  className="font-sans text-sm text-red-500 hover:text-red-600 transition-colors"
+                  className="font-sans text-[14px] text-coral hover:text-coral/80 transition-colors"
                 >
                   Sign out
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <Link href="/signin" onClick={onClose} className="font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors">
-                  Sign in
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={onClose}
-                  className="font-sans text-sm font-medium bg-accent text-white px-5 py-2.5 rounded-full hover:bg-ink-primary transition-colors duration-300"
-                >
-                  Get early access
-                </Link>
-              </div>
+              <Link
+                href="/signup"
+                onClick={onClose}
+                className="w-full h-12 bg-lime text-void rounded-full font-sans text-[15px] font-semibold flex items-center justify-center hover:bg-lime/90 transition-colors"
+              >
+                Sign up
+              </Link>
             )}
           </motion.div>
         </motion.div>
@@ -547,7 +555,7 @@ export default function GlobalHeader() {
                     data-cursor="JOIN"
                     className="font-sans text-sm font-medium bg-ink-primary text-bg-primary px-5 py-2.5 rounded-full hover:bg-accent transition-colors duration-300"
                   >
-                    Get early access
+                    Sign up
                   </Link>
                 </MagneticButton>
               </>
