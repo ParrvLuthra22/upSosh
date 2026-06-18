@@ -6,9 +6,9 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import TextReveal from '@/components/ui/TextReveal';
 
 const SUGGESTIONS = [
-  { label: 'Hyde Park Morning Run', time: '6AM · 8 spots', icon: '◎' },
-  { label: 'Shoreditch Speed Run', time: '7AM · 12 spots', icon: '◎' },
-  { label: 'Victoria Park Tempo', time: '7:30AM · 4 spots', icon: '◎' },
+  { label: 'Lodhi Garden Morning Run', time: '6AM · 8 spots', icon: '◎' },
+  { label: 'Sunder Nursery 5K', time: '7AM · 12 spots', icon: '◎' },
+  { label: 'India Gate Tempo Run', time: '7:30AM · 4 spots', icon: '◎' },
 ];
 
 function PlannerMockup() {
@@ -122,7 +122,7 @@ export default function AIPlanner() {
           </motion.h2>
 
           <motion.p variants={fadeInUp} className="font-sans text-base text-ink-muted leading-relaxed mb-10 max-w-md">
-            The UpSosh AI Planner learns your vibe, budget, and guest count — then surfaces the right events, venues, and timings in seconds. No spreadsheets. No endless group chats.
+            The UpSosh AI Planner helps you set pricing, predict attendance, and cut no-shows — with WhatsApp reminders built in. No spreadsheets. No chasing UPI screenshots.
           </motion.p>
 
           <motion.div variants={fadeInUp}>

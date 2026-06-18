@@ -75,16 +75,16 @@ export default function Testimonials() {
             variants={fadeInUp}
             className="font-display italic text-cream text-[clamp(2rem,5vw,3.5rem)] leading-[1.15] tracking-tight mb-10"
           >
-            "I used to dread social events. Now I host a run club every Saturday morning and I know half the city."
+            "I was managing RSVPs on WhatsApp and collecting UPI screenshots manually. UpSosh replaced all of it — our no-shows dropped by half the first month."
           </motion.blockquote>
 
           <motion.footer variants={fadeInUp} className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-lime flex items-center justify-center">
-              <span className="font-display text-[13px] font-bold text-void">JK</span>
+              <span className="font-display text-[13px] font-bold text-void">AS</span>
             </div>
             <div>
-              <p className="font-sans text-[14px] font-medium text-cream">James K.</p>
-              <p className="font-mono text-[11px] text-cream-faint">Hyde Park Run Club founder · London</p>
+              <p className="font-sans text-[14px] font-medium text-cream">Arjun S.</p>
+              <p className="font-mono text-[11px] text-cream-faint">Sunday Run Club founder · Delhi</p>
             </div>
           </motion.footer>
         </motion.div>

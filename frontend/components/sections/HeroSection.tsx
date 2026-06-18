@@ -131,7 +131,7 @@ function AvatarStack() {
   );
 }
 
-// ─── CTA button — primary ─────────────────────────────────────────────────────
+// ─── CTA button — primary (Host an event) ────────────────────────────────────
 
 function PrimaryButton() {
   return (
@@ -141,7 +141,7 @@ function PrimaryButton() {
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <Link
-        href="/discover"
+        href="/become-a-host"
         className="inline-flex items-center gap-2 rounded-full font-sans font-semibold hover:opacity-90 transition-opacity duration-200"
         style={{
           height: '3.25rem',
@@ -152,20 +152,20 @@ function PrimaryButton() {
           textDecoration: 'none',
         }}
       >
-        Browse events
+        Host an event
         <IconArrowRight size={16} strokeWidth={2.5} />
       </Link>
     </motion.div>
   );
 }
 
-// ─── CTA button — secondary ───────────────────────────────────────────────────
+// ─── CTA button — secondary (Browse events) ───────────────────────────────────
 
 function SecondaryButton() {
   return (
     <motion.div whileTap={{ scale: 0.97 }}>
       <Link
-        href="/become-a-host"
+        href="/discover"
         className="inline-flex items-center rounded-full font-sans hover:opacity-80 transition-opacity duration-200"
         style={{
           height: '3.25rem',
@@ -176,7 +176,7 @@ function SecondaryButton() {
           textDecoration: 'none',
         }}
       >
-        Host an event
+        Browse events
       </Link>
     </motion.div>
   );
@@ -206,7 +206,7 @@ export default function HeroSection() {
         <FadeUp delay={0} className="flex items-center gap-3 mb-8">
           <PulseDot />
           <span className="font-mono text-[11px] uppercase tracking-wider text-cream-dim">
-            Now booking · 2,400+ events
+            Made in India · UPI native · Free to start
           </span>
         </FadeUp>
 
@@ -236,8 +236,7 @@ export default function HeroSection() {
         {/* 3 — Subhead */}
         <FadeUp delay={0.35} className="mt-8">
           <p className="font-sans text-[20px] text-cream-dim max-w-2xl text-balance leading-relaxed">
-            The curated platform for micro-events worth showing up to. Run clubs, dinner
-            circles, creator gatherings, book nights.
+            The curated platform for micro-events worth showing up to — native UPI payments, WhatsApp reminders, and attendee tracking built for India.
           </p>
         </FadeUp>
 
