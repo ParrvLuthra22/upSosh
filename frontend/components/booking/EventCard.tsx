@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Event, api } from '@/src/lib/api';
+import { Event, api } from '@/lib/api';
 
 interface EventCardProps {
     event: Event;

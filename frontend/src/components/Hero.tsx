@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useAppStore } from '@/lib/stores/useAppStore';
 import FloatingMesh3D from '@/src/components/FloatingMesh3D';
 import SplineToggle from './SplineToggle';
 import Link from 'next/link';

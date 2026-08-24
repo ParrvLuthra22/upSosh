@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { useBookingStore } from '@/src/store/bookingStore';
-import { api } from '@/src/lib/api';
-import { useFocusTrap, useEscapeKey } from '@/src/lib/a11y';
+import { useBookingStore } from '@/lib/stores/bookingCart';
+import { api } from '@/lib/api';
+import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -162,46 +162,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             };
             
             const booking = await api.createBooking(bookingData as any);
-            console.log('Pre-payment booking created:', booking.id);
-            
-            
+
             sessionStorage.setItem('pendingBookingId', booking.id);
             sessionStorage.setItem('pendingBookingItems', JSON.stringify(items));
-            
-            const response = await api.createDodoCheckout({
-                items,
-                customer: {
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone || '',
-                },
-                returnUrl: `${window.location.origin}/booking/confirmation?bookingId=${booking.id}`,
-                metadata: {
-                    userId: user.id,
-                    bookingId: booking.id,
-                },
-            });
-            
-            
-            if (response.useManualPayment) {
-                setStatus('payment-details');
-                setErrorMessage('Online payments are currently unavailable. Please use manual payment.');
-                return;
-            }
-            
-            if (response.checkoutUrl) {
-                
-                clearCart();
-                
-                window.location.href = response.checkoutUrl;
-            } else {
-                
-                setStatus('payment-details');
-                setErrorMessage('Online checkout unavailable. Please use manual payment.');
-            }
+
+            // Online checkout (formerly Dodo Payments) is not wired up on the
+            // backend — POST /api/payments/create-checkout does not exist.
+            // Go straight to the manual-payment fallback the rest of this
+            // handler already implements correctly.
+            throw new Error('Online checkout unavailable. Please use manual payment.');
         } catch (error: any) {
-            console.error('Dodo payment error:', error);
-            
+            console.error('Checkout error:', error);
+
             
             if (error.message?.includes('expired') || error.message?.includes('Invalid token') || error.message?.includes('401')) {
                 setErrorMessage('Your session has expired. Please log in again.');

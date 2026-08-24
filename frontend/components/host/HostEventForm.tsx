@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api, Event } from '@/src/lib/api';
+import { api, Event } from '@/lib/api';
 
 interface HostEventFormProps {
     eventToEdit?: Event | null;

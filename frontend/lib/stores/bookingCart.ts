@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Event } from '@/src/lib/api';
+import { Event } from '@/lib/api';
 
 interface Filters {
     type: 'all' | 'formal' | 'informal';

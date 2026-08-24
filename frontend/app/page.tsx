@@ -6,7 +6,7 @@ import FeaturedEvents from '@/components/sections/FeaturedEvents';
 import AIPlanner from '@/components/sections/AIPlanner';
 import Testimonials from '@/components/sections/Testimonials';
 import CTAFooterSection from '@/components/sections/CTAFooterSection';
-import { generateOrganizationSchema } from '@/src/lib/structuredData';
+import { generateOrganizationSchema } from '@/lib/structuredData';
 
 // ─── Shared content arrays ────────────────────────────────────────────────────
 

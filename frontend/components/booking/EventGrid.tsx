@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { useBookingStore } from '@/src/store/bookingStore';
+import { useBookingStore } from '@/lib/stores/bookingCart';
 import EventCard from './EventCard';
 
 const EventGrid = () => {

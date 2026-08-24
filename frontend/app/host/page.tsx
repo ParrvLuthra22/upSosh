@@ -3,10 +3,10 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/store/authStore';
-import HostEventForm from '@/src/components/host/HostEventForm';
-import MyEventsList from '@/src/components/host/MyEventsList';
-import AIAssistant from '@/src/components/host/AIAssistant';
-import { api, Event } from '@/src/lib/api';
+import HostEventForm from '@/components/host/HostEventForm';
+import MyEventsList from '@/components/host/MyEventsList';
+import AIAssistant from '@/components/host/AIAssistant';
+import { api, Event } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 

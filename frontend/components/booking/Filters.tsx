@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useBookingStore } from '@/src/store/bookingStore';
+import { useBookingStore } from '@/lib/stores/bookingCart';
 
 const Filters = () => {
     const { filters, setFilters, applyFilters } = useBookingStore();

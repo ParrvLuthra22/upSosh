@@ -1,22 +1,22 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import SearchBar from '@/src/components/booking/SearchBar';
-import Filters from '@/src/components/booking/Filters';
-import EventGrid from '@/src/components/booking/EventGrid';
-import HorizontalEventSlider from '@/src/components/booking/HorizontalEventSlider';
-import Pagination from '@/src/components/booking/Pagination';
-import FormalInformalToggle from '@/src/components/FormalInformalToggle';
-import { useBookingStore } from '@/src/store/bookingStore';
-import { useAppStore } from '@/src/store/useAppStore';
-import { api } from '@/src/lib/api';
-import { generateEventSchema } from '@/src/lib/structuredData';
+import SearchBar from '@/components/booking/SearchBar';
+import Filters from '@/components/booking/Filters';
+import EventGrid from '@/components/booking/EventGrid';
+import HorizontalEventSlider from '@/components/booking/HorizontalEventSlider';
+import Pagination from '@/components/booking/Pagination';
+import FormalInformalToggle from '@/components/FormalInformalToggle';
+import { useBookingStore } from '@/lib/stores/bookingCart';
+import { useAppStore } from '@/lib/stores/useAppStore';
+import { api } from '@/lib/api';
+import { generateEventSchema } from '@/lib/structuredData';
 
 import dynamic from 'next/dynamic';
 
-const EventDetailsModal = dynamic(() => import('@/src/components/booking/EventDetailsModal'), { ssr: false });
-const CartDrawer = dynamic(() => import('@/src/components/booking/CartDrawer'), { ssr: false });
-const CheckoutModal = dynamic(() => import('@/src/components/booking/CheckoutModal'), { ssr: false });
+const EventDetailsModal = dynamic(() => import('@/components/booking/EventDetailsModal'), { ssr: false });
+const CartDrawer = dynamic(() => import('@/components/booking/CartDrawer'), { ssr: false });
+const CheckoutModal = dynamic(() => import('@/components/booking/CheckoutModal'), { ssr: false });
 
 export default function BookingPage() {
     const { isFormal } = useAppStore();

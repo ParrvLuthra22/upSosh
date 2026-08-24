@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Event } from '@/src/lib/api';
+import { Event } from '@/lib/api';
 import EventCard from './EventCard';
-import { useBookingStore } from '@/src/store/bookingStore';
+import { useBookingStore } from '@/lib/stores/bookingCart';
 
 interface HorizontalEventSliderProps {
     title: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useAppStore } from '@/lib/stores/useAppStore';
 
 const FormalInformalToggle = () => {
     const { isFormal, toggleMode } = useAppStore();

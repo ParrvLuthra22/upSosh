@@ -3,8 +3,8 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import QRCode from 'react-qr-code';
-import { Booking } from '@/src/lib/api';
-import { downloadQRCode, generateICS } from '@/src/lib/ticketUtils';
+import { Booking } from '@/lib/api';
+import { downloadQRCode, generateICS } from '@/lib/ticketUtils';
 
 interface QRTicketModalProps {
     booking: Booking;

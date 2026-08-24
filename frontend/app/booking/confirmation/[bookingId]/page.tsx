@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import gsap from 'gsap';
-import { api, Booking } from '@/src/lib/api';
-import QRTicketModal from '@/src/components/booking/QRTicketModal';
+import { api, Booking } from '@/lib/api';
+import QRTicketModal from '@/components/booking/QRTicketModal';
 
 export default function ConfirmationPage() {
     const params = useParams();

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { useBookingStore } from '@/src/store/bookingStore';
-import { api } from '@/src/lib/api';
-import { useFocusTrap, useEscapeKey } from '@/src/lib/a11y';
+import { useBookingStore } from '@/lib/stores/bookingCart';
+import { api } from '@/lib/api';
+import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
 
 const EventDetailsModal = () => {
     const { selectedEvent, setSelectedEvent, addToCart, toggleCheckout } = useBookingStore();

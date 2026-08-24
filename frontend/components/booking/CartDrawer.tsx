@@ -3,8 +3,8 @@
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
-import { useBookingStore } from '@/src/store/bookingStore';
-import { useFocusTrap, useEscapeKey } from '@/src/lib/a11y';
+import { useBookingStore } from '@/lib/stores/bookingCart';
+import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
 
 const CartDrawer = () => {
     const { cart, isCartOpen, toggleCart, removeFromCart, updateCartQty, toggleCheckout } = useBookingStore();
