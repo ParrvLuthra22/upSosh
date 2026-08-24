@@ -6,7 +6,7 @@ export interface AuthRequest extends Request {
   user?: { id: string; email: string; role: string; hostStatus: string };
 }
 
-export async function requireAuth(req: AuthRequest, res: Response, next: NextFunction): Promise<any> {
+export async function requireAuth(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ message: 'Authentication required' });
@@ -34,7 +34,7 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
 }
 
 export function requireRole(role: string) {
-  return (req: AuthRequest, res: Response, next: NextFunction): any => {
+  return (req: AuthRequest, res: Response, next: NextFunction): Response | void => {
     if (!req.user) return res.status(401).json({ message: 'Authentication required' });
     if (req.user.role !== role && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Insufficient permissions' });
@@ -44,7 +44,7 @@ export function requireRole(role: string) {
 }
 
 export function requireHostStatus(status: string) {
-  return (req: AuthRequest, res: Response, next: NextFunction): any => {
+  return (req: AuthRequest, res: Response, next: NextFunction): Response | void => {
     if (!req.user) return res.status(401).json({ message: 'Authentication required' });
     if (req.user.hostStatus !== status && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Host verification required' });

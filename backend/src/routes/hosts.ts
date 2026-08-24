@@ -1,11 +1,16 @@
 import { Router, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 const router = Router();
 
 // POST /api/hosts/apply — submit host application (requireAuth)
-router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const {
       govIdUrl, selfieUrl, bio, experience, categories,
@@ -18,7 +23,7 @@ router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Prom
 
     const categoriesJson = Array.isArray(categories) ? JSON.stringify(categories) : (categories ?? '[]');
 
-    const applicationData: any = {
+    const applicationData: Omit<Prisma.HostApplicationUncheckedCreateInput, 'userId'> = {
       bio: String(bio).trim(),
       experience: String(experience),
       categories: categoriesJson,
@@ -55,14 +60,14 @@ router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Prom
     });
 
     return res.status(201).json({ message: 'Host application submitted successfully', application });
-  } catch (err: any) {
-    console.error('POST /hosts/apply error:', err.message);
+  } catch (err: unknown) {
+    console.error('POST /hosts/apply error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/hosts/application — current user's application status (requireAuth)
-router.get('/application', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/application', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const application = await prisma.hostApplication.findUnique({
       where: { userId: req.user!.id },
@@ -73,21 +78,21 @@ router.get('/application', requireAuth, async (req: AuthRequest, res: Response):
     }
 
     return res.json({ application });
-  } catch (err: any) {
-    console.error('GET /hosts/application error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /hosts/application error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/hosts/admin/applications — list all applications (admin only)
-router.get('/admin/applications', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/admin/applications', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     if (req.user!.role !== 'admin') {
       return res.status(403).json({ message: 'Admin access required' });
     }
 
     const { status } = req.query;
-    const where: any = {};
+    const where: Prisma.HostApplicationWhereInput = {};
     if (status) where.status = String(status);
 
     const applications = await prisma.hostApplication.findMany({
@@ -101,14 +106,14 @@ router.get('/admin/applications', requireAuth, async (req: AuthRequest, res: Res
     });
 
     return res.json({ applications });
-  } catch (err: any) {
-    console.error('GET /hosts/admin/applications error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /hosts/admin/applications error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PATCH /api/hosts/admin/applications/:id/approve
-router.patch('/admin/applications/:id/approve', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/admin/applications/:id/approve', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     if (req.user!.role !== 'admin') {
       return res.status(403).json({ message: 'Admin access required' });
@@ -131,14 +136,14 @@ router.patch('/admin/applications/:id/approve', requireAuth, async (req: AuthReq
     ]);
 
     return res.json({ message: 'Application approved', application: updatedApp });
-  } catch (err: any) {
-    console.error('PATCH /hosts/admin/applications/:id/approve error:', err.message);
+  } catch (err: unknown) {
+    console.error('PATCH /hosts/admin/applications/:id/approve error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PATCH /api/hosts/admin/applications/:id/reject
-router.patch('/admin/applications/:id/reject', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/admin/applications/:id/reject', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     if (req.user!.role !== 'admin') {
       return res.status(403).json({ message: 'Admin access required' });
@@ -162,18 +167,18 @@ router.patch('/admin/applications/:id/reject', requireAuth, async (req: AuthRequ
     ]);
 
     return res.json({ message: 'Application rejected', application: updatedApp });
-  } catch (err: any) {
-    console.error('PATCH /hosts/admin/applications/:id/reject error:', err.message);
+  } catch (err: unknown) {
+    console.error('PATCH /hosts/admin/applications/:id/reject error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/hosts — list verified hosts (public, optional ?city=)
-router.get('/', async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/', async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { city } = req.query;
 
-    const where: any = { verified: true };
+    const where: Prisma.HostWhereInput = { verified: true };
     if (city) {
       // Hosts are in the Host model; city filter not directly on Host, skip or join via events
     }
@@ -190,14 +195,14 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<any> => {
     });
 
     return res.json({ hosts });
-  } catch (err: any) {
-    console.error('GET /hosts error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /hosts error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/hosts/:id — get host profile (public)
-router.get('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/:id', async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -214,8 +219,8 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
     if (!host) return res.status(404).json({ message: 'Host not found' });
 
     return res.json({ host });
-  } catch (err: any) {
-    console.error('GET /hosts/:id error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /hosts/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

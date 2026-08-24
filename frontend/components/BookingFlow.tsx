@@ -208,9 +208,8 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
 
 function Step1Review() {
   const { event, guestCount, guestDetails, setGuestDetails, next } = useBookingStore();
-  if (!event) return null;
-
   const [errors, setErrors] = useState<Partial<typeof guestDetails>>({});
+  if (!event) return null;
 
   function validate() {
     const e: Partial<typeof guestDetails> = {};
@@ -349,12 +348,12 @@ function Step2Payment() {
     back,
     submit,
   } = useBookingStore();
+  const [terms, setTerms] = useState(false);
   if (!event) return null;
 
   const price = unitPrice(event.price);
   const isFree = price === 0;
   const total = price * guestCount + Math.round(price * guestCount * 0.1);
-  const [terms, setTerms] = useState(false);
 
   const canSubmit =
     !isProcessing &&

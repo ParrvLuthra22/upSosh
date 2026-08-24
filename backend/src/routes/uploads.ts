@@ -1,8 +1,13 @@
-import { Router } from 'express';
+import { Router, Response, RequestHandler } from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
+import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import prisma from '../lib/prisma';
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 const router = Router();
 
@@ -36,9 +41,14 @@ const upload = multer({
 // POST /api/uploads — upload a file (requireAuth)
 router.post(
   '/',
-  requireAuth as any,
-  upload.single('file') as any,
-  async (req: AuthRequest, res): Promise<any> => {
+  requireAuth,
+  // multer's RequestHandler type resolves against a duplicate, mismatched
+  // copy of @types/express-serve-static-core pulled in transitively via
+  // @types/cookie-parser's `@types/express: "*"` peer dependency — a
+  // workspace-level dependency conflict, not an untyped value. The cast is
+  // narrowly scoped to just this line.
+  upload.single('file') as unknown as RequestHandler,
+  async (req: AuthRequest, res: Response): Promise<Response> => {
     try {
       if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
@@ -46,8 +56,8 @@ router.post(
 
       if (isCloudinaryConfigured) {
         // Upload to Cloudinary
-        const fileBuffer = (req as any).file!.buffer;
-        const result = await new Promise<any>((resolve, reject) => {
+        const fileBuffer = req.file.buffer;
+        const result = await new Promise<UploadApiResponse>((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             {
               folder: 'upsosh',
@@ -55,12 +65,12 @@ router.post(
                 { width: 1200, height: 840, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
               ],
             },
-            (error: any, result: any) => {
-              if (error) reject(error);
+            (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
+              if (error || !result) reject(error ?? new Error('Cloudinary upload returned no result'));
               else resolve(result);
             },
           );
-          (stream as any).end(fileBuffer);
+          stream.end(fileBuffer);
         });
         url = result.secure_url;
       } else {
@@ -82,9 +92,9 @@ router.post(
       });
 
       return res.json({ url, filename: req.file.originalname });
-    } catch (err: any) {
-      console.error('Upload error:', err.message);
-      return res.status(500).json({ message: err.message || 'Upload failed' });
+    } catch (err: unknown) {
+      console.error('Upload error:', errorMessage(err));
+      return res.status(500).json({ message: errorMessage(err) || 'Upload failed' });
     }
   },
 );

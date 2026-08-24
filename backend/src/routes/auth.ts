@@ -2,9 +2,14 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendPasswordResetEmail } from '../lib/email';
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 const router = Router();
 
@@ -21,35 +26,6 @@ function generateToken(userId: string): string {
   return jwt.sign({ userId }, secret, { expiresIn: '7d' });
 }
 
-function sanitizeUser(user: any) {
-  const role = user.role ?? 'user';
-  const hostStatus = user.hostStatus ?? (role === 'host' ? 'verified' : 'none');
-
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    photoUrl: user.photoUrl ?? null,
-    bio: user.bio ?? null,
-    role,
-    hostStatus,
-    onboardingComplete: user.onboardingComplete ?? false,
-    interests: user.interests ?? '[]',
-    city: user.city ?? null,
-    groupSize: user.groupSize ?? null,
-    vibe: user.vibe ?? null,
-    frequency: user.frequency ?? null,
-    wantsToHost: user.wantsToHost ?? false,
-    hostBio: user.hostBio ?? null,
-    hostExperience: user.hostExperience ?? null,
-    hostCategories: user.hostCategories ?? '[]',
-    hostInstagram: user.hostInstagram ?? null,
-    hostLinkedin: user.hostLinkedin ?? null,
-    hostWebsite: user.hostWebsite ?? null,
-    createdAt: user.createdAt,
-  };
-}
-
 const AUTH_USER_SELECT = {
   id: true,
   email: true,
@@ -58,8 +34,46 @@ const AUTH_USER_SELECT = {
   createdAt: true,
 };
 
+type AuthSelectedUser = Prisma.UserGetPayload<{ select: typeof AUTH_USER_SELECT }>;
+
+// Every field below AUTH_USER_SELECT's five is a hardcoded default, not a
+// read of the user row — this query never selects them, so they were always
+// undefined here regardless of the real value in the DB (falling through
+// every `??`). Typing the parameter to what's actually selected made that
+// explicit; behavior is unchanged. `routes/users.ts` has its own
+// sanitizeUser() over the full User row — unifying the two is tracked
+// separately (P2-20).
+function sanitizeUser(user: AuthSelectedUser) {
+  const role = user.role ?? 'user';
+  const hostStatus = role === 'host' ? 'verified' : 'none';
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    photoUrl: null,
+    bio: null,
+    role,
+    hostStatus,
+    onboardingComplete: false,
+    interests: '[]',
+    city: null,
+    groupSize: null,
+    vibe: null,
+    frequency: null,
+    wantsToHost: false,
+    hostBio: null,
+    hostExperience: null,
+    hostCategories: '[]',
+    hostInstagram: null,
+    hostLinkedin: null,
+    hostWebsite: null,
+    createdAt: user.createdAt,
+  };
+}
+
 // POST /api/auth/signup
-router.post('/signup', async (req: Request, res: Response): Promise<any> => {
+router.post('/signup', async (req: Request, res: Response): Promise<Response> => {
   try {
     const { name, email, password } = req.body;
 
@@ -103,14 +117,14 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
     res.cookie('token', token, COOKIE_OPTS);
 
     return res.status(201).json({ user: sanitizeUser(user), token, message: 'Account created successfully' });
-  } catch (err: any) {
-    console.error('Signup error:', err.message);
+  } catch (err: unknown) {
+    console.error('Signup error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // POST /api/auth/signin (and /login alias)
-async function signinHandler(req: Request, res: Response): Promise<any> {
+async function signinHandler(req: Request, res: Response): Promise<Response> {
   try {
     const { email, password } = req.body;
 
@@ -140,8 +154,8 @@ async function signinHandler(req: Request, res: Response): Promise<any> {
 
     const { password: _pw, ...userWithoutPw } = user;
     return res.status(200).json({ user: sanitizeUser(userWithoutPw), token, message: 'Login successful' });
-  } catch (err: any) {
-    console.error('Signin error:', err.message);
+  } catch (err: unknown) {
+    console.error('Signin error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
@@ -163,7 +177,7 @@ router.post('/signout', signoutHandler);
 router.post('/logout', signoutHandler);
 
 // GET /api/auth/me
-router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
@@ -172,16 +186,16 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<
 
     if (!user) return res.status(404).json({ message: 'User not found' });
     return res.json({ user: sanitizeUser(user) });
-  } catch (err: any) {
-    console.error('Get me error:', err.message);
+  } catch (err: unknown) {
+    console.error('Get me error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PATCH /api/auth/me
-router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
-    const updateData: Record<string, any> = {};
+    const updateData: Prisma.UserUpdateInput = {};
 
     const { name } = req.body;
     if (name !== undefined) updateData.name = String(name).trim();
@@ -197,15 +211,17 @@ router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promis
           select: AUTH_USER_SELECT,
         });
 
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
     return res.json({ user: sanitizeUser(user) });
-  } catch (err: any) {
-    console.error('Update me error:', err.message);
+  } catch (err: unknown) {
+    console.error('Update me error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', async (req: Request, res: Response): Promise<any> => {
+router.post('/forgot-password', async (req: Request, res: Response): Promise<Response> => {
   try {
     const { email } = req.body;
     const trimmedEmail = (email ?? '').trim().toLowerCase();
@@ -241,14 +257,14 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<any
     }
 
     return res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
-  } catch (err: any) {
-    console.error('Forgot password error:', err.message);
+  } catch (err: unknown) {
+    console.error('Forgot password error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // POST /api/auth/reset-password
-router.post('/reset-password', async (req: Request, res: Response): Promise<any> => {
+router.post('/reset-password', async (req: Request, res: Response): Promise<Response> => {
   try {
     const { token, password } = req.body;
 
@@ -285,8 +301,8 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<any>
     });
 
     return res.json({ message: 'Password reset successfully', success: true });
-  } catch (err: any) {
-    console.error('Reset password error:', err.message);
+  } catch (err: unknown) {
+    console.error('Reset password error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

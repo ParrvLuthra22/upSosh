@@ -1,13 +1,6 @@
 
 const nextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    // Pre-existing R3F type error in FloatingMesh3D (missing JSX namespace augmentation)
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns: [
       {

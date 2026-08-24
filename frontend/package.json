@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --passWithNoTests",
     "test:e2e": "playwright test"
   },
   "private": true,
@@ -52,6 +53,8 @@
     "@types/canvas-confetti": "^1.9.0",
     "@types/cookie": "^0.6.0",
     "@types/jest": "^30.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "ts-jest": "^29.4.6"

@@ -1,10 +1,16 @@
-import { Router, Response } from 'express';
+import { Router, Response, RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { Prisma, User } from '@prisma/client';
+import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 const router = Router();
 
@@ -23,7 +29,7 @@ const upload = multer({
   },
 });
 
-function sanitizeUser(user: any) {
+function sanitizeUser(user: User) {
   return {
     id: user.id,
     email: user.email,
@@ -50,16 +56,16 @@ function sanitizeUser(user: any) {
 }
 
 // PATCH /api/users/me — update profile fields
-router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const allowed = ['name', 'bio', 'photoUrl', 'city', 'groupSize', 'vibe', 'frequency',
       'wantsToHost', 'hostBio', 'hostExperience', 'hostCategories',
-      'hostInstagram', 'hostLinkedin', 'hostWebsite', 'onboardingComplete', 'interests'];
+      'hostInstagram', 'hostLinkedin', 'hostWebsite', 'onboardingComplete', 'interests'] as const;
 
-    const updateData: Record<string, any> = {};
+    const updateData: Prisma.UserUpdateInput = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
-        updateData[key] = req.body[key];
+        (updateData as Record<string, unknown>)[key] = req.body[key];
       }
     }
 
@@ -71,15 +77,17 @@ router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promis
       ? await prisma.user.update({ where: { id: req.user!.id }, data: updateData })
       : await prisma.user.findUnique({ where: { id: req.user!.id } });
 
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
     return res.json({ user: sanitizeUser(user) });
-  } catch (err: any) {
-    console.error('PATCH /users/me error:', err.message);
+  } catch (err: unknown) {
+    console.error('PATCH /users/me error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PATCH /api/users/me/password — change password (requires current password)
-router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -100,8 +108,8 @@ router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response
     await prisma.user.update({ where: { id: req.user!.id }, data: { password: hashed } });
 
     return res.json({ message: 'Password updated successfully' });
-  } catch (err: any) {
-    console.error('PATCH /users/me/password error:', err.message);
+  } catch (err: unknown) {
+    console.error('PATCH /users/me/password error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -109,7 +117,7 @@ router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response
 // DELETE /api/users/me — soft delete: anonymize the account, cancel the
 // user's own pending/confirmed bookings, keep the row (Bookings/Events/
 // HostApplications still need a valid userId to point at).
-router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const userId = req.user!.id;
 
@@ -151,8 +159,8 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
     return res.json({ message: 'Account deleted' });
-  } catch (err: any) {
-    console.error('DELETE /users/me error:', err.message);
+  } catch (err: unknown) {
+    console.error('DELETE /users/me error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -160,9 +168,14 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
 // POST /api/users/me/avatar — upload avatar via Cloudinary
 router.post(
   '/me/avatar',
-  requireAuth as any,
-  upload.single('avatar') as any,
-  async (req: AuthRequest, res: Response): Promise<any> => {
+  requireAuth,
+  // multer's RequestHandler type resolves against a duplicate, mismatched
+  // copy of @types/express-serve-static-core pulled in transitively via
+  // @types/cookie-parser's `@types/express: "*"` peer dependency — a
+  // workspace-level dependency conflict, not an untyped value. The cast is
+  // narrowly scoped to just this line.
+  upload.single('avatar') as unknown as RequestHandler,
+  async (req: AuthRequest, res: Response): Promise<Response> => {
     try {
       if (!req.file) return res.status(400).json({ message: 'No file provided' });
 
@@ -175,13 +188,16 @@ router.post(
       );
 
       if (isCloudinaryConfigured) {
-        const fileBuffer = (req as any).file!.buffer;
-        const result = await new Promise<any>((resolve, reject) => {
+        const fileBuffer = req.file.buffer;
+        const result = await new Promise<UploadApiResponse>((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: 'upsosh/avatars', transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }] },
-            (err: any, r: any) => { if (err) reject(err); else resolve(r); },
+            (err?: UploadApiErrorResponse, r?: UploadApiResponse) => {
+              if (err || !r) reject(err ?? new Error('Cloudinary upload returned no result'));
+              else resolve(r);
+            },
           );
-          (stream as any).end(fileBuffer);
+          stream.end(fileBuffer);
         });
         photoUrl = result.secure_url;
       } else {
@@ -190,15 +206,15 @@ router.post(
 
       await prisma.user.update({ where: { id: req.user!.id }, data: { photoUrl } });
       return res.json({ photoUrl, avatarUrl: photoUrl });
-    } catch (err: any) {
-      console.error('POST /users/me/avatar error:', err.message);
+    } catch (err: unknown) {
+      console.error('POST /users/me/avatar error:', errorMessage(err));
       return res.status(500).json({ message: 'Upload failed' });
     }
   },
 );
 
 // GET /api/users/:id — public user profile
-router.get('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/:id', async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.id },
@@ -206,8 +222,8 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<any> => {
     });
     if (!user) return res.status(404).json({ message: 'User not found' });
     return res.json({ user });
-  } catch (err: any) {
-    console.error('GET /users/:id error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /users/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Prisma, Event } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 
@@ -12,11 +13,15 @@ function parseTagsField(tags: string): string[] {
   }
 }
 
-function formatEvent(event: any) {
+function formatEvent(event: Event) {
   return {
     ...event,
     tags: parseTagsField(event.tags),
   };
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 function buildSlug(title: string): string {
@@ -32,7 +37,7 @@ function buildSlug(title: string): string {
 }
 
 // GET /api/events — list with filters, pagination
-router.get('/', async (req: Request, res: Response): Promise<any> => {
+router.get('/', async (req: Request, res: Response): Promise<Response> => {
   try {
     const {
       category, city, search, minPrice, maxPrice,
@@ -43,7 +48,7 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
     const limitNum = Math.min(100, Math.max(1, parseInt(String(limit))));
     const skip = (pageNum - 1) * limitNum;
 
-    const where: any = {
+    const where: Prisma.EventWhereInput = {
       status: { in: ['live', 'full'] },
     };
 
@@ -85,7 +90,7 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
       where.date = { gte: now };
     }
 
-    let orderBy: any = { date: 'asc' };
+    let orderBy: Prisma.EventOrderByWithRelationInput | Prisma.EventOrderByWithRelationInput[] = { date: 'asc' };
     if (sort === 'price') orderBy = { price: 'asc' };
     else if (sort === 'relevance') orderBy = [{ isSuperhost: 'desc' }, { date: 'asc' }];
 
@@ -106,14 +111,14 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
       page: pageNum,
       pages: Math.ceil(total / limitNum),
     });
-  } catch (err: any) {
-    console.error('GET /events error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /events error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/events/host/mine — current user's events (requireAuth)
-router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const events = await prisma.event.findMany({
       where: { userId: req.user!.id },
@@ -122,14 +127,14 @@ router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): P
     });
 
     return res.json({ events: events.map(formatEvent) });
-  } catch (err: any) {
-    console.error('GET /events/host/mine error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /events/host/mine error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/events/:slug — get single event by slug or id
-router.get('/:slug', async (req: Request, res: Response): Promise<any> => {
+router.get('/:slug', async (req: Request, res: Response): Promise<Response> => {
   try {
     const { slug } = req.params;
 
@@ -143,14 +148,14 @@ router.get('/:slug', async (req: Request, res: Response): Promise<any> => {
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
     return res.json(formatEvent(event));
-  } catch (err: any) {
-    console.error('GET /events/:slug error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /events/:slug error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // POST /api/events — create event (requireAuth, hostStatus=verified OR admin)
-router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = req.user!;
 
@@ -220,14 +225,14 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
     });
 
     return res.status(201).json(formatEvent(event));
-  } catch (err: any) {
-    console.error('POST /events error:', err.message);
+  } catch (err: unknown) {
+    console.error('POST /events error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PUT /api/events/:id — update event (requireAuth, must own or admin)
-router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const user = req.user!;
@@ -244,7 +249,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
       description, image, tags, capacity, status, isSuperhost,
     } = req.body;
 
-    const updateData: any = {};
+    const updateData: Prisma.EventUpdateInput = {};
     if (title !== undefined) updateData.title = title.trim();
     if (type !== undefined) updateData.type = type;
     if (category !== undefined) updateData.category = category;
@@ -272,14 +277,14 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
     });
 
     return res.json(formatEvent(event));
-  } catch (err: any) {
-    console.error('PUT /events/:id error:', err.message);
+  } catch (err: unknown) {
+    console.error('PUT /events/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // DELETE /api/events/:id — soft delete: set status='cancelled'
-router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const user = req.user!;
@@ -297,14 +302,14 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Prom
     });
 
     return res.json({ message: 'Event cancelled successfully' });
-  } catch (err: any) {
-    console.error('DELETE /events/:id error:', err.message);
+  } catch (err: unknown) {
+    console.error('DELETE /events/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // POST /api/events/:id/attend — increment attendees (requireAuth)
-router.post('/:id/attend', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/:id/attend', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -321,8 +326,8 @@ router.post('/:id/attend', requireAuth, async (req: AuthRequest, res: Response):
     });
 
     return res.json({ attendees: updated.attendees, capacity: updated.capacity });
-  } catch (err: any) {
-    console.error('POST /events/:id/attend error:', err.message);
+  } catch (err: unknown) {
+    console.error('POST /events/:id/attend error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -1,12 +1,17 @@
 import { Router, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendBookingConfirmation } from '../lib/email';
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 const router = Router();
 
 // POST /api/bookings — create booking (requireAuth)
-router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod, ticketPrice: reqTicketPrice } = req.body;
 
@@ -83,14 +88,14 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
     }).catch(() => {});
 
     return res.status(201).json({ booking: updatedBooking, message: 'Booking created successfully' });
-  } catch (err: any) {
-    console.error('POST /bookings error:', err.message);
+  } catch (err: unknown) {
+    console.error('POST /bookings error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/bookings — current user's bookings (requireAuth)
-router.get('/', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const bookings = await prisma.booking.findMany({
       where: { userId: req.user!.id },
@@ -99,14 +104,14 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response): Promise<an
     });
 
     return res.json({ bookings });
-  } catch (err: any) {
-    console.error('GET /bookings error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /bookings error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/bookings/admin/all — all bookings (admin only)
-router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     if (req.user!.role !== 'admin') {
       return res.status(403).json({ message: 'Admin access required' });
@@ -116,7 +121,7 @@ router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): P
     const pageNum = Math.max(1, parseInt(String(page)));
     const limitNum = Math.min(100, Math.max(1, parseInt(String(limit))));
 
-    const where: any = {};
+    const where: Prisma.BookingWhereInput = {};
     if (status) where.status = String(status);
 
     const [bookings, total] = await prisma.$transaction([
@@ -134,14 +139,14 @@ router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): P
     ]);
 
     return res.json({ bookings, total, page: pageNum, pages: Math.ceil(total / limitNum) });
-  } catch (err: any) {
-    console.error('GET /bookings/admin/all error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /bookings/admin/all error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // GET /api/bookings/:id — get booking by id (requireAuth, must own or admin)
-router.get('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.get('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const user = req.user!;
@@ -158,14 +163,14 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
     }
 
     return res.json({ booking });
-  } catch (err: any) {
-    console.error('GET /bookings/:id error:', err.message);
+  } catch (err: unknown) {
+    console.error('GET /bookings/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // PATCH /api/bookings/:id/cancel — cancel booking (requireAuth, must own)
-router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const user = req.user!;
@@ -195,8 +200,8 @@ router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response)
     }
 
     return res.json({ booking: updatedBooking, message: 'Booking cancelled successfully' });
-  } catch (err: any) {
-    console.error('PATCH /bookings/:id/cancel error:', err.message);
+  } catch (err: unknown) {
+    console.error('PATCH /bookings/:id/cancel error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -8,7 +8,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.upsosh.app',
+        baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000',
         trace: 'on-first-retry',
     },
     projects: [

@@ -2,6 +2,69 @@ import { Router, Response } from 'express';
 import OpenAI from 'openai';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+interface AIEventPlanRequestBody {
+  type?: string;
+  guestCount?: number;
+  budget?: number;
+  vibes?: string[];
+  query?: string;
+}
+
+// Mirrors the JSON schema dictated to the model in SYSTEM_PROMPT below —
+// the model isn't guaranteed to honor it, so this is a best-effort shape,
+// not a validated one.
+interface AIEventPlan {
+  query: string;
+  overview: {
+    title: string;
+    tagline: string;
+    description: string;
+    format: string;
+    duration: string;
+    attendeesMin: number;
+    attendeesMax: number;
+  };
+  budget: {
+    total: number;
+    items: { item: string; cost: number; note: string; color: string }[];
+  };
+  venues: {
+    name: string;
+    address: string;
+    neighbourhood: string;
+    capacity: number;
+    price: number | 'Free';
+    why: string;
+    tags: string[];
+    rating: number;
+  }[];
+  schedule: { time: string; title: string; description: string }[];
+  pricing: {
+    suggested: number;
+    min: number;
+    max: number;
+    capacity: number;
+    totalCost: number;
+    platformFeePct: number;
+  };
+  marketing: {
+    caption: string;
+    hashtags: string[];
+    bestPostTime: string;
+    bestPlatform: string;
+  };
+  summary: {
+    eventName: string;
+    totalCost: number;
+    capacity: number;
+    riskLevel: 'Low' | 'Medium' | 'High';
+  };
+}
+
 const router = Router();
 
 function getClient(): OpenAI {
@@ -84,7 +147,7 @@ Rules:
 - Hashtags array must have 6-8 items.
 - Never return anything outside the JSON.`;
 
-function buildUserPrompt(body: any): string {
+function buildUserPrompt(body: AIEventPlanRequestBody): string {
   const { type, guestCount, budget, vibes, query } = body;
   if (query) return query;
   const parts = [];
@@ -96,7 +159,7 @@ function buildUserPrompt(body: any): string {
 }
 
 // POST /api/ai/plan — AI event planning (requireAuth)
-router.post('/plan', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/plan', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   const userPrompt = buildUserPrompt(req.body);
 
   if (!userPrompt.trim()) {
@@ -124,7 +187,7 @@ router.post('/plan', requireAuth, async (req: AuthRequest, res: Response): Promi
 
     const raw = completion.choices[0]?.message?.content ?? '';
 
-    let plan: any;
+    let plan: AIEventPlan;
     try {
       // Strip any accidental markdown fences before parsing
       const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
@@ -135,8 +198,8 @@ router.post('/plan', requireAuth, async (req: AuthRequest, res: Response): Promi
     }
 
     return res.json(plan);
-  } catch (err: any) {
-    console.error('[AI] OpenRouter error:', err.message);
+  } catch (err: unknown) {
+    console.error('[AI] OpenRouter error:', errorMessage(err));
     return res.status(500).json({ message: 'AI service error. Please try again in a moment.' });
   }
 });

@@ -10,3 +10,7 @@ build
 *.tsbuildinfo
 
 /src/generated/prisma
+
+# Playwright
+/playwright-report
+/test-results

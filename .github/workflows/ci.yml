@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
+      NEXT_PUBLIC_FRONTEND_URL: http://localhost:3000
+      # Placeholder only — CI never talks to a real Razorpay account. Real
+      # keys live in the deploy platform's env config, not here.
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: rzp_test_ci_placeholder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck --workspace=upsosh-website
+
+      - name: Lint
+        run: npm run lint --workspace=upsosh-website
+
+      - name: Test
+        run: npm run test --workspace=upsosh-website
+
+      - name: Build
+        run: npm run build --workspace=upsosh-website
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders — typecheck/build only need Prisma to be able to parse
+      # the schema and generate a client; neither step opens a connection.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upsosh_ci?schema=public
+      JWT_SECRET: ci-placeholder-secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck --workspace=upsosh-backend
+
+      - name: Build
+        run: npm run build --workspace=upsosh-backend

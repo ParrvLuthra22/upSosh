@@ -4,6 +4,10 @@ import Razorpay from 'razorpay';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 const router = Router();
 
 function getRazorpayClient(): Razorpay {
@@ -41,7 +45,7 @@ function signaturesMatch(expected: string, received: string): boolean {
 // The amount is NEVER taken from the request. It is read from the booking row
 // the server itself created. Trusting a client-supplied amount here previously
 // allowed anyone to pay ₹1 for any event.
-router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { bookingId } = req.body;
 
@@ -88,10 +92,11 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
       currency: order.currency,
       key: process.env.RAZORPAY_KEY_ID,
     });
-  } catch (err: any) {
-    console.error('POST /payments/create-order error:', err.message);
+  } catch (err: unknown) {
+    const message = errorMessage(err);
+    console.error('POST /payments/create-order error:', message);
 
-    if (err.message?.includes('not configured')) {
+    if (message.includes('not configured')) {
       return res.status(503).json({ message: 'Payment service not configured' });
     }
 
@@ -100,7 +105,7 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
 });
 
 // POST /api/payments/verify — verify Razorpay payment signature (requireAuth)
-router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { bookingId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -174,14 +179,14 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     });
 
     return res.json({ success: true, booking: updatedBooking });
-  } catch (err: any) {
-    console.error('POST /payments/verify error:', err.message);
+  } catch (err: unknown) {
+    console.error('POST /payments/verify error:', errorMessage(err));
     return res.status(500).json({ message: 'Payment verification failed' });
   }
 });
 
 // POST /api/payments/webhook — Razorpay webhook (no auth, verify webhook signature)
-router.post('/webhook', async (req: Request, res: Response): Promise<any> => {
+router.post('/webhook', async (req: Request, res: Response): Promise<Response> => {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers['x-razorpay-signature'];
@@ -230,8 +235,8 @@ router.post('/webhook', async (req: Request, res: Response): Promise<any> => {
     }
 
     return res.json({ received: true });
-  } catch (err: any) {
-    console.error('Webhook error:', err.message);
+  } catch (err: unknown) {
+    console.error('Webhook error:', errorMessage(err));
     return res.status(500).json({ message: 'Webhook processing failed' });
   }
 });

@@ -1,6 +1,10 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 const FROM = 'upSosh <bookings@upsosh.app>';
 
 export interface BookingEmailData {
@@ -131,8 +135,8 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
       html,
     });
     console.log(`[Email] Booking confirmation sent to ${data.guestEmail}`);
-  } catch (err: any) {
-    console.error('[Email] Failed to send booking confirmation:', err.message);
+  } catch (err: unknown) {
+    console.error('[Email] Failed to send booking confirmation:', errorMessage(err));
   }
 }
 
@@ -189,7 +193,7 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string): P
       html,
     });
     console.log(`[Email] Password reset email sent to ${email}`);
-  } catch (err: any) {
-    console.error('[Email] Failed to send password reset email:', err.message);
+  } catch (err: unknown) {
+    console.error('[Email] Failed to send password reset email:', errorMessage(err));
   }
 }

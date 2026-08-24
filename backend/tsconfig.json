@@ -2,13 +2,17 @@
     "compilerOptions": {
         "target": "es2018",
         "module": "commonjs",
-        "lib": ["es2018"],
-        "types": ["node"],
+        "lib": [
+            "es2018"
+        ],
+        "types": [
+            "node"
+        ],
         "rootDir": "./",
         "outDir": "./dist",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "strict": false,
+        "strict": true,
         "skipLibCheck": true,
         "resolveJsonModule": true
     },

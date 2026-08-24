@@ -1,10 +1,25 @@
 import './lib/loadEnv';
 
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+
+// Express's error handler receives whatever was passed to next(err) — thrown
+// by app code, or by a library (body-parser's JSON errors carry `status`,
+// multer's carry `code`) — so it's never guaranteed to be an Error at all.
+interface ErrorLike {
+  message?: string;
+  status?: number;
+  code?: string;
+  stack?: string;
+}
+
+function toErrorLike(err: unknown): ErrorLike {
+  if (err && typeof err === 'object') return err as ErrorLike;
+  return { message: String(err) };
+}
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import eventRoutes from './routes/events';
@@ -50,8 +65,11 @@ const authLimiter = rateLimit({
   message: { message: 'Too many authentication attempts, please try again later.' },
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-app.use(generalLimiter as any);
+// express-rate-limit's RequestHandler type resolves against a duplicate,
+// mismatched copy of @types/express-serve-static-core pulled in
+// transitively via @types/cookie-parser's `@types/express: "*"` peer
+// dependency — a workspace-level dependency conflict, not an untyped value.
+app.use(generalLimiter as unknown as RequestHandler);
 
 const allowedOrigins = [
   'https://www.upsosh.app',
@@ -97,8 +115,7 @@ app.get('/health', async (req: Request, res: Response) => {
 });
 
 // Routes
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-app.use('/api/auth', authLimiter as any, authRoutes);
+app.use('/api/auth', authLimiter as unknown as RequestHandler, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/hosts', hostRoutes);
@@ -118,7 +135,9 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+app.use((rawErr: unknown, req: Request, res: Response, _next: NextFunction) => {
+  const err = toErrorLike(rawErr);
+
   // Fail CLOSED: only an explicit NODE_ENV=development gets stack traces.
   // The previous `!== 'production'` leaked them whenever NODE_ENV was unset or
   // misspelled, which is exactly the situation you cannot detect from outside.

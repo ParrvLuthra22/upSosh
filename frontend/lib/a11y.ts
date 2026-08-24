@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 
 export const useFocusTrap = (ref: React.RefObject<HTMLElement | null>, isActive: boolean) => {
     useEffect(() => {
-        if (!isActive || !ref.current) return;
+        const node = ref.current;
+        if (!isActive || !node) return;
 
-        const focusableElements = ref.current.querySelectorAll(
+        const focusableElements = node.querySelectorAll(
             'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select'
         );
         const firstElement = focusableElements[0] as HTMLElement;
@@ -26,15 +27,15 @@ export const useFocusTrap = (ref: React.RefObject<HTMLElement | null>, isActive:
             }
         };
 
-        ref.current.addEventListener('keydown', handleTab);
+        node.addEventListener('keydown', handleTab);
 
-        
+
         if (firstElement) {
             firstElement.focus();
         }
 
         return () => {
-            ref.current?.removeEventListener('keydown', handleTab);
+            node.removeEventListener('keydown', handleTab);
         };
     }, [isActive, ref]);
 };
