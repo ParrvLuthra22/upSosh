@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
@@ -31,7 +31,6 @@ interface EventDetails {
 export default function HostEventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { isAuth } = useAuth();
-  const router = useRouter();
 
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
@@ -130,12 +129,6 @@ export default function HostEventDetailPage() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push(`/host/events/${id}/edit`)}
-              className="px-4 py-2 border border-border rounded-full font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors"
-            >
-              Edit event
-            </button>
             <button
               onClick={() => setShowAnnouncement(true)}
               className="px-4 py-2 bg-accent text-white rounded-full font-sans text-sm font-medium hover:bg-ink-primary transition-colors"

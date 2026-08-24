@@ -17,12 +17,14 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
     const decoded = jwt.verify(token, secret) as { userId: string };
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, role: true },
+      select: { id: true, email: true, role: true, deletedAt: true },
     });
 
-    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!user || user.deletedAt) return res.status(401).json({ message: 'User not found' });
     req.user = {
-      ...user,
+      id: user.id,
+      email: user.email,
+      role: user.role,
       hostStatus: user.role === 'host' ? 'verified' : 'none',
     };
     next();

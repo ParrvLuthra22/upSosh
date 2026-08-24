@@ -5,13 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/lib/stores/auth';
-import {
-  mockActivity,
-  revenueData,
-  type HostEvent,
-  type ActivityItem,
-  type RevenuePoint,
-} from '@/lib/mockHostData';
+import { type HostEvent } from '@/lib/hostEventTypes';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -41,45 +35,6 @@ function useGreeting(): string {
   if (h < 12) return 'morning';
   if (h < 17) return 'afternoon';
   return 'evening';
-}
-
-// ─── SVG Chart helpers ────────────────────────────────────────────────────────
-
-const W = 800;
-const H = 180;
-const PAD = { top: 16, right: 4, bottom: 24, left: 4 };
-
-function normalize(points: RevenuePoint[]): Array<{ x: number; y: number; d: RevenuePoint }> {
-  if (!points.length) return [];
-  const maxR = Math.max(...points.map((p) => p.revenue), 1);
-  return points.map((d, i) => ({
-    x: PAD.left + (i / (points.length - 1)) * (W - PAD.left - PAD.right),
-    y: PAD.top + (1 - d.revenue / maxR) * (H - PAD.top - PAD.bottom),
-    d,
-  }));
-}
-
-function smoothLinePath(pts: Array<{ x: number; y: number }>): string {
-  if (pts.length < 2) return '';
-  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
-  for (let i = 1; i < pts.length; i++) {
-    const pp = i > 1 ? pts[i - 2] : pts[i - 1];
-    const p0 = pts[i - 1];
-    const p1 = pts[i];
-    const p2 = i < pts.length - 1 ? pts[i + 1] : p1;
-    const cp1x = p0.x + (p1.x - pp.x) / 6;
-    const cp1y = p0.y + (p1.y - pp.y) / 6;
-    const cp2x = p1.x - (p2.x - p0.x) / 6;
-    const cp2y = p1.y - (p2.y - p0.y) / 6;
-    d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
-  }
-  return d;
-}
-
-function areaPath(linePath: string, pts: Array<{ x: number; y: number }>): string {
-  if (!pts.length) return '';
-  const bottom = H - PAD.bottom;
-  return `${linePath} L ${pts[pts.length - 1].x.toFixed(2)} ${bottom} L ${pts[0].x.toFixed(2)} ${bottom} Z`;
 }
 
 // ─── Nav Items ────────────────────────────────────────────────────────────────
@@ -369,8 +324,7 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
 
   return (
     <motion.div
-      className="flex-shrink-0 w-[280px] border border-border rounded-2xl overflow-hidden bg-bg-primary group cursor-none"
-      data-cursor="MANAGE"
+      className="flex-shrink-0 w-[280px] border border-border rounded-2xl overflow-hidden bg-bg-primary group"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 + index * 0.07, duration: 0.45, ease: EASE_VERCEL }}
@@ -422,242 +376,6 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
           ) : (
             <span className="font-mono text-xs text-ink-light">Free</span>
           )}
-          <button className="font-mono text-[10px] text-ink-muted hover:text-accent transition-colors group-hover:text-accent flex items-center gap-1">
-            Manage <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Revenue Chart ────────────────────────────────────────────────────────────
-
-type TimeRange = '7D' | '30D' | '3M' | 'All';
-
-function RevenueChart() {
-  const [range, setRange] = useState<TimeRange>('30D');
-  const [tooltip, setTooltip] = useState<{
-    x: number; y: number; svgX: number; data: RevenuePoint;
-  } | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-
-  const points = revenueData[range];
-  const normalized = normalize(points);
-  const linePath = smoothLinePath(normalized);
-  const fillPath = areaPath(linePath, normalized);
-  const totalRevenue = points.reduce((s, p) => s + p.revenue, 0);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      if (!svgRef.current || !normalized.length) return;
-      const rect = svgRef.current.getBoundingClientRect();
-      const mouseX = ((e.clientX - rect.left) / rect.width) * W;
-      let nearest = normalized[0];
-      let minDist = Infinity;
-      for (const pt of normalized) {
-        const dist = Math.abs(pt.x - mouseX);
-        if (dist < minDist) { minDist = dist; nearest = pt; }
-      }
-      setTooltip({
-        x: (nearest.x / W) * rect.width + rect.left - rect.left,
-        y: (nearest.y / H) * rect.height,
-        svgX: nearest.x,
-        data: nearest.d,
-      });
-    },
-    [normalized]
-  );
-
-  return (
-    <motion.div
-      className="border border-border rounded-2xl p-6 bg-bg-primary"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.45, duration: 0.5, ease: EASE_VERCEL }}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-1">Revenue</p>
-          <p className="font-display text-3xl text-ink-primary">
-            ₹{totalRevenue.toLocaleString('en-IN')}
-          </p>
-          <p className="font-mono text-[10px] text-ink-muted mt-0.5">
-            {range === '7D' ? 'Last 7 days' : range === '30D' ? 'Last 30 days' : range === '3M' ? 'Last 3 months' : 'All time'}
-          </p>
-        </div>
-        {/* Time range pills */}
-        <div className="flex items-center gap-1 bg-bg-secondary rounded-xl p-1 border border-border">
-          {(['7D', '30D', '3M', 'All'] as TimeRange[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`relative px-3 py-1.5 rounded-lg font-mono text-xs transition-colors duration-150 ${
-                range === r ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'
-              }`}
-            >
-              {range === r && (
-                <motion.div
-                  layoutId="chart-range-bg"
-                  className="absolute inset-0 bg-bg-primary border border-border rounded-lg shadow-sm"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-                />
-              )}
-              <span className="relative z-10">{r}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* SVG Chart */}
-      <div className="relative" onMouseLeave={() => setTooltip(null)}>
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${W} ${H}`}
-          role="img"
-          aria-label={`Revenue chart: ₹${totalRevenue.toLocaleString('en-IN')} for ${range === '7D' ? 'last 7 days' : range === '30D' ? 'last 30 days' : range === '3M' ? 'last 3 months' : 'all time'}`}
-          className="w-full overflow-visible"
-          style={{ height: 200 }}
-          onMouseMove={handleMouseMove}
-        >
-          <defs>
-            <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF5A1F" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#FF5A1F" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {/* Fill area */}
-          <AnimatePresence mode="wait">
-            <motion.path
-              key={`fill-${range}`}
-              d={fillPath}
-              fill="url(#chart-fill)"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            />
-          </AnimatePresence>
-
-          {/* Line — animates pathLength on mount/range change */}
-          <AnimatePresence mode="wait">
-            <motion.path
-              key={`line-${range}`}
-              d={linePath}
-              fill="none"
-              stroke="#FF5A1F"
-              strokeWidth="2"
-              strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              exit={{ pathLength: 0, opacity: 0 }}
-              transition={{ duration: 1.2, ease: EASE_VERCEL }}
-            />
-          </AnimatePresence>
-
-          {/* Tooltip elements */}
-          {tooltip && (
-            <>
-              {/* Vertical dashed line */}
-              <line
-                x1={tooltip.svgX}
-                y1={PAD.top}
-                x2={tooltip.svgX}
-                y2={H - PAD.bottom}
-                stroke="#E8E4DC"
-                strokeWidth="1"
-                strokeDasharray="3 3"
-              />
-              {/* Dot */}
-              <circle
-                cx={tooltip.svgX}
-                cy={normalized.find((p) => p.d === tooltip.data)?.y ?? 0}
-                r="4"
-                fill="#FF5A1F"
-                stroke="#FAFAF7"
-                strokeWidth="2"
-              />
-            </>
-          )}
-        </svg>
-
-        {/* Tooltip card */}
-        <AnimatePresence>
-          {tooltip && (
-            <motion.div
-              className="absolute pointer-events-none z-10 bg-ink-primary text-bg-primary rounded-xl px-3 py-2 shadow-lg text-left"
-              style={{
-                left: tooltip.x,
-                top: tooltip.y,
-                transform: 'translate(-50%, -110%)',
-              }}
-              initial={{ opacity: 0, scale: 0.9, y: 4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.15 }}
-            >
-              <p className="font-mono text-[10px] text-bg-primary/60 mb-0.5">{tooltip.data.label}</p>
-              <p className="font-sans text-sm font-medium">
-                {tooltip.data.revenue === 0 ? '—' : `₹${tooltip.data.revenue.toLocaleString('en-IN')}`}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Activity Feed ────────────────────────────────────────────────────────────
-
-const ACTIVITY_ICONS: Record<string, string> = {
-  booking: '🎟',
-  review: '★',
-  cancellation: '✕',
-  payout: '₹',
-  message: '💬',
-};
-
-function ActivityFeed({ items }: { items: ActivityItem[] }) {
-  return (
-    <motion.div
-      className="border border-border rounded-2xl p-6 bg-bg-primary"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.55, duration: 0.5, ease: EASE_VERCEL }}
-    >
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-5">Recent activity</p>
-      <div className="relative">
-        {/* Vertical timeline line */}
-        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-        <div className="space-y-5">
-          {items.map((item, i) => (
-            <motion.div
-              key={item.id}
-              className="relative flex items-start gap-4 group pl-1"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 + i * 0.05, duration: 0.35, ease: EASE_VERCEL }}
-              whileHover={{ x: 2, transition: { duration: 0.15 } }}
-            >
-              {/* Icon dot */}
-              <div
-                className="relative z-10 w-6 h-6 rounded-full bg-bg-primary border border-border flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px]"
-                style={{ borderColor: item.accent ? `${item.accent}40` : undefined, backgroundColor: item.accent ? `${item.accent}10` : undefined }}
-              >
-                <span>{item.icon}</span>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p className="font-sans text-sm text-ink-primary leading-snug group-hover:text-accent transition-colors duration-150">
-                  {item.text}
-                </p>
-                <p className="font-mono text-[10px] text-ink-light mt-0.5">{item.time}</p>
-              </div>
-            </motion.div>
-          ))}
         </div>
       </div>
     </motion.div>
@@ -881,19 +599,6 @@ function HostDashboard() {
                 </Link>
               </div>
             )}
-          </section>
-
-          {/* ── Revenue Chart ─────────────────────────────────────── */}
-          <section>
-            <RevenueChart />
-          </section>
-
-          {/* ── Activity Feed ─────────────────────────────────────── */}
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <SectionHeading>Activity</SectionHeading>
-            </div>
-            <ActivityFeed items={mockActivity} />
           </section>
 
           {/* ── AI Planner Promo ──────────────────────────────────── */}

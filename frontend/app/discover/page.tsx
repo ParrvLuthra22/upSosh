@@ -9,7 +9,7 @@ import {
   IconX,
   IconCheck,
 } from '@tabler/icons-react';
-import { mockEvents, type MockEvent } from '@/lib/mockEvents';
+import { type MockEvent } from '@/lib/eventTypes';
 import { cn } from '@/lib/utils';
 import type { EventCardProps } from '@/components/EventCard';
 
@@ -55,7 +55,6 @@ export interface FilterState {
   nearMe: boolean;
   priceMax: number;
   dateFilter: 'any' | 'today' | 'tomorrow' | 'weekend';
-  distance: number;
   verified: boolean;
   superhost: boolean;
   newHosts: boolean;
@@ -67,7 +66,6 @@ const DEFAULT_FILTERS: FilterState = {
   nearMe:     false,
   priceMax:   5000,
   dateFilter: 'any',
-  distance:   20,
   verified:   false,
   superhost:  false,
   newHosts:   false,
@@ -323,24 +321,6 @@ function FilterDrawer({
                 </div>
               </div>
 
-              {/* Distance */}
-              <div>
-                <p className="label text-cream-faint mb-4">Distance</p>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-[13px] text-cream-dim">1 km</span>
-                  <span className="font-mono text-[13px] text-cream">{filters.distance} km</span>
-                </div>
-                <input
-                  type="range"
-                  min={1}
-                  max={20}
-                  step={1}
-                  value={filters.distance}
-                  onChange={(e) => onChange('distance', Number(e.target.value))}
-                  className="w-full accent-lime"
-                />
-              </div>
-
               {/* Host type */}
               <div>
                 <p className="label text-cream-faint mb-1">Host type</p>
@@ -419,12 +399,9 @@ function EmptyState() {
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <button className="h-11 px-6 bg-lime text-void rounded-full font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors">
-          Notify me
-        </button>
         <Link
           href="/become-a-host"
-          className="h-11 px-6 border border-cream/20 text-cream rounded-full font-sans text-[14px] hover:bg-cream/5 transition-colors inline-flex items-center"
+          className="h-11 px-6 bg-lime text-void rounded-full font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors inline-flex items-center"
         >
           Become a host
         </Link>
@@ -514,7 +491,7 @@ export default function DiscoverPage() {
   const [query, setQuery]           = useState('');
   const [filters, setFilters]       = useState<FilterState>(DEFAULT_FILTERS);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [events, setEvents]         = useState<MockEvent[]>(mockEvents);
+  const [events, setEvents]         = useState<MockEvent[]>([]);
   const [loading, setLoading]       = useState(true);
 
   // Load real events, fall back to mock
@@ -527,7 +504,7 @@ export default function DiscoverPage() {
           const raw: any[] = data.events ?? data.data ?? [];
           if (raw.length > 0) setEvents(raw.map(normaliseApiEvent));
         }
-      } catch { /* keep mock */ }
+      } catch { /* leave events empty — the empty state below handles this */ }
       finally { setLoading(false); }
     })();
   }, []);
@@ -545,7 +522,6 @@ export default function DiscoverPage() {
   const activeFilterCount = [
     filters.priceMax < 5000,
     filters.dateFilter !== 'any',
-    filters.distance < 20,
     filters.verified,
     filters.superhost,
     filters.newHosts,

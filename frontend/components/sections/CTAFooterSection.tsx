@@ -11,7 +11,6 @@ const FOOTER_COLS = [
       { label: 'Discover Events', href: '/discover' },
       { label: 'Host an Event', href: '/become-a-host' },
       { label: 'AI Planner', href: '/planner' },
-      { label: 'Pricing', href: '/pricing' },
     ],
   },
   {
@@ -19,7 +18,6 @@ const FOOTER_COLS = [
     links: [
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
-      { label: 'Features', href: '/features' },
       { label: 'Safety', href: '/safety' },
     ],
   },

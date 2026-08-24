@@ -56,7 +56,6 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
               transition={{ duration: 0.15, ease: EASE_VERCEL }}
             >
               {[
-                { label: 'Edit', action: () => router.push(`/host/events/${eventId}/edit`) },
                 { label: 'View public page', action: () => router.push(`/events/${eventId}`) },
                 { label: 'Manage attendees', action: () => router.push(`/host/events/${eventId}`) },
               ].map((item) => (

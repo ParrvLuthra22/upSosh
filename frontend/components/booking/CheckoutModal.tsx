@@ -90,7 +90,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         if (!token || !userData) {
             setErrorMessage('Please login to complete your booking');
             setStatus('error');
-            setTimeout(() => window.location.href = '/login', 2000);
+            setTimeout(() => window.location.href = '/signin', 2000);
             return;
         }
         
@@ -118,7 +118,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         if (!token || !userData) {
             setErrorMessage('Please login to complete your booking');
             setStatus('error');
-            setTimeout(() => window.location.href = '/login', 2000);
+            setTimeout(() => window.location.href = '/signin', 2000);
             return;
         }
         
@@ -128,7 +128,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             setStatus('error');
             localStorage.removeItem('token');
             localStorage.removeItem('userData');
-            setTimeout(() => window.location.href = '/login', 2000);
+            setTimeout(() => window.location.href = '/signin', 2000);
             return;
         }
         
@@ -181,7 +181,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 
                 localStorage.removeItem('token');
                 localStorage.removeItem('userData');
-                setTimeout(() => window.location.href = '/login', 2000);
+                setTimeout(() => window.location.href = '/signin', 2000);
                 return;
             }
             

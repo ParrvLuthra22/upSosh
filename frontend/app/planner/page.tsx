@@ -23,13 +23,13 @@ import {
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import {
-  mockPlannerResult,
   type PlannerResult,
   type BudgetItem,
   type VenueSuggestion,
   type ScheduleItem,
-} from '@/lib/mockPlannerResult';
+} from '@/lib/plannerTypes';
 import { withAuth } from '@/components/ProtectedRoute';
+import { toast } from 'sonner';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -520,11 +520,13 @@ function PlannerPage() {
         vibes: form.vibes,
       });
       setResult(data);
-    } catch {
-      // Fall back to mock data — keeps the demo working even without the AI endpoint
-      setResult(mockPlannerResult);
-    } finally {
       setPhase('result');
+    } catch {
+      // Previously fell back to a fabricated plan on any failure — including a
+      // missing OPENROUTER_API_KEY — with no indication it wasn't real. Show
+      // the actual failure and let the user retry instead.
+      toast.error('Could not generate a plan. Please try again in a moment.');
+      setPhase('form');
     }
   }
 
@@ -566,7 +568,7 @@ function PlannerPage() {
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-20 h-14 bg-void/90 backdrop-blur-md border-b border-border flex items-center justify-between px-6">
         <Link
-          href="/dashboard"
+          href="/host/dashboard"
           className="flex items-center gap-2 font-sans text-[14px] text-cream-dim hover:text-cream transition-colors"
         >
           <IconArrowLeft size={16} /> Dashboard

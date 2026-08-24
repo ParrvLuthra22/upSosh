@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
-import MagneticButton from '@/components/ui/MagneticButton';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -280,27 +279,16 @@ export default function PublicProfilePage() {
             )}
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              {isOwner ? (
+            {isOwner && (
+              <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   href="/settings"
                   className="font-sans text-sm border border-border text-ink-primary px-5 py-2.5 rounded-full hover:border-ink-primary transition-colors duration-200"
                 >
                   Edit profile
                 </Link>
-              ) : (
-                <>
-                  <MagneticButton>
-                    <button className="font-sans text-sm font-medium bg-accent text-white px-5 py-2.5 rounded-full hover:bg-ink-primary transition-colors duration-300">
-                      Follow
-                    </button>
-                  </MagneticButton>
-                  <button className="font-sans text-sm border border-border text-ink-muted px-5 py-2.5 rounded-full hover:text-ink-primary hover:border-ink-primary transition-colors duration-200">
-                    Message
-                  </button>
-                </>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Stats */}
             <p className="font-mono text-[12px] text-ink-muted">

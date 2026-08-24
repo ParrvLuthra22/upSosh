@@ -8,13 +8,11 @@ import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
-type Section = 'account' | 'profile' | 'notifications' | 'privacy' | 'host' | 'danger';
+type Section = 'account' | 'profile' | 'host' | 'danger';
 
 const NAV_ITEMS: { id: Section; label: string }[] = [
   { id: 'account', label: 'Account' },
   { id: 'profile', label: 'Profile' },
-  { id: 'notifications', label: 'Notifications' },
-  { id: 'privacy', label: 'Privacy' },
   { id: 'host', label: 'Host Settings' },
   { id: 'danger', label: 'Danger Zone' },
 ];
@@ -33,24 +31,6 @@ function SaveButton({ saving, saved }: { saving: boolean; saved: boolean }) {
       ) : (
         'Save'
       )}
-    </button>
-  );
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`relative w-10 h-6 rounded-full transition-colors duration-300 ${checked ? 'bg-accent' : 'bg-border'}`}
-    >
-      <motion.span
-        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-        animate={{ left: checked ? '1.25rem' : '0.25rem' }}
-        transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-      />
     </button>
   );
 }
@@ -186,103 +166,6 @@ function ProfileSection({ user, onUpdate }: { user: any; onUpdate: (u: any) => v
           <SaveButton saving={saving} saved={saved} />
         </div>
       </form>
-    </div>
-  );
-}
-
-// ─── Notifications Section ────────────────────────────────────────────────────
-
-function NotificationsSection() {
-  const [prefs, setPrefs] = useState({
-    emailNewEvents: true,
-    emailBookingConfirm: true,
-    emailReminders: true,
-    emailHostUpdates: false,
-    pushNewEvents: false,
-    pushBookingConfirm: true,
-    pushReminders: true,
-    smsCancel: true,
-  });
-
-  const rows = [
-    { label: 'New events near you', desc: 'Email alerts when relevant events are posted', key: 'emailNewEvents' },
-    { label: 'Booking confirmations', desc: 'Confirm when your booking is processed', key: 'emailBookingConfirm' },
-    { label: 'Event reminders', desc: "24h reminders before events you're attending", key: 'emailReminders' },
-    { label: 'Host updates (Push)', desc: 'Push notifications about your events', key: 'pushBookingConfirm' },
-    { label: 'Critical SMS', desc: 'SMS only for event cancellations', key: 'smsCancel' },
-  ];
-
-  return (
-    <div>
-      <SectionHeading>Notifications.</SectionHeading>
-      <div className="border border-border rounded-2xl overflow-hidden divide-y divide-border">
-        {rows.map((row) => (
-          <div key={row.key} className="flex items-center justify-between px-6 py-4 bg-bg-primary hover:bg-bg-secondary transition-colors">
-            <div>
-              <p className="font-sans text-sm text-ink-primary">{row.label}</p>
-              <p className="font-mono text-[11px] text-ink-muted mt-0.5">{row.desc}</p>
-            </div>
-            <Toggle
-              checked={prefs[row.key as keyof typeof prefs]}
-              onChange={(v) => setPrefs((p) => ({ ...p, [row.key]: v }))}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => toast.success('Notification preferences saved.')}
-          className="px-5 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Privacy Section ──────────────────────────────────────────────────────────
-
-function PrivacySection() {
-  const [prefs, setPrefs] = useState({
-    showPublic: true,
-    showAttending: true,
-    allowMessages: false,
-    showInLists: true,
-  });
-
-  const rows = [
-    { label: 'Show profile publicly', desc: 'Anyone can view your /u/[username] page', key: 'showPublic' },
-    { label: 'Show events I\'m attending', desc: 'Visible on your public profile Attending tab', key: 'showAttending' },
-    { label: 'Allow messages from non-connections', desc: 'Let anyone message you through UpSosh', key: 'allowMessages' },
-    { label: 'Show in attendee lists', desc: 'Appear in event attendee lists for other attendees', key: 'showInLists' },
-  ];
-
-  return (
-    <div>
-      <SectionHeading>Privacy.</SectionHeading>
-      <div className="border border-border rounded-2xl overflow-hidden divide-y divide-border">
-        {rows.map((row) => (
-          <div key={row.key} className="flex items-center justify-between px-6 py-4 bg-bg-primary hover:bg-bg-secondary transition-colors">
-            <div>
-              <p className="font-sans text-sm text-ink-primary">{row.label}</p>
-              <p className="font-mono text-[11px] text-ink-muted mt-0.5">{row.desc}</p>
-            </div>
-            <Toggle
-              checked={prefs[row.key as keyof typeof prefs]}
-              onChange={(v) => setPrefs((p) => ({ ...p, [row.key]: v }))}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={() => toast.success('Privacy settings saved.')}
-          className="px-5 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors"
-        >
-          Save
-        </button>
-      </div>
     </div>
   );
 }
@@ -446,8 +329,6 @@ export default function SettingsPage() {
   const sections: Record<Section, React.ReactNode> = {
     account: <AccountSection user={user} />,
     profile: <ProfileSection user={user} onUpdate={setUser} />,
-    notifications: <NotificationsSection />,
-    privacy: <PrivacySection />,
     host: <HostSection user={user} />,
     danger: <DangerZone />,
   };

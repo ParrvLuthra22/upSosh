@@ -18,9 +18,8 @@ const HorizontalEventSlider: React.FC<HorizontalEventSliderProps> = ({ title, ev
 
     return (
         <section className="py-8">
-            <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+            <div className="mb-6 px-4 md:px-0">
                 <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h2>
-                <button className="text-sm font-medium text-red-600 hover:text-red-700">See All ›</button>
             </div>
 
             <div

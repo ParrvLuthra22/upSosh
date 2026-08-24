@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { v2 as cloudinary } from 'cloudinary';
@@ -101,6 +102,57 @@ router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response
     return res.json({ message: 'Password updated successfully' });
   } catch (err: any) {
     console.error('PATCH /users/me/password error:', err.message);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// DELETE /api/users/me — soft delete: anonymize the account, cancel the
+// user's own pending/confirmed bookings, keep the row (Bookings/Events/
+// HostApplications still need a valid userId to point at).
+router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    const userId = req.user!.id;
+
+    const activeBookings = await prisma.booking.findMany({
+      where: { userId, status: { in: ['pending', 'confirmed'] } },
+    });
+
+    const anonEmail = `deleted-${userId}@deleted.upsosh.app`;
+    const unusablePassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+
+    await prisma.$transaction([
+      ...activeBookings.map((b) =>
+        prisma.booking.update({ where: { id: b.id }, data: { status: 'cancelled' } })
+      ),
+      ...activeBookings
+        .filter((b) => b.eventId)
+        .map((b) =>
+          prisma.event.update({ where: { id: b.eventId! }, data: { attendees: { decrement: 1 } } })
+        ),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          email: anonEmail,
+          name: 'Deleted user',
+          password: unusablePassword,
+          photoUrl: null,
+          bio: null,
+          city: null,
+          resetToken: null,
+          resetTokenExpiry: null,
+          deletedAt: new Date(),
+        },
+      }),
+    ]);
+
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+    return res.json({ message: 'Account deleted' });
+  } catch (err: any) {
+    console.error('DELETE /users/me error:', err.message);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

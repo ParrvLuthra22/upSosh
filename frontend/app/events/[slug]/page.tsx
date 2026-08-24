@@ -28,7 +28,8 @@ import {
   IconBrandWhatsapp,
   IconLink,
 } from '@tabler/icons-react';
-import { mockEvents, type MockEvent } from '@/lib/mockEvents';
+import { type MockEvent } from '@/lib/eventTypes';
+import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
@@ -101,16 +102,6 @@ const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedData>>> = {
 
 function getExtended(id: string): ExtendedData {
   return { ...DEFAULT_EXTENDED, ...(EXTENDED_OVERRIDES[id] ?? {}) };
-}
-
-function getMockEvent(slug: string): MockEvent {
-  return (
-    mockEvents.find(
-      (e) =>
-        e.id === slug ||
-        e.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') === slug,
-    ) ?? mockEvents[0]
-  );
 }
 
 function apiEventToMock(raw: any): MockEvent {
@@ -582,6 +573,8 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<MockEvent | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [eventNotFound, setEventNotFound] = useState(false);
+
   useEffect(() => {
     async function fetchEvent() {
       try {
@@ -593,10 +586,9 @@ export default function EventDetailPage() {
           return;
         }
       } catch {
-        // fall through to mock
+        // fall through to not-found
       }
-      // Fall back to mock data (for demo events)
-      setEvent(getMockEvent(slug));
+      setEventNotFound(true);
     }
     fetchEvent().finally(() => setLoading(false));
   }, [slug]);
@@ -620,6 +612,10 @@ export default function EventDetailPage() {
     }, guests);
   }
 
+  // notFound() must be called during render (not inside the async effect
+  // above) so Next's error-boundary machinery actually catches the thrown
+  // NEXT_NOT_FOUND signal and renders the nearest not-found.tsx.
+  if (eventNotFound) notFound();
   if (loading) return <PageSkeleton />;
   if (!event) return <PageSkeleton />;
 

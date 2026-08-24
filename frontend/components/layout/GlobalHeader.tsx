@@ -333,7 +333,7 @@ function MobileMenu({
                   { name: 'Planner',   href: '/planner' },
                   { name: 'About',     href: '/about' },
                   ...(user?.hostStatus === 'verified'
-                    ? [{ name: 'Dashboard', href: '/dashboard' }]
+                    ? [{ name: 'Dashboard', href: '/host/dashboard' }]
                     : []),
                 ]
               : MOBILE_NAV

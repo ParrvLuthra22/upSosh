@@ -177,7 +177,7 @@ function ResetPasswordContent() {
 
                             <div className="text-center">
                                 <Link
-                                    href="/login"
+                                    href="/signin"
                                     className="text-sm text-primary hover:text-primary/90 font-medium"
                                 >
                                     ← Back to login
@@ -189,7 +189,7 @@ function ResetPasswordContent() {
 
                 <p className="text-center text-sm text-text-muted mt-6">
                     Remember your password?{' '}
-                    <Link href="/login" className="text-primary hover:text-primary/90 font-medium">
+                    <Link href="/signin" className="text-primary hover:text-primary/90 font-medium">
                         Sign in
                     </Link>
                 </p>

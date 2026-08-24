@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import {
   IconBrandInstagram,
-  IconBrandX,
   IconBrandLinkedin,
   IconHeartFilled,
 } from '@tabler/icons-react';
@@ -12,14 +11,11 @@ const PRODUCT = [
   { label: 'Discover',      href: '/discover' },
   { label: 'AI Planner',    href: '/planner' },
   { label: 'Become a Host', href: '/become-a-host' },
-  { label: 'Pricing',       href: '/pricing' },
 ];
 
 const COMPANY = [
   { label: 'About',    href: '/about' },
-  { label: 'Features', href: '/features' },
   { label: 'Contact',  href: '/contact' },
-  { label: 'Blog',     href: '#' },
 ];
 
 const LEGAL = [
@@ -27,12 +23,11 @@ const LEGAL = [
   { label: 'Terms of Service', href: '/terms' },
   { label: 'Refund Policy',    href: '/refund' },
   { label: 'Safety',           href: '/safety' },
-  { label: 'Cookie Policy',    href: '#' },
 ];
 
+// X/Twitter dropped — no live account to link (was href="#").
 const SOCIAL = [
   { label: 'Instagram',   href: 'https://www.instagram.com/upsosh.app/', Icon: IconBrandInstagram },
-  { label: 'X / Twitter', href: '#',                                       Icon: IconBrandX },
   { label: 'LinkedIn',    href: 'https://www.linkedin.com/company/upsosh', Icon: IconBrandLinkedin },
 ];
 

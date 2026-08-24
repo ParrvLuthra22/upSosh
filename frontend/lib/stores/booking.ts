@@ -26,7 +26,7 @@ function authHeaders(): Record<string, string> {
 
 /**
  * Flexible event shape accepted by the store — works with both
- * `Event` (types/index.ts) and `MockEvent` (lib/mockEvents).
+ * `Event` (types/index.ts) and `MockEvent` (lib/eventTypes).
  */
 export interface BookingEventData {
   id: string;

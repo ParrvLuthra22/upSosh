@@ -1,34 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
-
 export default function ContactPage() {
-    const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
-
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setStatus('submitting');
-        
-        const formData = new FormData(e.currentTarget);
-        const firstName = formData.get('firstName') as string;
-        const lastName = formData.get('lastName') as string;
-        const email = formData.get('email') as string;
-        const subject = formData.get('subject') as string;
-        const message = formData.get('message') as string;
-
-        
-        const emailBody = `Name: ${firstName} ${lastName}%0D%0AEmail: ${email}%0D%0ASubject: ${subject}%0D%0A%0D%0AMessage:%0D%0A${encodeURIComponent(message)}`;
-        
-        
-        window.location.href = `mailto:support@upsosh.app?subject=${encodeURIComponent(subject)}&body=${emailBody}`;
-        
-        
-        setTimeout(() => {
-            setStatus('success');
-            setTimeout(() => setStatus('idle'), 3000);
-        }, 500);
-    };
-
     return (
         <div className="min-h-screen pt-24 pb-12">
             <section className="container mx-auto px-4 mb-16 text-center">
@@ -62,53 +32,20 @@ export default function ContactPage() {
 
                     </div>
 
-                    
+
                     <div className="lg:w-2/3">
-                        <form onSubmit={handleSubmit} className="bg-surface p-8 md:p-10 rounded-3xl border border-white/10 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-2">First Name</label>
-                                    <input name="firstName" required type="text" className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" placeholder="John" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-2">Last Name</label>
-                                    <input name="lastName" required type="text" className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" placeholder="Doe" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-2">Email Address</label>
-                                <input name="email" required type="email" className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" placeholder="john@example.com" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-2">Subject</label>
-                                <select name="subject" className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors">
-                                    <option>General Inquiry</option>
-                                    <option>Support</option>
-                                    <option>Partnership</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-2">Message</label>
-                                <textarea name="message" required rows={5} className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors" placeholder="How can we help you?" />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={status !== 'idle'}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${status === 'success'
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-primary text-white hover:opacity-90 shadow-lg shadow-primary/20'
-                                    }`}
+                        <div className="bg-surface p-8 md:p-10 rounded-3xl border border-white/10 space-y-4">
+                            <h3 className="text-xl font-bold">Send us an email</h3>
+                            <p className="text-text-secondary">
+                                Tap the button below to open your email app with our address filled in.
+                            </p>
+                            <a
+                                href="mailto:support@upsosh.app"
+                                className="inline-block w-full text-center py-4 rounded-xl font-bold text-lg bg-primary text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all"
                             >
-                                {status === 'idle' && 'Send Message'}
-                                {status === 'submitting' && 'Sending...'}
-                                {status === 'success' && 'Message Sent!'}
-                            </button>
-                        </form>
+                                Email support@upsosh.app
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
