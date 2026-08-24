@@ -173,3 +173,4 @@ process.on('SIGTERM', () => {
 });
 
 export default app;
+const brokenTypeError: number = 'this is a string, not a number';
