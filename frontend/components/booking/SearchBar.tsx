@@ -10,7 +10,7 @@ const SearchBar = () => {
         <div className="relative w-full max-w-xl mx-auto mb-16">
             <div className="absolute inset-y-0 left-0 flex items-center pl-0 pointer-events-none">
                 <svg
-                    className="w-5 h-5 text-foreground/40"
+                    className="w-5 h-5 text-cream/40"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -28,7 +28,7 @@ const SearchBar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search events, hosts..."
-                className="w-full py-4 pl-8 pr-4 text-xl font-light text-foreground bg-transparent border-b border-border focus:border-foreground focus:outline-none transition-all placeholder:text-foreground/30"
+                className="w-full py-4 pl-8 pr-4 text-xl font-light text-cream bg-transparent border-b border-border focus:border-lime focus:outline-none transition-all placeholder:text-cream-faint"
                 aria-label="Search events"
             />
         </div>

@@ -65,14 +65,14 @@ const DEFAULT_EXTENDED: ExtendedData = {
   hostPhoto:
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&q=80',
   attendees: [
-    { name: 'Priya S.', initials: 'PS', bg: '#D4FF3F', fg: '#0A0A0B', shared: 3 },
-    { name: 'Rahul K.', initials: 'RK', bg: '#1C1C26', fg: '#F4F1EA', shared: 1 },
-    { name: 'Ananya M.', initials: 'AM', bg: '#FF6F61', fg: '#F4F1EA', shared: 2 },
-    { name: 'Dev C.', initials: 'DC', bg: '#34D399', fg: '#0A0A0B', shared: 0 },
-    { name: 'Shreya P.', initials: 'SP', bg: '#1C1C26', fg: '#F4F1EA', shared: 1 },
-    { name: 'Vikram R.', initials: 'VR', bg: '#D4FF3F', fg: '#0A0A0B', shared: 4 },
-    { name: 'Nisha T.', initials: 'NT', bg: '#1C1C26', fg: '#F4F1EA', shared: 0 },
-    { name: 'Arjun B.', initials: 'AB', bg: '#FF6F61', fg: '#F4F1EA', shared: 2 },
+    { name: 'Priya S.', initials: 'PS', bg: 'var(--lime)', fg: 'var(--void)', shared: 3 },
+    { name: 'Rahul K.', initials: 'RK', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 1 },
+    { name: 'Ananya M.', initials: 'AM', bg: 'var(--coral)', fg: 'var(--cream)', shared: 2 },
+    { name: 'Dev C.', initials: 'DC', bg: '#34D399', fg: 'var(--void)', shared: 0 },
+    { name: 'Shreya P.', initials: 'SP', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 1 },
+    { name: 'Vikram R.', initials: 'VR', bg: 'var(--lime)', fg: 'var(--void)', shared: 4 },
+    { name: 'Nisha T.', initials: 'NT', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 0 },
+    { name: 'Arjun B.', initials: 'AB', bg: 'var(--coral)', fg: 'var(--cream)', shared: 2 },
   ],
 };
 
@@ -229,7 +229,7 @@ function HostCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 22, fontWeight: 400, color: '#F4F1EA', lineHeight: 1.2 }}>
+          <p style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 22, fontWeight: 400, color: 'var(--cream)', lineHeight: 1.2 }}>
             {event.host.name}
           </p>
 
@@ -391,7 +391,7 @@ function BookingCard({
       {/* Price */}
       <div className="flex items-baseline gap-2 mb-6">
         <span
-          style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 40, fontWeight: 400, color: '#D4FF3F', lineHeight: 1 }}
+          style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 40, fontWeight: 400, color: 'var(--lime)', lineHeight: 1 }}
         >
           {isFree ? 'Free' : `₹${unitPrice.toLocaleString('en-IN')}`}
         </span>
@@ -434,7 +434,7 @@ function BookingCard({
             initial={{ scale: 1.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
-            style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 24, fontWeight: 400, color: '#F4F1EA', minWidth: 24, textAlign: 'center', display: 'inline-block' }}
+            style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 24, fontWeight: 400, color: 'var(--cream)', minWidth: 24, textAlign: 'center', display: 'inline-block' }}
           >
             {guests}
           </motion.span>
@@ -466,7 +466,7 @@ function BookingCard({
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25 }}
-              style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: '#D4FF3F' }}
+              style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: 'var(--lime)' }}
             >
               ₹{total.toLocaleString('en-IN')}
             </motion.span>
@@ -490,7 +490,7 @@ function BookingCard({
         onClick={() => onBook(guests)}
         whileTap={{ scale: 0.97 }}
         className="w-full rounded-full font-sans font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-        style={{ height: 56, backgroundColor: '#D4FF3F', color: '#0A0A0B', fontSize: 16 }}
+        style={{ height: 56, backgroundColor: 'var(--lime)', color: 'var(--void)', fontSize: 16 }}
       >
         Book now
         <IconArrowRight size={16} strokeWidth={2.5} />
@@ -522,7 +522,7 @@ function MobileBar({ event, onOpen }: { event: MockEvent; onOpen: () => void }) 
       style={{ backgroundColor: 'rgba(10,10,11,0.95)', backdropFilter: 'blur(20px)' }}
     >
       <div>
-        <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: '#D4FF3F' }}>
+        <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: 'var(--lime)' }}>
           {fmtPrice(event.price)}
         </span>
         {event.price !== 'Free' && event.price !== 0 && (
@@ -532,7 +532,7 @@ function MobileBar({ event, onOpen }: { event: MockEvent; onOpen: () => void }) 
       <button
         onClick={onOpen}
         className="h-12 px-7 rounded-full font-sans font-semibold flex items-center gap-2"
-        style={{ backgroundColor: '#D4FF3F', color: '#0A0A0B', fontSize: 15 }}
+        style={{ backgroundColor: 'var(--lime)', color: 'var(--void)', fontSize: 15 }}
       >
         Book now <IconArrowRight size={15} strokeWidth={2.5} />
       </button>

@@ -34,8 +34,8 @@ function DiscoverIllustration({ hovered }: { hovered: boolean }) {
       {/* Back card */}
       <motion.rect
         x="8" y="16" width="44" height="56" rx="5"
-        fill="#1C1C26"
-        stroke="rgba(244,241,234,0.08)"
+        fill="var(--surface-2)"
+        stroke="var(--border)"
         strokeWidth="1"
         animate={{ rotate: hovered ? -14 : -10, x: hovered ? 4 : 8 }}
         style={{ transformOrigin: '30px 80px' }}
@@ -44,8 +44,8 @@ function DiscoverIllustration({ hovered }: { hovered: boolean }) {
       {/* Mid card */}
       <motion.rect
         x="20" y="10" width="44" height="56" rx="5"
-        fill="#13131B"
-        stroke="rgba(244,241,234,0.16)"
+        fill="var(--surface)"
+        stroke="var(--border-strong)"
         strokeWidth="1"
         animate={{ rotate: hovered ? -5 : -3, x: hovered ? 0 : 0 }}
         style={{ transformOrigin: '42px 80px' }}
@@ -54,18 +54,18 @@ function DiscoverIllustration({ hovered }: { hovered: boolean }) {
       {/* Front card — lime border */}
       <motion.rect
         x="32" y="4" width="44" height="56" rx="5"
-        fill="#13131B"
-        stroke="#D4FF3F"
+        fill="var(--surface)"
+        stroke="var(--lime)"
         strokeWidth="1.5"
         animate={{ rotate: hovered ? 3 : 0 }}
         style={{ transformOrigin: '54px 80px' }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       />
       {/* Front card content lines */}
-      <rect x="39" y="14" width="20" height="2.5" rx="1.25" fill="#D4FF3F" opacity="0.7" />
-      <rect x="39" y="21" width="28" height="2" rx="1" fill="#F4F1EA" opacity="0.2" />
-      <rect x="39" y="27" width="20" height="2" rx="1" fill="#F4F1EA" opacity="0.15" />
-      <rect x="39" y="33" width="24" height="2" rx="1" fill="#F4F1EA" opacity="0.1" />
+      <rect x="39" y="14" width="20" height="2.5" rx="1.25" fill="var(--lime)" opacity="0.7" />
+      <rect x="39" y="21" width="28" height="2" rx="1" fill="var(--cream)" opacity="0.2" />
+      <rect x="39" y="27" width="20" height="2" rx="1" fill="var(--cream)" opacity="0.15" />
+      <rect x="39" y="33" width="24" height="2" rx="1" fill="var(--cream)" opacity="0.1" />
     </svg>
   );
 }
@@ -84,9 +84,9 @@ function BookIllustration({ hovered }: { hovered: boolean }) {
       aria-hidden="true"
     >
       {/* Phone shell */}
-      <rect x="28" y="4" width="36" height="64" rx="6" fill="#1C1C26" stroke="rgba(244,241,234,0.16)" strokeWidth="1.2" />
+      <rect x="28" y="4" width="36" height="64" rx="6" fill="var(--surface-2)" stroke="var(--border-strong)" strokeWidth="1.2" />
       {/* Screen */}
-      <rect x="32" y="10" width="28" height="46" rx="3" fill="#13131B" />
+      <rect x="32" y="10" width="28" height="46" rx="3" fill="var(--surface)" />
       {/* Home notch */}
       <rect x="42" y="58" width="8" height="2" rx="1" fill="rgba(244,241,234,0.2)" />
 
@@ -95,16 +95,16 @@ function BookIllustration({ hovered }: { hovered: boolean }) {
         animate={{ y: hovered ? -6 : 0, opacity: hovered ? 1 : 0.85 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       >
-        <rect x="34" y="16" width="24" height="32" rx="3" fill="#13131B" stroke="#D4FF3F" strokeWidth="1.2" />
+        <rect x="34" y="16" width="24" height="32" rx="3" fill="var(--surface)" stroke="var(--lime)" strokeWidth="1.2" />
         {/* Ticket perforation line */}
-        <line x1="34" y1="36" x2="58" y2="36" stroke="#D4FF3F" strokeWidth="0.8" strokeDasharray="2 2" opacity="0.5" />
+        <line x1="34" y1="36" x2="58" y2="36" stroke="var(--lime)" strokeWidth="0.8" strokeDasharray="2 2" opacity="0.5" />
         {/* Ticket lines */}
-        <rect x="38" y="21" width="14" height="2" rx="1" fill="#D4FF3F" opacity="0.6" />
-        <rect x="38" y="26" width="10" height="1.5" rx="0.75" fill="#F4F1EA" opacity="0.2" />
+        <rect x="38" y="21" width="14" height="2" rx="1" fill="var(--lime)" opacity="0.6" />
+        <rect x="38" y="26" width="10" height="1.5" rx="0.75" fill="var(--cream)" opacity="0.2" />
         {/* Lime checkmark — draws on hover */}
         <motion.path
           d="M38 42 L43 47 L55 35"
-          stroke="#D4FF3F"
+          stroke="var(--lime)"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -130,15 +130,15 @@ function ShowUpIllustration({ hovered }: { hovered: boolean }) {
       {/* Three overlapping person circles */}
       <motion.circle
         cx="35" cy="42" r="18"
-        fill="#1C1C26"
-        stroke="rgba(244,241,234,0.16)"
+        fill="var(--surface-2)"
+        stroke="var(--border-strong)"
         strokeWidth="1.2"
         animate={{ cx: hovered ? 31 : 35 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       />
       <motion.circle
         cx="50" cy="40" r="18"
-        fill="#13131B"
+        fill="var(--surface)"
         stroke="rgba(244,241,234,0.24)"
         strokeWidth="1.2"
         animate={{ scale: hovered ? 1.06 : 1 }}
@@ -147,8 +147,8 @@ function ShowUpIllustration({ hovered }: { hovered: boolean }) {
       />
       <motion.circle
         cx="65" cy="42" r="18"
-        fill="#1C1C26"
-        stroke="rgba(244,241,234,0.16)"
+        fill="var(--surface-2)"
+        stroke="var(--border-strong)"
         strokeWidth="1.2"
         animate={{ cx: hovered ? 69 : 65 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
@@ -171,7 +171,7 @@ function ShowUpIllustration({ hovered }: { hovered: boolean }) {
         {/* 4-point star */}
         <path
           d="M50 33 L51.5 38 L57 40 L51.5 42 L50 47 L48.5 42 L43 40 L48.5 38 Z"
-          fill="#D4FF3F"
+          fill="var(--lime)"
           opacity={hovered ? 1 : 0.85}
         />
       </motion.g>

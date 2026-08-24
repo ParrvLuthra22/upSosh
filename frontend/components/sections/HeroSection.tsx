@@ -80,7 +80,7 @@ function WavyUnderline() {
     >
       <motion.path
         d={WAVE_PATH}
-        stroke="#D4FF3F"
+        stroke="var(--lime)"
         strokeWidth="3"
         fill="none"
         strokeLinecap="round"
@@ -96,11 +96,11 @@ function WavyUnderline() {
 // ─── Social proof avatars ─────────────────────────────────────────────────────
 
 const AVATARS = [
-  { initials: 'PR', bg: '#D4FF3F', fg: '#0A0A0B' },
-  { initials: 'AK', bg: '#1C1C26', fg: '#F4F1EA' },
-  { initials: 'SN', bg: '#FF6F61', fg: '#F4F1EA' },
-  { initials: 'RV', bg: '#34D399', fg: '#0A0A0B' },
-  { initials: 'DM', bg: '#1C1C26', fg: '#F4F1EA' },
+  { initials: 'PR', bg: 'var(--lime)', fg: 'var(--void)' },
+  { initials: 'AK', bg: 'var(--surface-2)', fg: 'var(--cream)' },
+  { initials: 'SN', bg: 'var(--coral)', fg: 'var(--cream)' },
+  { initials: 'RV', bg: '#34D399', fg: 'var(--void)' },
+  { initials: 'DM', bg: 'var(--surface-2)', fg: 'var(--cream)' },
 ];
 
 function AvatarStack() {
@@ -114,7 +114,7 @@ function AvatarStack() {
             height: 28,
             borderRadius: '50%',
             backgroundColor: bg,
-            border: '2px solid #0A0A0B',
+            border: '2px solid var(--void)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -146,8 +146,8 @@ function PrimaryButton() {
         style={{
           height: '3.25rem',
           padding: '0 1.75rem',
-          backgroundColor: '#D4FF3F',
-          color: '#0A0A0B',
+          backgroundColor: 'var(--lime)',
+          color: 'var(--void)',
           fontSize: '15px',
           textDecoration: 'none',
         }}
@@ -171,7 +171,7 @@ function SecondaryButton() {
           height: '3.25rem',
           padding: '0 1.75rem',
           border: '1px solid rgba(244,241,234,0.40)',
-          color: '#F4F1EA',
+          color: 'var(--cream)',
           fontSize: '15px',
           textDecoration: 'none',
         }}

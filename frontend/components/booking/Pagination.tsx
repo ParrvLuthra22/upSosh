@@ -14,7 +14,7 @@ const Pagination = () => {
             <button
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-6 py-3 border border-border text-foreground rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-foreground/5 transition-colors font-medium"
+                className="px-6 py-3 border border-border text-cream rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-cream/5 transition-colors font-medium"
             >
                 Previous
             </button>
@@ -27,8 +27,8 @@ const Pagination = () => {
                             key={page}
                             onClick={() => setPage(page)}
                             className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors font-medium ${currentPage === page
-                                ? 'bg-foreground text-background'
-                                : 'text-foreground hover:bg-foreground/5'
+                                ? 'bg-lime text-void'
+                                : 'text-cream hover:bg-cream/5'
                                 }`}
                         >
                             {page}
@@ -40,7 +40,7 @@ const Pagination = () => {
             <button
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-6 py-3 border border-border text-foreground rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-foreground/5 transition-colors font-medium"
+                className="px-6 py-3 border border-border text-cream rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-cream/5 transition-colors font-medium"
             >
                 Next
             </button>

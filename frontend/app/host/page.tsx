@@ -46,8 +46,8 @@ function HostPageContent() {
         return (
             <div className="min-h-screen pt-24 pb-12 px-4 md:px-8 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Loading...</p>
+                    <div className="w-16 h-16 border-4 border-lime border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-cream-dim">Loading...</p>
                 </div>
             </div>
         );
@@ -58,15 +58,15 @@ function HostPageContent() {
             <div className="min-h-screen pt-24 pb-12 px-4 md:px-8">
                 <div className="container mx-auto max-w-2xl text-center">
                     <div className="bg-surface rounded-2xl p-8 md:p-12 border border-white/10">
-                        <h1 className="text-3xl md:text-4xl font-heading font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-lime to-lime-dim">
                             Sign in to host
                         </h1>
-                        <p className="text-lg text-text-secondary mb-8">
+                        <p className="text-lg text-cream-dim mb-8">
                             You need an account before creating or managing events.
                         </p>
                         <button
                             onClick={() => router.push('/signin?from=/host')}
-                            className="w-full px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-opacity shadow-lg"
+                            className="w-full px-8 py-4 rounded-full bg-gradient-to-r from-lime to-lime-dim text-void font-medium hover:opacity-90 transition-opacity shadow-lg"
                         >
                             Go to Sign In
                         </button>
@@ -81,34 +81,34 @@ function HostPageContent() {
             <div className="min-h-screen pt-24 pb-12 px-4 md:px-8">
                 <div className="container mx-auto max-w-2xl text-center">
                     <div className="bg-surface rounded-2xl p-8 md:p-12 border border-white/10">
-                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-20 h-20 bg-lime/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-10 h-10 text-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-heading font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                        <h1 className="text-3xl md:text-4xl font-display font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-lime to-lime-dim">
                             Host Mode Required
                         </h1>
-                        <p className="text-lg text-text-secondary mb-8">
+                        <p className="text-lg text-cream-dim mb-8">
                             To host events on UpSosh, you need to enable Host Mode in your profile settings.
                         </p>
                         <div className="space-y-4">
                             <button
                                 onClick={() => router.push('/profile')}
-                                className="w-full px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-opacity shadow-lg"
+                                className="w-full px-8 py-4 rounded-full bg-gradient-to-r from-lime to-lime-dim text-void font-medium hover:opacity-90 transition-opacity shadow-lg"
                             >
                                 Go to Profile & Enable Host Mode
                             </button>
                             <button
                                 onClick={() => router.push('/')}
-                                className="w-full px-8 py-4 rounded-full border border-white/10 text-text-secondary hover:bg-white/5 transition-colors"
+                                className="w-full px-8 py-4 rounded-full border border-white/10 text-cream-dim hover:bg-white/5 transition-colors"
                             >
                                 Back to Home
                             </button>
                         </div>
-                        <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/20">
-                            <h3 className="font-semibold text-primary mb-2">How to enable Host Mode:</h3>
-                            <ol className="text-sm text-text-secondary text-left space-y-2">
+                        <div className="mt-8 p-4 bg-lime/5 rounded-xl border border-lime/20">
+                            <h3 className="font-semibold text-lime mb-2">How to enable Host Mode:</h3>
+                            <ol className="text-sm text-cream-dim text-left space-y-2">
                                 <li>1. Go to your Profile page</li>
                                 <li>2. Click "Edit Profile"</li>
                                 <li>3. Toggle "Enable Host Mode" switch</li>
@@ -126,10 +126,10 @@ function HostPageContent() {
         <div className="min-h-screen pt-24 pb-12 px-4 md:px-8">
             <div className="container mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-5xl font-heading font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                    <h1 className="text-5xl font-display font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-lime to-lime-dim">
                         Host Your Next Big Thing
                     </h1>
-                    <p className="text-xl text-text-muted max-w-2xl mx-auto">
+                    <p className="text-xl text-cream-faint max-w-2xl mx-auto">
                         Create memorable experiences for your community. Use our AI tools to plan, budget, and launch your event in minutes.
                     </p>
                 </div>
@@ -147,7 +147,7 @@ function HostPageContent() {
                         {editingEvent && (
                             <button
                                 onClick={() => setEditingEvent(null)}
-                                className="w-full mt-4 py-2 px-4 bg-surface-highlight text-text-primary rounded-xl hover:bg-primary hover:text-white transition-all"
+                                className="w-full mt-4 py-2 px-4 bg-surface-2 text-cream rounded-xl hover:bg-lime hover:text-white transition-all"
                             >
                                 Cancel Edit
                             </button>
@@ -180,8 +180,8 @@ export default function HostPage() {
         <Suspense fallback={
             <div className="min-h-screen pt-24 pb-12 px-4 md:px-8 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Loading...</p>
+                    <div className="w-16 h-16 border-4 border-lime border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-cream-dim">Loading...</p>
                 </div>
             </div>
         }>

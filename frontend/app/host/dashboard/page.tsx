@@ -388,7 +388,7 @@ function AIPromoCard() {
   return (
     <motion.div
       className="rounded-2xl overflow-hidden relative"
-      style={{ background: '#0A0A0A' }}
+      style={{ background: 'var(--void)' }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.65, duration: 0.5, ease: EASE_VERCEL }}
@@ -397,7 +397,7 @@ function AIPromoCard() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 80% at 90% 50%, rgba(255,90,31,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 60% 80% at 90% 50%, rgba(212,255,63,0.12) 0%, transparent 70%)',
         }}
       />
 
@@ -416,7 +416,7 @@ function AIPromoCard() {
           >
             Planning your next event?
             <br />
-            <em style={{ color: '#FF5A1F' }}>Let the AI do the math.</em>
+            <em style={{ color: 'var(--lime)' }}>Let the AI do the math.</em>
           </h3>
           <p className="font-sans text-sm leading-relaxed" style={{ color: 'rgba(250,250,247,0.45)', maxWidth: '400px' }}>
             Optimal pricing, the best date based on your audience, and a full run-of-show — generated in seconds.
@@ -427,10 +427,10 @@ function AIPromoCard() {
           <motion.button
             className="flex items-center gap-2 px-6 py-3.5 rounded-2xl font-sans text-sm font-medium"
             style={{
-              background: '#FF5A1F',
-              color: '#FAFAF7',
+              background: 'var(--lime)',
+              color: 'var(--void)',
             }}
-            whileHover={{ scale: 1.03, boxShadow: '0 0 32px rgba(255,90,31,0.4)' }}
+            whileHover={{ scale: 1.03, boxShadow: '0 0 32px rgba(212,255,63,0.4)' }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.2 }}
           >

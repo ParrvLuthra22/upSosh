@@ -115,7 +115,7 @@ export default function AIPlanner() {
 
           <motion.h2
             variants={fadeInUp}
-            className="font-display text-display-md text-ink-primary leading-[1.1] tracking-tight mb-6"
+            className="display-md text-ink-primary leading-[1.1] tracking-tight mb-6"
           >
             Plan like you've done this a hundred times.
             <span className="italic text-ink-muted"> Even if it's your first.</span>

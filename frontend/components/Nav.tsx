@@ -23,7 +23,7 @@ function NavLink({ label, href }: { label: string; href: string }) {
       href={href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ position: 'relative', paddingBottom: 2, textDecoration: 'none', color: 'rgba(244,241,234,0.55)', fontSize: 14 }}
+      style={{ position: 'relative', paddingBottom: 2, textDecoration: 'none', color: 'var(--cream-dim)', fontSize: 14 }}
     >
       {label}
       <motion.span
@@ -33,7 +33,7 @@ function NavLink({ label, href }: { label: string; href: string }) {
           left: 0,
           right: 0,
           height: 1,
-          backgroundColor: '#D4FF3F',
+          backgroundColor: 'var(--lime)',
           transformOrigin: 'left',
           display: 'block',
         }}
@@ -62,7 +62,7 @@ export default function Nav() {
         display: 'flex',
         alignItems: 'center',
         backgroundColor: 'rgba(10,10,11,0.85)',
-        borderBottom: '1px solid rgba(244,241,234,0.08)',
+        borderBottom: '1px solid var(--border)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
@@ -73,7 +73,7 @@ export default function Nav() {
       <div style={{ maxWidth: 1152, margin: '0 auto', padding: '0 1.5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Left — wordmark */}
-        <Link href="/" style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontStyle: 'italic', fontSize: 22, color: '#F4F1EA', textDecoration: 'none', letterSpacing: '-0.02em' }}>
+        <Link href="/" style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--cream)', textDecoration: 'none', letterSpacing: '-0.02em' }}>
           UpSosh
         </Link>
 
@@ -91,7 +91,7 @@ export default function Nav() {
               <Link
                 href="/discover"
                 className="hidden md:block"
-                style={{ fontFamily: 'inherit', fontSize: 14, color: 'rgba(244,241,234,0.55)', textDecoration: 'none' }}
+                style={{ fontFamily: 'inherit', fontSize: 14, color: 'var(--cream-dim)', textDecoration: 'none' }}
               >
                 Browse events
               </Link>
@@ -106,7 +106,7 @@ export default function Nav() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: '#1C1C26',
+                  background: 'var(--surface-2)',
                   flexShrink: 0,
                   textDecoration: 'none',
                 }}
@@ -115,7 +115,7 @@ export default function Nav() {
                 {user.photoUrl ? (
                   <img src={user.photoUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 14, fontWeight: 700, color: '#D4FF3F' }}>
+                  <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 14, fontWeight: 700, color: 'var(--lime)' }}>
                     {(user.name?.[0] ?? 'U').toUpperCase()}
                   </span>
                 )}
@@ -126,7 +126,7 @@ export default function Nav() {
               <Link
                 href="/signin"
                 className="hidden md:block"
-                style={{ fontFamily: 'inherit', fontSize: 14, color: 'rgba(244,241,234,0.55)', textDecoration: 'none' }}
+                style={{ fontFamily: 'inherit', fontSize: 14, color: 'var(--cream-dim)', textDecoration: 'none' }}
               >
                 Sign in
               </Link>
@@ -135,8 +135,8 @@ export default function Nav() {
                 style={{
                   height: 40,
                   padding: '0 20px',
-                  backgroundColor: '#D4FF3F',
-                  color: '#0A0A0B',
+                  backgroundColor: 'var(--lime)',
+                  color: 'var(--void)',
                   borderRadius: 9999,
                   fontSize: 14,
                   fontWeight: 600,

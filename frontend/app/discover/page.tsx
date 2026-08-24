@@ -374,20 +374,20 @@ function EmptyState() {
         {/* Cone */}
         <path d="M100 18 L55 148 L145 148 Z" fill="rgba(212,255,63,0.05)" />
         {/* Cone edges */}
-        <line x1="100" y1="26" x2="56" y2="148" stroke="#D4FF3F" strokeWidth="1" opacity="0.15" />
-        <line x1="100" y1="26" x2="144" y2="148" stroke="#D4FF3F" strokeWidth="1" opacity="0.15" />
+        <line x1="100" y1="26" x2="56" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
+        <line x1="100" y1="26" x2="144" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
         {/* Stage floor */}
         <rect x="30" y="148" width="140" height="3" rx="1.5" fill="rgba(244,241,234,0.06)" />
         {/* Lamp */}
-        <circle cx="100" cy="14" r="10" fill="#13131B" stroke="rgba(244,241,234,0.16)" strokeWidth="1.2" />
+        <circle cx="100" cy="14" r="10" fill="var(--surface)" stroke="var(--border-strong)" strokeWidth="1.2" />
         <motion.circle
           cx="100" cy="14" r="5"
-          fill="#D4FF3F"
+          fill="var(--lime)"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         />
         {/* Inner cone glow */}
-        <ellipse cx="100" cy="148" rx="35" ry="4" fill="#D4FF3F" opacity="0.06" />
+        <ellipse cx="100" cy="148" rx="35" ry="4" fill="var(--lime)" opacity="0.06" />
       </svg>
 
       <h3 className="font-display text-[32px] text-cream leading-tight mb-3">

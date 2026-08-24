@@ -69,7 +69,7 @@ function StepDots({ step }: { step: 1 | 2 | 3 }) {
           style={{
             borderRadius: 99,
             backgroundColor:
-              s < step ? '#D4FF3F' : s === step ? '#D4FF3F' : 'rgba(244,241,234,0.2)',
+              s < step ? 'var(--lime)' : s === step ? 'var(--lime)' : 'rgba(244,241,234,0.2)',
             height: 8,
           }}
           animate={{ width: s === step ? 24 : 8 }}
@@ -87,7 +87,7 @@ function AnimatedCheck() {
       {/* Outer circle */}
       <motion.circle
         cx="60" cy="60" r="54"
-        stroke="#D4FF3F"
+        stroke="var(--lime)"
         strokeWidth="4"
         strokeLinecap="round"
         strokeDasharray="339.3"
@@ -98,7 +98,7 @@ function AnimatedCheck() {
       {/* Checkmark path — total length ≈ 75 */}
       <motion.path
         d="M36 62 L52 78 L84 44"
-        stroke="#D4FF3F"
+        stroke="var(--lime)"
         strokeWidth="5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -123,11 +123,11 @@ function useConfetti() {
           particleCount: Math.floor(200 * particleRatio),
         });
 
-      fire(0.25, { spread: 26, startVelocity: 55, colors: ['#D4FF3F', '#F4F1EA'] });
-      fire(0.2,  { spread: 60, colors: ['#D4FF3F', '#FF6F61', '#34D399'] });
-      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ['#D4FF3F', '#F4F1EA'] });
-      fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['#FF6F61'] });
-      fire(0.1,  { spread: 120, startVelocity: 45, colors: ['#D4FF3F'] });
+      fire(0.25, { spread: 26, startVelocity: 55, colors: ['var(--lime)', 'var(--cream)'] });
+      fire(0.2,  { spread: 60, colors: ['var(--lime)', 'var(--coral)', '#34D399'] });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ['var(--lime)', 'var(--cream)'] });
+      fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['var(--coral)'] });
+      fire(0.1,  { spread: 120, startVelocity: 45, colors: ['var(--lime)'] });
     });
   }, []);
 }
@@ -177,7 +177,7 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
                 fontFamily: 'var(--font-fraunces, Georgia, serif)',
                 fontSize: 24,
                 fontWeight: 400,
-                color: '#D4FF3F',
+                color: 'var(--lime)',
                 lineHeight: 1,
               }}
             >
@@ -193,7 +193,7 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
               fontFamily: 'var(--font-fraunces, Georgia, serif)',
               fontSize: 24,
               fontWeight: 400,
-              color: '#D4FF3F',
+              color: 'var(--lime)',
             }}
           >
             Free
@@ -272,7 +272,7 @@ function Step1Review() {
           <button
             onClick={handleContinue}
             className="w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#D4FF3F', color: '#0A0A0B' }}
+            style={{ backgroundColor: 'var(--lime)', color: 'var(--void)' }}
           >
             Continue <IconArrowRight size={16} strokeWidth={2.5} />
           </button>
@@ -460,7 +460,7 @@ function Step2Payment() {
             )}
             onClick={() => setTerms((t) => !t)}
           >
-            {terms && <IconCheck size={11} style={{ color: '#0A0A0B' }} strokeWidth={3} />}
+            {terms && <IconCheck size={11} style={{ color: 'var(--void)' }} strokeWidth={3} />}
           </div>
           <span className="font-sans text-[13px] text-cream-dim leading-relaxed">
             I agree to the{' '}
@@ -491,7 +491,7 @@ function Step2Payment() {
           onClick={submit}
           disabled={!canSubmit && !isFree}
           className="w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
-          style={{ backgroundColor: '#D4FF3F', color: '#0A0A0B' }}
+          style={{ backgroundColor: 'var(--lime)', color: 'var(--void)' }}
         >
           {isProcessing ? (
             <span className="w-4 h-4 border-2 border-void/30 border-t-void rounded-full animate-spin" />
@@ -773,8 +773,8 @@ export default function BookingFlow() {
           <motion.div
             className="relative w-full flex flex-col sm:max-w-lg rounded-t-[28px] sm:rounded-[28px]"
             style={{
-              backgroundColor: '#13131B',
-              border: '1px solid rgba(244,241,234,0.16)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
               // Mobile: height grows with content, capped at 90dvh
               // Desktop: fixed at min(90dvh, 680px) so flex-1 scroll works
               maxHeight: '90dvh',
@@ -790,7 +790,7 @@ export default function BookingFlow() {
           >
             {/* Drag handle — mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div style={{ width: 36, height: 4, borderRadius: 99, backgroundColor: 'rgba(244,241,234,0.25)' }} />
+              <div style={{ width: 36, height: 4, borderRadius: 99, backgroundColor: 'var(--cream-faint)' }} />
             </div>
 
             <ModalContent />

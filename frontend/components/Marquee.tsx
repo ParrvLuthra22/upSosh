@@ -37,10 +37,10 @@ export interface MarqueeProps {
 // ─── Per-item colour ──────────────────────────────────────────────────────────
 
 const ACCENT_COLORS: Record<NonNullable<MarqueeProps['accent']>, string[]> = {
-  cream:  ['#F4F1EA'],
-  coral:  ['#FF6F61'],
+  cream:  ['var(--cream)'],
+  coral:  ['var(--coral)'],
   // lime accent alternates lime → cream on each item
-  lime:   ['#D4FF3F', '#F4F1EA'],
+  lime:   ['var(--lime)', 'var(--cream)'],
 };
 
 function itemColor(accent: NonNullable<MarqueeProps['accent']>, index: number): string {

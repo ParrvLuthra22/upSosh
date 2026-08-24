@@ -67,7 +67,7 @@ export default function ConfirmationPage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-lime"></div>
             </div>
         );
     }
@@ -76,7 +76,7 @@ export default function ConfirmationPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
                 <h1 className="text-2xl font-bold mb-4">Booking not found</h1>
-                <button onClick={() => router.push('/booking')} className="text-primary hover:underline">
+                <button onClick={() => router.push('/booking')} className="text-lime hover:underline">
                     Return to Booking
                 </button>
             </div>
@@ -102,11 +102,11 @@ export default function ConfirmationPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-heading font-bold text-text-primary">
+                    <h1 className="text-4xl font-display font-bold text-cream">
                         {booking.status === 'confirmed' ? 'Booking Confirmed!' : 'Booking Received!'}
                     </h1>
-                    <p className="text-text-secondary text-lg">
-                        Your order <span className="font-mono font-bold text-primary">#{booking.id.slice(-8)}</span> has been successfully {booking.status === 'confirmed' ? 'confirmed' : 'received'}.
+                    <p className="text-cream-dim text-lg">
+                        Your order <span className="font-mono font-bold text-lime">#{booking.id.slice(-8)}</span> has been successfully {booking.status === 'confirmed' ? 'confirmed' : 'received'}.
                     </p>
                 </div>
 
@@ -119,24 +119,24 @@ export default function ConfirmationPage() {
                             </svg>
                             <h3 className="text-lg font-bold">Payment Under Review</h3>
                         </div>
-                        <p className="text-text-secondary">
+                        <p className="text-cream-dim">
                             Our team is reviewing your payment proof. This usually takes <span className="font-bold text-white">6-8 hours</span>.
                         </p>
-                        <p className="text-text-muted text-sm">
+                        <p className="text-cream-faint text-sm">
                             Once approved, your tickets will be available in <span className="font-semibold">My Profile → My Tickets</span>
                         </p>
                     </div>
                 )}
 
                 <div className="bg-surface/50 backdrop-blur-md border border-white/10 rounded-3xl p-8 space-y-6">
-                    <h2 className="text-xl font-bold text-text-primary">Your Events</h2>
+                    <h2 className="text-xl font-bold text-cream">Your Events</h2>
                     <div className="space-y-4">
                         {booking.items.map((item: any) => (
-                            <div key={item.id} className="flex items-center gap-4 bg-surface-highlight rounded-xl p-4 text-left">
+                            <div key={item.id} className="flex items-center gap-4 bg-surface-2 rounded-xl p-4 text-left">
                                 <img src={item.image} alt={item.title} className="w-16 h-16 rounded-lg object-cover" />
                                 <div className="flex-1">
-                                    <h3 className="font-bold text-text-primary">{item.title}</h3>
-                                    <p className="text-sm text-text-muted">{item.date} • {item.time}</p>
+                                    <h3 className="font-bold text-cream">{item.title}</h3>
+                                    <p className="text-sm text-cream-faint">{item.date} • {item.time}</p>
                                 </div>
                                 {booking.status === 'confirmed' ? (
                                     <button
@@ -158,21 +158,21 @@ export default function ConfirmationPage() {
                 <div className="flex justify-center gap-4">
                     <button
                         onClick={() => router.push('/booking')}
-                        className="px-8 py-3 rounded-xl border border-white/10 hover:bg-surface-highlight transition-colors text-text-primary"
+                        className="px-8 py-3 rounded-xl border border-white/10 hover:bg-surface-2 transition-colors text-cream"
                     >
                         Book Another
                     </button>
                     {booking.status === 'confirmed' && (
                         <button
                             onClick={() => setShowTicket(true)}
-                            className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+                            className="px-8 py-3 rounded-xl bg-lime text-void font-bold shadow-lg shadow-lime/20 hover:opacity-90 transition-opacity"
                         >
                             View All Tickets
                         </button>
                     )}
                     <button
                         onClick={() => router.push('/profile')}
-                        className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+                        className="px-8 py-3 rounded-xl bg-lime text-void font-bold shadow-lg shadow-lime/20 hover:opacity-90 transition-opacity"
                     >
                         Go to Profile
                     </button>

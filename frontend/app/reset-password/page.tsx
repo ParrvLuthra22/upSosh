@@ -67,13 +67,13 @@ function ResetPasswordContent() {
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <Link href="/" className="text-3xl font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary inline-block mb-6">
+                    <Link href="/" className="text-3xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-lime to-lime-dim inline-block mb-6">
                         UpSosh
                     </Link>
-                    <h2 className="text-3xl font-bold text-text-primary mb-2">
+                    <h2 className="text-3xl font-bold text-cream mb-2">
                         Reset your password
                     </h2>
-                    <p className="text-text-secondary">
+                    <p className="text-cream-dim">
                         Enter your new password below
                     </p>
                 </div>
@@ -87,11 +87,11 @@ function ResetPasswordContent() {
                                 </svg>
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-text-primary mb-2">Password reset successful!</h3>
-                                <p className="text-text-secondary text-sm mb-6">
+                                <h3 className="text-xl font-bold text-cream mb-2">Password reset successful!</h3>
+                                <p className="text-cream-dim text-sm mb-6">
                                     {message}
                                 </p>
-                                <p className="text-text-secondary text-sm">
+                                <p className="text-cream-dim text-sm">
                                     Redirecting to login...
                                 </p>
                             </div>
@@ -105,15 +105,15 @@ function ResetPasswordContent() {
                             )}
 
                             {email && (
-                                <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
-                                    <p className="text-text-secondary text-sm">
-                                        Resetting password for: <strong className="text-text-primary">{email}</strong>
+                                <div className="bg-lime/10 border border-lime/20 rounded-xl p-4">
+                                    <p className="text-cream-dim text-sm">
+                                        Resetting password for: <strong className="text-cream">{email}</strong>
                                     </p>
                                 </div>
                             )}
 
                             <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-2">
+                                <label htmlFor="password" className="block text-sm font-medium text-cream-dim mb-2">
                                     New Password
                                 </label>
                                 <div className="relative">
@@ -125,14 +125,14 @@ function ResetPasswordContent() {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 pr-12 text-text-primary focus:outline-none focus:border-primary transition-colors"
+                                        className="w-full bg-surface-2 border border-white/5 rounded-xl px-4 py-3 pr-12 text-cream focus:outline-none focus:border-lime transition-colors"
                                         placeholder="Enter new password"
                                         minLength={8}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-dim hover:text-cream"
                                     >
                                         {showPassword ? (
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,11 +146,11 @@ function ResetPasswordContent() {
                                         )}
                                     </button>
                                 </div>
-                                <p className="text-xs text-text-muted mt-1">Must be at least 8 characters</p>
+                                <p className="text-xs text-cream-faint mt-1">Must be at least 8 characters</p>
                             </div>
 
                             <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-secondary mb-2">
+                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-cream-dim mb-2">
                                     Confirm New Password
                                 </label>
                                 <input
@@ -161,7 +161,7 @@ function ResetPasswordContent() {
                                     required
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full bg-surface-highlight border border-white/5 rounded-xl px-4 py-3 text-text-primary focus:outline-none focus:border-primary transition-colors"
+                                    className="w-full bg-surface-2 border border-white/5 rounded-xl px-4 py-3 text-cream focus:outline-none focus:border-lime transition-colors"
                                     placeholder="Confirm new password"
                                     minLength={8}
                                 />
@@ -170,7 +170,7 @@ function ResetPasswordContent() {
                             <button
                                 type="submit"
                                 disabled={status === 'resetting'}
-                                className="w-full py-3 px-4 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-3 px-4 bg-lime text-void rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {status === 'resetting' ? 'Resetting password...' : 'Reset password'}
                             </button>
@@ -178,7 +178,7 @@ function ResetPasswordContent() {
                             <div className="text-center">
                                 <Link
                                     href="/signin"
-                                    className="text-sm text-primary hover:text-primary/90 font-medium"
+                                    className="text-sm text-lime hover:text-lime/90 font-medium"
                                 >
                                     ← Back to login
                                 </Link>
@@ -187,9 +187,9 @@ function ResetPasswordContent() {
                     )}
                 </div>
 
-                <p className="text-center text-sm text-text-muted mt-6">
+                <p className="text-center text-sm text-cream-faint mt-6">
                     Remember your password?{' '}
-                    <Link href="/signin" className="text-primary hover:text-primary/90 font-medium">
+                    <Link href="/signin" className="text-lime hover:text-lime/90 font-medium">
                         Sign in
                     </Link>
                 </p>
@@ -203,8 +203,8 @@ export default function ResetPasswordPage() {
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Loading...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime mx-auto mb-4"></div>
+                    <p className="text-cream-dim">Loading...</p>
                 </div>
             </div>
         }>

@@ -47,9 +47,9 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
                 className="relative w-full max-w-md bg-white text-black rounded-3xl shadow-2xl overflow-hidden transform perspective-1000"
             >
                 
-                <div className="bg-primary p-6 text-white text-center relative overflow-hidden">
+                <div className="bg-lime p-6 text-void text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-                    <h2 className="text-2xl font-heading font-bold relative z-10">Digital Ticket</h2>
+                    <h2 className="text-2xl font-display font-bold relative z-10">Digital Ticket</h2>
                     <p className="text-sm opacity-80 relative z-10">Scan at entry</p>
                 </div>
 

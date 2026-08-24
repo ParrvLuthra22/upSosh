@@ -68,7 +68,7 @@ export default function IntroScreen() {
                 fontStyle: 'italic',
                 fontSize: 'clamp(40px, 8vw, 72px)',
                 fontWeight: 400,
-                color: '#F4F1EA',
+                color: 'var(--cream)',
                 letterSpacing: '-0.04em',
                 lineHeight: 1,
               }}
@@ -78,7 +78,7 @@ export default function IntroScreen() {
 
             {/* Animated underline */}
             <motion.div
-              style={{ height: 2, backgroundColor: '#D4FF3F', borderRadius: 999 }}
+              style={{ height: 2, backgroundColor: 'var(--lime)', borderRadius: 999 }}
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.55 }}

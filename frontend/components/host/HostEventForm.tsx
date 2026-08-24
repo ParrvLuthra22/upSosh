@@ -147,31 +147,31 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
 
     return (
         <div className="glass-panel p-8 rounded-3xl">
-            <h2 className="text-3xl font-heading font-bold mb-6 text-text-primary">
+            <h2 className="text-3xl font-display font-bold mb-6 text-cream">
                 {eventToEdit ? 'Edit Your Event' : 'Create Your Event'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Event Title</label>
+                        <label className="text-sm font-medium text-cream-dim">Event Title</label>
                         <input
                             type="text"
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                             placeholder="e.g., Summer Rooftop Party"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Event Type</label>
+                        <label className="text-sm font-medium text-cream-dim">Event Type</label>
                         <select
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                         >
                             <option value="formal">Formal</option>
                             <option value="informal">Informal</option>
@@ -182,25 +182,25 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Date</label>
+                        <label className="text-sm font-medium text-cream-dim">Date</label>
                         <input
                             type="date"
                             name="date"
                             value={formData.date}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Time</label>
+                        <label className="text-sm font-medium text-cream-dim">Time</label>
                         <input
                             type="time"
                             name="time"
                             value={formData.time}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                         />
                     </div>
                 </div>
@@ -208,19 +208,19 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Venue</label>
+                        <label className="text-sm font-medium text-cream-dim">Venue</label>
                         <input
                             type="text"
                             name="venue"
                             value={formData.venue}
                             onChange={handleChange}
                             required
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                             placeholder="e.g., Grand Hotel Ballroom"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-text-secondary">Price (₹)</label>
+                        <label className="text-sm font-medium text-cream-dim">Price (₹)</label>
                         <input
                             type="number"
                             name="price"
@@ -228,31 +228,31 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                             onChange={handleChange}
                             required
                             min="0"
-                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                         />
                     </div>
                 </div>
 
                 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-secondary">Description</label>
+                    <label className="text-sm font-medium text-cream-dim">Description</label>
                     <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
                         required
                         rows={4}
-                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                         placeholder="Tell guests what to expect..."
                     />
                 </div>
 
                 
                 <div className="space-y-4">
-                    <label className="text-sm font-medium text-text-secondary">Event Image</label>
+                    <label className="text-sm font-medium text-cream-dim">Event Image</label>
                     <div className="flex flex-col gap-4">
                         
-                        <div className="relative w-full h-64 rounded-xl overflow-hidden bg-surface-highlight">
+                        <div className="relative w-full h-64 rounded-xl overflow-hidden bg-surface-2">
                             <img
                                 src={imagePreview}
                                 alt="Event preview"
@@ -263,7 +263,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                         
                         <div className="flex gap-4">
                             <label className="flex-1 cursor-pointer">
-                                <div className="w-full py-3 px-4 bg-surface-highlight text-text-primary font-medium rounded-xl hover:bg-primary hover:text-white transition-all text-center">
+                                <div className="w-full py-3 px-4 bg-surface-2 text-cream font-medium rounded-xl hover:bg-lime hover:text-white transition-all text-center">
                                     📸 Upload Image
                                 </div>
                                 <input
@@ -280,10 +280,10 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                                     setFormData((prev) => ({ ...prev, image: e.target.value }));
                                     setImagePreview(e.target.value);
                                 }}
-                                className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                                className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                             />
                         </div>
-                        <p className="text-xs text-text-secondary">
+                        <p className="text-xs text-cream-dim">
                             Upload an image (max 5MB) or paste an image URL
                         </p>
                     </div>
@@ -291,26 +291,26 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
 
                 
                 <div className="space-y-4">
-                    <label className="text-sm font-medium text-text-secondary">Available Menu</label>
+                    <label className="text-sm font-medium text-cream-dim">Available Menu</label>
                     <div className="flex gap-2">
                         <input
                             type="text"
                             value={menuItem}
                             onChange={(e) => setMenuItem(e.target.value)}
-                            className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary"
+                            className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                             placeholder="Add menu item (e.g., Vegan Sliders)"
                         />
                         <button
                             type="button"
                             onClick={addMenuItem}
-                            className="px-4 py-2 bg-secondary text-white rounded-xl hover:opacity-90 transition-opacity"
+                            className="px-4 py-2 bg-lime-dim text-void rounded-xl hover:opacity-90 transition-opacity"
                         >
                             Add
                         </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {formData.menu.map((item, index) => (
-                            <span key={index} className="px-3 py-1 bg-surface-highlight rounded-full text-sm text-text-primary flex items-center gap-2">
+                            <span key={index} className="px-3 py-1 bg-surface-2 rounded-full text-sm text-cream flex items-center gap-2">
                                 {item}
                                 <button
                                     type="button"
@@ -327,7 +327,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-primary/25 disabled:opacity-50"
+                    className="w-full py-4 bg-lime text-void font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-lime/25 disabled:opacity-50"
                 >
                     {isSubmitting
                         ? (eventToEdit ? 'Updating Event...' : 'Creating Event...')

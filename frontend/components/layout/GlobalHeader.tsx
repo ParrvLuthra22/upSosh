@@ -309,7 +309,7 @@ function MobileMenu({
           transition={{ duration: 0.25, ease: EASE_VERCEL }}
         >
           {/* Top bar — close X right, wordmark center */}
-          <div className="relative flex items-center justify-center px-6 h-16 border-b border-[rgba(244,241,234,0.08)]">
+          <div className="relative flex items-center justify-center px-6 h-16 border-b border-border">
             <Link href="/" onClick={onClose}
               className="font-display italic text-[20px] text-cream tracking-tight">
               UpSosh
@@ -362,7 +362,7 @@ function MobileMenu({
 
           {/* Bottom CTA */}
           <motion.div
-            className="px-8 pb-10 pt-6 border-t border-[rgba(244,241,234,0.08)] flex flex-col items-center gap-3"
+            className="px-8 pb-10 pt-6 border-t border-border flex flex-col items-center gap-3"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.32, duration: 0.4, ease: EASE_VERCEL }}

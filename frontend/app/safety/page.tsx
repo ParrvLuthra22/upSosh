@@ -14,7 +14,7 @@ export default function SafetyPage() {
 
   return (
     <main className="pt-24">
-      <Section className="bg-gradient-to-br from-light-blue to-white dark:from-dark-navy to-dark-black">
+      <Section>
         <Container>
           <motion.div
             className="max-w-6xl mx-auto"
@@ -23,16 +23,16 @@ export default function SafetyPage() {
           >
             
             <div className="mb-12">
-              <div className="inline-block px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-sm font-semibold mb-4">
+              <div className="inline-block px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-semibold mb-4">
                 Critical Safety Guidelines
               </div>
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
                 <span className="gradient-text">Event Safety Policy</span>
               </h1>
-              <p className="text-xl text-light-secondary dark:text-dark-slate mb-6">
+              <p className="text-xl text-cream-dim mb-6">
                 Protecting Users and Hosts at All Events Including Informal Gatherings
               </p>
-              <div className="flex flex-wrap gap-4 text-sm text-light-secondary dark:text-dark-slate">
+              <div className="flex flex-wrap gap-4 text-sm text-cream-dim">
                 <span><strong>Last Updated:</strong> 19th December 2025</span>
                 <span><strong>Effective From:</strong> 19th December 2025</span>
                 <span><strong>Applies To:</strong> All Events (Formal & Informal)</span>
@@ -53,8 +53,8 @@ export default function SafetyPage() {
 
             
             <div className="glass-card mb-12">
-              <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">Safety Categories Overview</h2>
-              <p className="text-light-secondary dark:text-dark-slate mb-8">
+              <h2 className="text-3xl font-bold text-cream mb-6">Safety Categories Overview</h2>
+              <p className="text-cream-dim mb-8">
                 upSosh enforces safety standards across six critical categories:
               </p>
               
@@ -72,18 +72,18 @@ export default function SafetyPage() {
                     className="glass-card text-center p-6 hover:scale-105 transition-transform cursor-pointer"
                     whileHover={{ y: -5 }}
                   >
-                    <h3 className="text-sm font-semibold text-light-text dark:text-dark-text">{category.title}</h3>
+                    <h3 className="text-sm font-semibold text-cream">{category.title}</h3>
                   </motion.div>
                 ))}
               </div>
             </div>
 
             
-            <div className="space-y-8 text-light-secondary dark:text-dark-slate">
+            <div className="space-y-8 text-cream-dim">
               
               
               <section className="glass-card" id="purpose">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">1. Purpose of This Policy</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">1. Purpose of This Policy</h2>
                 <p className="mb-4">This Policy exists to:</p>
                 <ul className="space-y-2 ml-6">
                   <li className="flex items-start">
@@ -108,15 +108,15 @@ export default function SafetyPage() {
                   </li>
                 </ul>
                 
-                <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
-                  <strong className="text-blue-700 dark:text-blue-400">Important:</strong>
+                <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                  <strong className="text-blue-700">Important:</strong>
                   <span className="ml-2">upSosh is a technology platform — NOT an event organizer — but safety rules must still be followed.</span>
                 </div>
               </section>
 
               
               <section className="glass-card" id="general-safety">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">2. General Safety Guidelines</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">2. General Safety Guidelines</h2>
                 <p className="mb-4">All events must:</p>
                 <ul className="space-y-2 ml-6">
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Comply with all applicable Indian laws</li>
@@ -128,15 +128,15 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Have responsible alcohol service (if applicable)</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700 dark:text-yellow-400">Violation may result in:</strong>
+                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                  <strong className="text-yellow-700">Violation may result in:</strong>
                   <span className="ml-2">Event removal or account suspension.</span>
                 </div>
               </section>
 
               
               <section className="glass-card" id="informal-safety">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">3. Informal Event Safety Rules</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">3. Informal Event Safety Rules</h2>
                 <p className="mb-4"><strong>Informal events carry higher risks due to:</strong></p>
                 <ul className="space-y-2 ml-6 mb-6">
                   <li className="flex items-start"><span className="mr-3">•</span> Private/unknown venues</li>
@@ -151,7 +151,7 @@ export default function SafetyPage() {
                   <p>The following rules are <strong>MANDATORY</strong> for all informal events. Non-compliance will result in immediate action.</p>
                 </div>
 
-                <h3 className="text-2xl font-bold text-light-text dark:text-dark-text mb-4 mt-8">3.1 Host Responsibilities (Critical)</h3>
+                <h3 className="text-2xl font-bold text-cream mb-4 mt-8">3.1 Host Responsibilities (Critical)</h3>
                 <p className="mb-6"><strong>Hosts MUST comply with the following:</strong></p>
                 
                 <div className="grid md:grid-cols-2 gap-6">
@@ -212,8 +212,8 @@ export default function SafetyPage() {
                       ]
                     }
                   ].map((section, index) => (
-                    <div key={index} className="glass-card border-2 border-light-border dark:border-dark-border hover:border-primary transition-colors">
-                      <h4 className="text-lg font-bold text-light-text dark:text-dark-text mb-3">{section.title}</h4>
+                    <div key={index} className="glass-card border-2 border-light-border hover:border-lime transition-colors">
+                      <h4 className="text-lg font-bold text-cream mb-3">{section.title}</h4>
                       <ul className="space-y-2">
                         {section.items.map((item, idx) => (
                           <li key={idx} className="flex items-start text-sm">
@@ -226,7 +226,7 @@ export default function SafetyPage() {
                   ))}
                 </div>
 
-                <h3 className="text-2xl font-bold text-light-text dark:text-dark-text mb-4 mt-8">3.2 User Responsibilities</h3>
+                <h3 className="text-2xl font-bold text-cream mb-4 mt-8">3.2 User Responsibilities</h3>
                 <p className="mb-4"><strong>Users MUST:</strong></p>
                 <ul className="space-y-2 ml-6">
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Follow host instructions</li>
@@ -239,15 +239,15 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Not share ticket QR codes with others</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700 dark:text-yellow-400">Important:</strong>
+                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                  <strong className="text-yellow-700">Important:</strong>
                   <span className="ml-2">If a User violates rules, the Host may deny entry without refund.</span>
                 </div>
               </section>
 
               
               <section className="glass-card" id="prohibited">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">4. Prohibited Behaviour</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">4. Prohibited Behaviour</h2>
                 <p className="mb-6">The following actions are <strong>strictly NOT allowed</strong>:</p>
                 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -266,9 +266,9 @@ export default function SafetyPage() {
                     'Filming people without permission',
                     'Sharing host\'s address publicly'
                   ].map((item, index) => (
-                    <div key={index} className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
+                    <div key={index} className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
                       <span className="text-2xl text-red-500 font-bold">X</span>
-                      <span className="text-sm font-semibold text-red-700 dark:text-red-400">{item}</span>
+                      <span className="text-sm font-semibold text-red-700">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -281,7 +281,7 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="privacy">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">5. Address Privacy & Safety</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">5. Address Privacy & Safety</h2>
                 <p className="mb-4">For informal events:</p>
                 <ul className="space-y-2 ml-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> The exact address is shown <strong>only to confirmed attendees</strong></li>
@@ -290,22 +290,22 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Screenshots of chat/address are strictly prohibited</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700 dark:text-yellow-400">Immediate Suspension:</strong>
+                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                  <strong className="text-yellow-700">Immediate Suspension:</strong>
                   <span className="ml-2">Sharing venue details without permission leads to immediate suspension.</span>
                 </div>
               </section>
 
               
               <section className="glass-card" id="emergency">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">6. Emergency Protocols</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">6. Emergency Protocols</h2>
                 
-                <div className="mb-6 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 rounded">
-                  <strong className="text-green-700 dark:text-green-400">Hosts must have:</strong>
+                <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <strong className="text-green-700">Hosts must have:</strong>
                   <span className="ml-2">A basic emergency plan ready before the event begins.</span>
                 </div>
                 
-                <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">Emergency Plan Requirements:</h3>
+                <h3 className="text-xl font-bold text-cream mb-3">Emergency Plan Requirements:</h3>
                 <ul className="space-y-2 ml-6 mb-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> <strong>Exit routes</strong> - clearly marked and accessible</li>
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> <strong>Fire extinguisher access</strong> - know its location</li>
@@ -313,7 +313,7 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> <strong>Local police/ambulance numbers</strong> - programmed in phone</li>
                 </ul>
                 
-                <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">Immediate Action Required if Emergency Occurs:</h3>
+                <h3 className="text-xl font-bold text-cream mb-3">Immediate Action Required if Emergency Occurs:</h3>
                 <ol className="space-y-2 ml-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">1.</span> <strong>Stop the event if necessary</strong></li>
                   <li className="flex items-start"><span className="mr-3 font-bold">2.</span> <strong>Provide assistance to injured users</strong></li>
@@ -347,10 +347,10 @@ export default function SafetyPage() {
               
               <section className="glass-card" id="checklist">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                  <h2 className="text-3xl font-bold text-light-text dark:text-dark-text">7. Pre-Event Safety Checklist</h2>
+                  <h2 className="text-3xl font-bold text-cream">7. Pre-Event Safety Checklist</h2>
                   <button 
                     onClick={() => window.print()}
-                    className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2"
+                    className="px-6 py-3 bg-lime text-void rounded-lg font-semibold hover:bg-lime/90 transition-colors flex items-center gap-2"
                   >
                     Print Checklist
                   </button>
@@ -419,19 +419,19 @@ export default function SafetyPage() {
                       ]
                     }
                   ].map((group, groupIndex) => (
-                    <div key={groupIndex} className="border-l-4 border-primary pl-6">
-                      <h3 className="text-xl font-bold text-primary mb-4">{group.category}</h3>
+                    <div key={groupIndex} className="border-l-4 border-lime pl-6">
+                      <h3 className="text-xl font-bold text-lime mb-4">{group.category}</h3>
                       <div className="space-y-3">
                         {group.items.map((item, itemIndex) => {
                           const checkId = `check-${groupIndex}-${itemIndex}`;
                           return (
-                            <div key={itemIndex} className="flex items-start gap-3 p-2 rounded hover:bg-light-blue/30 dark:hover:bg-dark-navy/30 transition-colors">
+                            <div key={itemIndex} className="flex items-start gap-3 p-2 rounded hover:bg-light-blue/30 transition-colors">
                               <input
                                 type="checkbox"
                                 id={checkId}
                                 checked={checkedItems[checkId] || false}
                                 onChange={() => toggleCheckbox(checkId)}
-                                className="mt-1 w-5 h-5 cursor-pointer accent-primary"
+                                className="mt-1 w-5 h-5 cursor-pointer accent-lime"
                               />
                               <label htmlFor={checkId} className="cursor-pointer flex-1">
                                 {item}
@@ -447,9 +447,9 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="liability">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">8. Liability & Risk Acknowledgment</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">8. Liability & Risk Acknowledgment</h2>
                 
-                <h3 className="text-2xl font-bold text-light-text dark:text-dark-text mb-3 mt-6">8.1 User Assumption of Risk</h3>
+                <h3 className="text-2xl font-bold text-cream mb-3 mt-6">8.1 User Assumption of Risk</h3>
                 <p className="mb-4">Users understand that attending events — especially informal ones — involves:</p>
                 <ul className="space-y-2 ml-6 mb-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Crowd-related risks</li>
@@ -459,12 +459,12 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Misconduct by other attendees</li>
                 </ul>
                 
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded mb-6">
-                  <strong className="text-yellow-700 dark:text-yellow-400">Acknowledgment:</strong>
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded mb-6">
+                  <strong className="text-yellow-700">Acknowledgment:</strong>
                   <span className="ml-2">Users attend at their own discretion and risk.</span>
                 </div>
                 
-                <h3 className="text-2xl font-bold text-light-text dark:text-dark-text mb-3">8.2 Host Liability</h3>
+                <h3 className="text-2xl font-bold text-cream mb-3">8.2 Host Liability</h3>
                 <p className="mb-4"><strong>Hosts are fully responsible for:</strong></p>
                 <ul className="space-y-2 ml-6 mb-6">
                   <li className="flex items-start"><span className="mr-3">•</span> Venue safety</li>
@@ -490,7 +490,7 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="reporting">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">9. Incident Reporting</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">9. Incident Reporting</h2>
                 <p className="mb-4"><strong>Users may report:</strong></p>
                 <ul className="grid md:grid-cols-2 gap-3 mb-8">
                   {[
@@ -510,7 +510,7 @@ export default function SafetyPage() {
                   ))}
                 </ul>
 
-                <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-6">Incident Reporting Flow</h3>
+                <h3 className="text-xl font-bold text-cream mb-6">Incident Reporting Flow</h3>
                 <div className="grid md:grid-cols-4 gap-6 mb-6">
                   {[
                     { step: '1', title: 'Report', desc: 'Submit incident via app or email' },
@@ -521,26 +521,26 @@ export default function SafetyPage() {
                     <div key={index} className="relative">
                       <div className="glass-card text-center p-6">
                         <div className="relative inline-block mb-4">
-                          <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-4xl font-bold text-white">
+                          <div className="w-20 h-20 bg-gradient-to-br from-lime to-lime/70 rounded-full flex items-center justify-center text-4xl font-bold text-void">
                             {item.step}
                           </div>
                         </div>
-                        <h4 className="font-bold text-light-text dark:text-dark-text mb-2">{item.title}</h4>
+                        <h4 className="font-bold text-cream mb-2">{item.title}</h4>
                         <p className="text-sm">{item.desc}</p>
                       </div>
                       {index < 3 && (
-                        <div className="hidden md:block absolute top-1/2 -right-3 text-2xl text-light-border dark:text-dark-border">→</div>
+                        <div className="hidden md:block absolute top-1/2 -right-3 text-2xl text-light-border">→</div>
                       )}
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded mb-4">
-                  <strong className="text-blue-700 dark:text-blue-400">Response Time:</strong>
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
+                  <strong className="text-blue-700">Response Time:</strong>
                   <span className="ml-2">Reports are reviewed within 24–48 hours.</span>
                 </div>
 
-                <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">Possible Actions by upSosh:</h3>
+                <h3 className="text-xl font-bold text-cream mb-3">Possible Actions by upSosh:</h3>
                 <ul className="space-y-2 ml-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Suspend the Host</li>
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Suspend Users</li>
@@ -552,15 +552,15 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="role">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">10. upSosh's Role & Disclaimer</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">10. upSosh's Role & Disclaimer</h2>
                 
-                <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 rounded mb-6">
-                  <strong className="text-green-700 dark:text-green-400">upSosh is:</strong>
+                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
+                  <strong className="text-green-700">upSosh is:</strong>
                   <span className="ml-2">A technology platform — NOT an event organizer.</span>
                 </div>
                 
                 <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-xl">
-                  <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">upSosh is NOT Responsible For:</h3>
+                  <h3 className="text-xl font-bold text-cream mb-3">upSosh is NOT Responsible For:</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">X</span> Venue safety</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">X</span> Property conditions</li>
@@ -574,7 +574,7 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="violations">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-4">11. Policy Violations</h2>
+                <h2 className="text-3xl font-bold text-cream mb-4">11. Policy Violations</h2>
                 <p className="mb-4"><strong>If this Policy is violated, upSosh may:</strong></p>
                 <ul className="space-y-2 ml-6 mb-6">
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Remove events</li>
@@ -592,21 +592,21 @@ export default function SafetyPage() {
 
               
               <section className="glass-card" id="contact">
-                <h2 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">12. Contact & Support</h2>
+                <h2 className="text-3xl font-bold text-cream mb-6">12. Contact & Support</h2>
                 <p className="mb-6">For safety-related concerns, please contact:</p>
                 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="glass-card border-2 border-primary">
-                    <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">upSosh Safety Team</h3>
-                    <p className="mb-2"><strong>Email:</strong> <a href="mailto:safety@upsosh.app" className="text-primary hover:underline">safety@upsosh.app</a></p>
-                    <p className="mb-2"><strong>Phone:</strong> <a href="tel:+918076524225" className="text-primary hover:underline">+91 8076524225</a></p>
+                  <div className="glass-card border-2 border-lime">
+                    <h3 className="text-xl font-bold text-cream mb-3">upSosh Safety Team</h3>
+                    <p className="mb-2"><strong>Email:</strong> <a href="mailto:safety@upsosh.app" className="text-lime hover:underline">safety@upsosh.app</a></p>
+                    <p className="mb-2"><strong>Phone:</strong> <a href="tel:+918076524225" className="text-lime hover:underline">+91 8076524225</a></p>
                     <p><strong>Response Time:</strong> 24-48 hours</p>
                   </div>
                   
-                  <div className="glass-card border-2 border-primary">
-                    <h3 className="text-xl font-bold text-light-text dark:text-dark-text mb-3">Grievance Officer (DPDP Act)</h3>
+                  <div className="glass-card border-2 border-lime">
+                    <h3 className="text-xl font-bold text-cream mb-3">Grievance Officer (DPDP Act)</h3>
                     <p className="mb-2"><strong>Name:</strong> [To be appointed]</p>
-                    <p className="mb-2"><strong>Email:</strong> <a href="mailto:grievance@upsosh.app" className="text-primary hover:underline">grievance@upsosh.app</a></p>
+                    <p className="mb-2"><strong>Email:</strong> <a href="mailto:grievance@upsosh.app" className="text-lime hover:underline">grievance@upsosh.app</a></p>
                     <p><strong>Response Time:</strong> 7 days</p>
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export default function SafetyPage() {
                 >
                   Report a Safety Issue
                 </a>
-                <p className="mt-4 text-light-secondary dark:text-dark-slate">
+                <p className="mt-4 text-cream-dim">
                   See something unsafe? Let us know immediately.
                 </p>
               </div>

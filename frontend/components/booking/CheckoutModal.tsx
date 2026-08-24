@@ -329,7 +329,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={status === 'uploading' ? undefined : onClose} />
             <div ref={contentRef} className="relative w-full max-w-2xl bg-black border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black sticky top-0 z-10">
-                    <h2 className="text-2xl font-heading font-bold text-white">
+                    <h2 className="text-2xl font-display font-bold text-white">
                         {status === 'success' ? '✅ Booking Submitted!' : status === 'payment-details' ? '💳 Payment Details' : 'Complete Your Purchase'}
                     </h2>
                     {status !== 'uploading' && <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
@@ -337,23 +337,23 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 <div className="p-8">
                     {status === 'success' ? (
                         <div className="flex flex-col items-center justify-center text-center space-y-6">
-                            <div className="w-24 h-24 bg-[#D4A017]/20 text-[#D4A017] rounded-full flex items-center justify-center">
+                            <div className="w-24 h-24 bg-lime/20 text-lime rounded-full flex items-center justify-center">
                                 <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                             </div>
                             <h3 className="text-3xl font-bold text-white">Booking Submitted!</h3>
-                            <div className="bg-[#D4A017]/10 border border-[#D4A017]/20 rounded-xl p-4 w-full">
-                                <p className="text-[#D4A017] font-medium">⏳ Pending Verification</p>
+                            <div className="bg-lime/10 border border-lime/20 rounded-xl p-4 w-full">
+                                <p className="text-lime font-medium">⏳ Pending Verification</p>
                                 <p className="text-white/60 text-sm mt-2">Your booking will be confirmed once we verify your payment. You'll receive an email confirmation within 24 hours.</p>
                             </div>
                             <div className="bg-white/10 rounded-xl p-6 w-full">
                                 <p className="text-sm text-white/50 mb-2">Booking Reference</p>
-                                <p className="text-2xl font-mono font-bold text-[#D4A017]">{bookingDetails?.id}</p>
+                                <p className="text-2xl font-mono font-bold text-lime">{bookingDetails?.id}</p>
                             </div>
-                            <button onClick={onClose} className="w-full py-3 px-6 rounded-xl bg-[#D4A017] text-black font-bold hover:opacity-90">Done</button>
+                            <button onClick={onClose} className="w-full py-3 px-6 rounded-xl bg-lime text-void font-bold hover:opacity-90">Done</button>
                         </div>
                     ) : status === 'uploading' ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-                            <div className="w-16 h-16 border-4 border-[#D4A017] border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-16 h-16 border-4 border-lime border-t-transparent rounded-full animate-spin"></div>
                             <h3 className="text-2xl font-bold text-white">Submitting Booking...</h3>
                             <p className="text-white/60">Please wait while we process your request</p>
                         </div>
@@ -361,8 +361,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                         <div className="space-y-6">
                             {errorMessage && <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-white/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
                             
-                            <div className="bg-[#D4A017]/10 border border-[#D4A017]/20 rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-[#D4A017] flex items-center gap-2">
+                            <div className="bg-lime/10 border border-lime/20 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-lime flex items-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     How to Pay
                                 </h3>
@@ -389,8 +389,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 <div className="space-y-3">
                                     <div className="bg-black border border-white/10 rounded-lg p-4">
                                         <p className="text-sm text-white/50 mb-1">UPI ID</p>
-                                        <p className="text-xl font-mono font-bold text-[#D4A017]">upsosh@ptyes</p>
-                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-[#D4A017] hover:opacity-80 mt-2">Copy UPI ID</button>
+                                        <p className="text-xl font-mono font-bold text-lime">upsosh@ptyes</p>
+                                        <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-lime hover:opacity-80 mt-2">Copy UPI ID</button>
                                     </div>
                                     
                                     <div className="bg-black border border-white/10 rounded-lg p-4">
@@ -403,7 +403,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                         </div>
                                         <button 
                                             onClick={() => navigator.clipboard.writeText('50100828764622')} 
-                                            className="text-sm text-[#D4A017] hover:opacity-80 mt-2"
+                                            className="text-sm text-lime hover:opacity-80 mt-2"
                                         >
                                             Copy Account Number
                                         </button>
@@ -417,11 +417,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 
                                 <label className="block">
                                     <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                                    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-[#D4A017]/50 cursor-pointer transition-colors">
+                                    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-lime/50 cursor-pointer transition-colors">
                                         {previewUrl ? (
                                             <div className="space-y-3">
                                                 <img src={previewUrl} alt="Payment proof" className="max-h-48 mx-auto rounded-lg" />
-                                                <p className="text-sm text-[#D4A017]">✓ Image uploaded</p>
+                                                <p className="text-sm text-lime">✓ Image uploaded</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
@@ -436,7 +436,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
                             <div className="flex gap-3">
                                 <button onClick={() => setStatus('idle')} className="flex-1 py-3 px-6 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20">Back</button>
-                                <button onClick={handleSubmitManualPayment} disabled={!paymentProof} className="flex-1 py-3 px-6 rounded-xl bg-[#D4A017] text-black font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">Submit Booking</button>
+                                <button onClick={handleSubmitManualPayment} disabled={!paymentProof} className="flex-1 py-3 px-6 rounded-xl bg-lime text-void font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">Submit Booking</button>
                             </div>
                         </div>
                     ) : (
@@ -459,7 +459,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 <div className="border-t border-white/10 pt-4 mt-4">
                                     <div className="flex justify-between items-center text-xl font-bold">
                                         <span className="text-white">Total</span>
-                                        <span className="text-[#D4A017]">₹{total.toFixed(2)}</span>
+                                        <span className="text-lime">₹{total.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -471,7 +471,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 
                                 <button 
                                     onClick={handleDodoPayment} 
-                                    className="w-full py-4 px-6 rounded-xl bg-[#D4A017] text-black font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
+                                    className="w-full py-4 px-6 rounded-xl bg-lime text-void font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                                     Pay Online (Card/UPI/Wallet)

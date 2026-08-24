@@ -56,7 +56,7 @@ function EarningsCalculator() {
             <motion.p
               key={net}
               className="font-display leading-none mb-4"
-              style={{ fontSize: 'clamp(3rem,6vw,5rem)', color: '#FF5A1F' }}
+              style={{ fontSize: 'clamp(3rem,6vw,5rem)', color: 'var(--lime)' }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: EASE_VERCEL }}
@@ -200,7 +200,7 @@ export default function BecomeAHostPage() {
               initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE_VERCEL, delay: 0.1 }}
             >
               Turn your idea into a{' '}
-              <em className="italic" style={{ color: '#FF5A1F' }}>gathering.</em>
+              <em className="italic" style={{ color: 'var(--lime)' }}>gathering.</em>
             </motion.h1>
             <motion.p
               className="font-sans text-xl leading-relaxed mb-10"

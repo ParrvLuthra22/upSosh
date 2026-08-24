@@ -11,7 +11,7 @@ const FormalInformalToggle = () => {
             <div className="relative flex items-center bg-black border border-white/20 rounded-full p-1">
                 
                 <div
-                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-[#D4A017] rounded-full transition-all duration-300 ease-out ${
+                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-lime rounded-full transition-all duration-300 ease-out ${
                         isFormal ? 'left-[calc(50%+2px)]' : 'left-1'
                     }`}
                 />
@@ -23,7 +23,7 @@ const FormalInformalToggle = () => {
                         !isFormal ? 'text-black' : 'text-white/70 hover:text-white'
                     }`}
                     style={{
-                        fontFamily: 'VT323, monospace',
+                        fontFamily: 'var(--font-geist-mono), Menlo, monospace',
                         fontSize: '1.25rem',
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase'
@@ -39,7 +39,7 @@ const FormalInformalToggle = () => {
                         isFormal ? 'text-black' : 'text-white/70 hover:text-white'
                     }`}
                     style={{
-                        fontFamily: 'VT323, monospace',
+                        fontFamily: 'var(--font-geist-mono), Menlo, monospace',
                         fontSize: '1.25rem',
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase'

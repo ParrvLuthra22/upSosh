@@ -138,7 +138,7 @@ function LimeAsterisk() {
     >
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
         {Array.from({ length: 4 }).map((_, i) => (
-          <rect key={i} x="27" y="4" width="6" height="52" rx="3" fill="#D4FF3F"
+          <rect key={i} x="27" y="4" width="6" height="52" rx="3" fill="var(--lime)"
             transform={`rotate(${i * 45} 30 30)`} />
         ))}
       </svg>
@@ -215,7 +215,7 @@ export default function SignUpPage() {
               { n: '18,000+', l: 'Attendees' },
               { n: '6,200+', l: 'Events hosted' },
             ].map(({ n, l }) => (
-              <div key={l} className="bg-[rgba(244,241,234,0.08)] backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4">
+              <div key={l} className="bg-border backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4">
                 <p className="font-display text-[24px] text-cream leading-none">{n}</p>
                 <p className="font-mono text-[10px] text-cream-faint uppercase tracking-widest mt-1">{l}</p>
               </div>

@@ -114,7 +114,7 @@ export default function FeaturedEvents() {
             [ 02 — FEATURED ]
           </motion.p>
           <motion.h2
-            className="font-display text-display-lg text-ink-primary leading-[1.0] tracking-tight"
+            className="display-lg text-ink-primary leading-[1.0] tracking-tight"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

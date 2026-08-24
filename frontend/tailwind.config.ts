@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import colors from 'tailwindcss/colors';
 
 const config: Config = {
   content: [
@@ -21,10 +22,23 @@ const config: Config = {
         'cream-faint':  'rgba(244,241,234,0.25)',
         border:         'rgba(244,241,234,0.08)',
         'border-strong':'rgba(244,241,234,0.16)',
-        lime:           '#D4FF3F',
+        // `lime` and `emerald` used to be flat strings, which overrides (not
+        // extends) Tailwind's built-in numeric scale for those color names —
+        // bg-emerald-600, text-lime-400 etc. silently emitted no CSS. Spreading
+        // the real Tailwind scale back in and setting DEFAULT to the brand
+        // value keeps `bg-lime`/`text-emerald` as the brand color while
+        // restoring every numbered step (bg-emerald-600 on the success toast,
+        // app/layout.tsx, needs the actual Tailwind emerald-600 green).
+        lime: {
+          ...colors.lime,
+          DEFAULT: '#D4FF3F',
+        },
         'lime-dim':     '#A8CC32',
         coral:          '#FF6F61',
-        emerald:        '#34D399',
+        emerald: {
+          ...colors.emerald,
+          DEFAULT: '#34D399',
+        },
 
         // ── Legacy aliases — keep OLD pages/components compiling ──────────
         // These map old class names to the nearest new token so existing
@@ -59,11 +73,15 @@ const config: Config = {
         '18': '4.5rem',
       },
       fontSize: {
-        // Legacy display sizes referenced by old components
-        'display-hero': ['clamp(3.5rem, 9vw, 9rem)',   { lineHeight: '0.95', fontWeight: '300', letterSpacing: '-0.04em' }],
-        'display-xl':   ['clamp(3rem, 8vw, 6rem)',     { lineHeight: '1.05', fontWeight: '300', letterSpacing: '-0.04em' }],
-        'display-lg':   ['clamp(2.5rem, 6vw, 4.5rem)', { lineHeight: '1.0',  fontWeight: '300', letterSpacing: '-0.03em' }],
-        'display-md':   ['clamp(1.75rem, 4vw, 3rem)',  { lineHeight: '1.1',  fontWeight: '400', letterSpacing: '-0.02em' }],
+        // 'display-hero' has no counterpart in globals.css — kept here.
+        // display-xl/lg/md used to ALSO be defined in app/globals.css's
+        // `@layer components` with different clamp() values, so
+        // `text-display-xl` and `display-xl` silently rendered at different
+        // sizes depending on which one a page happened to use. globals.css's
+        // versions are the ones actually in use (9 call sites vs. 3), so
+        // they're the surviving definition — see globals.css's
+        // `@layer components` block. These three keys were deleted from here.
+        'display-hero': ['clamp(3.5rem, 9vw, 9rem)', { lineHeight: '0.95', fontWeight: '300', letterSpacing: '-0.04em' }],
       },
       transitionTimingFunction: {
         vercel: 'cubic-bezier(0.22, 1, 0.36, 1)',

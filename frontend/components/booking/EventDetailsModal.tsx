@@ -65,16 +65,16 @@ const EventDetailsModal = () => {
             role="dialog"
             aria-modal="true"
         >
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={handleClose} />
+            <div className="absolute inset-0 bg-void/80 backdrop-blur-sm" onClick={handleClose} />
 
             <div
                 ref={contentRef}
-                className="relative w-full max-w-4xl bg-background border border-border overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[800px]"
+                className="relative w-full max-w-4xl bg-void border border-border overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[800px]"
             >
                 
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 z-20 p-2 text-foreground/50 hover:text-foreground transition-colors"
+                    className="absolute top-4 right-4 z-20 p-2 text-cream/50 hover:text-cream transition-colors"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -95,24 +95,24 @@ const EventDetailsModal = () => {
                     <div className="flex-1 space-y-8">
                         <div>
                             <div className="flex items-center gap-3 mb-4">
-                                <span className="text-xs font-bold uppercase tracking-wider border border-foreground/20 px-2 py-1">
+                                <span className="text-xs font-bold uppercase tracking-wider border border-cream/20 px-2 py-1">
                                     {selectedEvent.type}
                                 </span>
                                 {selectedEvent.isSuperhost && (
-                                    <span className="text-xs font-bold uppercase tracking-wider text-foreground/50">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-cream/50">
                                         Superhost
                                     </span>
                                 )}
                             </div>
 
-                            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground mb-4 leading-[1.1]">
+                            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-4 leading-[1.1]">
                                 {selectedEvent.title}
                             </h2>
 
-                            <div className="space-y-2 text-foreground/70 text-lg">
+                            <div className="space-y-2 text-cream/70 text-lg">
                                 <div className="flex items-center gap-2">
                                     <span>{selectedEvent.date}</span>
-                                    <span className="w-1 h-1 bg-foreground/50 rounded-full" />
+                                    <span className="w-1 h-1 bg-cream/50 rounded-full" />
                                     <span>{selectedEvent.time}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -130,14 +130,14 @@ const EventDetailsModal = () => {
                             <div className="flex items-center gap-4 py-4 border-y border-border">
                                 <img src={host.avatar} alt={host.name} className="w-12 h-12 rounded-full grayscale" />
                                 <div>
-                                    <p className="font-medium text-foreground">Hosted by {host.name}</p>
-                                    <p className="text-sm text-foreground/50">{host.rating} ★ ({host.reviews} reviews)</p>
+                                    <p className="font-medium text-cream">Hosted by {host.name}</p>
+                                    <p className="text-sm text-cream/50">{host.rating} ★ ({host.reviews} reviews)</p>
                                 </div>
                             </div>
                         )}
 
                         <div className="prose prose-neutral dark:prose-invert">
-                            <p className="text-foreground/80 leading-relaxed text-lg font-light">
+                            <p className="text-cream/80 leading-relaxed text-lg font-light">
                                 {selectedEvent.description}
                             </p>
                         </div>
@@ -146,9 +146,9 @@ const EventDetailsModal = () => {
                     
                     <div className="mt-8 pt-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <div className="text-3xl font-medium text-foreground">
+                            <div className="text-3xl font-medium text-cream">
                                 ₹{selectedEvent.price * qty}
-                                <span className="text-base text-foreground/40 ml-2 font-normal">
+                                <span className="text-base text-cream/40 ml-2 font-normal">
                                     {qty > 1 && `(₹${selectedEvent.price} × ${qty})`}
                                 </span>
                             </div>
@@ -156,12 +156,12 @@ const EventDetailsModal = () => {
                             <div className="flex items-center border border-border rounded-full">
                                 <button
                                     onClick={() => setQty(Math.max(1, qty - 1))}
-                                    className="w-10 h-10 flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors rounded-l-full"
+                                    className="w-10 h-10 flex items-center justify-center text-cream hover:bg-cream/5 transition-colors rounded-l-full"
                                 >-</button>
                                 <span className="w-8 text-center font-medium">{qty}</span>
                                 <button
                                     onClick={() => setQty(qty + 1)}
-                                    className="w-10 h-10 flex items-center justify-center text-foreground hover:bg-foreground/5 transition-colors rounded-r-full"
+                                    className="w-10 h-10 flex items-center justify-center text-cream hover:bg-cream/5 transition-colors rounded-r-full"
                                 >+</button>
                             </div>
                         </div>
@@ -169,13 +169,13 @@ const EventDetailsModal = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={handleAddToCart}
-                                className="py-4 px-6 border border-foreground text-foreground font-medium text-lg hover:bg-foreground hover:text-background transition-colors"
+                                className="py-4 px-6 border border-lime text-lime font-medium text-lg hover:bg-lime hover:text-void transition-colors"
                             >
                                 Add to Cart
                             </button>
                             <button
                                 onClick={handleBuyNow}
-                                className="py-4 px-6 bg-foreground text-background font-medium text-lg hover:opacity-90 transition-opacity"
+                                className="py-4 px-6 bg-lime text-void font-medium text-lg hover:opacity-90 transition-opacity"
                             >
                                 Book Now
                             </button>

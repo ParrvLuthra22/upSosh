@@ -8,7 +8,7 @@
 }
 
 #nprogress .bar {
-  background: #D4FF3F;
+  background: var(--lime);
   position: fixed;
   z-index: 9999;
   top: 0;
@@ -24,7 +24,7 @@
   right: 0px;
   width: 100px;
   height: 100%;
-  box-shadow: 0 0 10px #D4FF3F, 0 0 5px #D4FF3F;
+  box-shadow: 0 0 10px var(--lime), 0 0 5px var(--lime);
   opacity: 1;
   transform: rotate(3deg) translate(0px, -4px);
 }
@@ -37,8 +37,8 @@
    Tailwind base styles and apply immediately on first paint.             */
 html,
 body {
-  background-color: #0A0A0B !important;
-  color: #F4F1EA;
+  background-color: var(--void) !important;
+  color: var(--cream);
 }
 
 @layer base {
@@ -58,16 +58,30 @@ body {
     --white:        #F4F1EA;
     --black:        #0A0A0B;
     --verified:     #34D399;
+
+    /* Real token names, matching tailwind.config.ts — for the many places
+       (inline style={{}}, boxShadow strings, SVG fill attrs) that can't use a
+       Tailwind class and previously restated the hex literal instead. */
+    --void:           #0A0A0B;
+    --surface:        #13131B;
+    --surface-2:      #1C1C26;
+    --cream:          #F4F1EA;
+    --cream-dim:      rgba(244,241,234,0.55);
+    --cream-faint:    rgba(244,241,234,0.25);
+    --border-strong:  rgba(244,241,234,0.16);
+    --lime:           #D4FF3F;
+    --lime-dim:       #A8CC32;
+    --coral:          #FF6F61;
   }
 
   html {
-    background-color: #0A0A0B;
+    background-color: var(--void);
     scroll-behavior: auto; /* Lenis handles smooth scroll */
   }
 
   body {
-    background-color: #0A0A0B;
-    color: #F4F1EA;
+    background-color: var(--void);
+    color: var(--cream);
     font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 1rem;
     font-weight: 400;
@@ -112,12 +126,12 @@ body {
   /* Selection */
   ::selection {
     background-color: rgba(212, 255, 63, 0.3);
-    color: #0A0A0B;
+    color: var(--void);
   }
 
   /* Focus-visible: lime ring */
   :focus-visible {
-    outline: 2px solid #D4FF3F;
+    outline: 2px solid var(--lime);
     outline-offset: 3px;
     border-radius: 6px;
   }
@@ -126,7 +140,7 @@ body {
   }
 
   * {
-    border-color: rgba(244, 241, 234, 0.08);
+    border-color: var(--border);
   }
 }
 
@@ -147,7 +161,8 @@ body {
 }
 
 @layer components {
-  /* Typography scale */
+  /* Typography scale — sole definition (tailwind.config.ts used to duplicate
+     these three under fontSize with different clamp() values). */
   .display-xl {
     font-family: var(--font-fraunces), Georgia, serif;
     font-size: clamp(56px, 9vw, 120px);
@@ -190,8 +205,8 @@ body {
     left: 16px;
     z-index: 9999;
     padding: 10px 20px;
-    background: #D4FF3F;
-    color: #0A0A0B;
+    background: var(--lime);
+    color: var(--void);
     font-family: var(--font-geist-mono), Menlo, monospace;
     font-size: 12px;
     font-weight: 500;
@@ -207,8 +222,8 @@ body {
 
   /* Cards */
   .glass-card {
-    background-color: #13131B;
-    border: 1px solid rgba(244, 241, 234, 0.08);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 1rem;
     transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -221,23 +236,23 @@ body {
   .input-minimal {
     @apply w-full px-4 py-3 rounded-lg;
     background-color: transparent;
-    border: 1px solid rgba(244, 241, 234, 0.16);
-    color: #F4F1EA;
+    border: 1px solid var(--border-strong);
+    color: var(--cream);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
   .input-minimal:focus {
     outline: none;
-    border-color: #D4FF3F;
+    border-color: var(--lime);
     box-shadow: 0 0 0 3px rgba(212, 255, 63, 0.15);
   }
   .input-minimal::placeholder {
-    color: rgba(244, 241, 234, 0.25);
+    color: var(--cream-faint);
   }
 
   /* Nav */
   .nav-link {
     position: relative;
-    color: rgba(244, 241, 234, 0.55);
+    color: var(--cream-dim);
     font-weight: 500;
     padding: 0.5rem 0;
     transition: color 0.25s ease;
@@ -250,19 +265,19 @@ body {
     left: 0;
     width: 0;
     height: 2px;
-    background-color: #D4FF3F;
+    background-color: var(--lime);
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .nav-link:hover { color: #F4F1EA; }
+  .nav-link:hover { color: var(--cream); }
   .nav-link:hover::after { width: 100%; }
-  .nav-link.active { color: #D4FF3F; }
+  .nav-link.active { color: var(--lime); }
   .nav-link.active::after { width: 100%; }
 
   /* Buttons */
   .btn-primary {
     @apply px-8 py-4 rounded-full font-semibold;
-    background-color: #D4FF3F;
-    color: #0A0A0B;
+    background-color: var(--lime);
+    color: var(--void);
     transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
   }
   .btn-primary:hover {
@@ -275,13 +290,13 @@ body {
   .btn-secondary {
     @apply px-8 py-4 rounded-full font-semibold;
     background-color: transparent;
-    color: #D4FF3F;
-    border: 2px solid #D4FF3F;
+    color: var(--lime);
+    border: 2px solid var(--lime);
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   }
   .btn-secondary:hover {
-    background-color: #D4FF3F;
-    color: #0A0A0B;
+    background-color: var(--lime);
+    color: var(--void);
     transform: translateY(-2px);
   }
   .btn-secondary:active { transform: translateY(0); }
@@ -289,10 +304,10 @@ body {
   .btn-ghost {
     @apply px-6 py-3 rounded-full font-semibold;
     background-color: transparent;
-    color: rgba(244, 241, 234, 0.55);
+    color: var(--cream-dim);
     transition: color 0.3s ease;
   }
-  .btn-ghost:hover { color: #D4FF3F; }
+  .btn-ghost:hover { color: var(--lime); }
 
   /* Section layout */
   .section-padding {

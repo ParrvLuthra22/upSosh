@@ -57,7 +57,7 @@ export default function CTAFooterSection() {
         </motion.p>
 
         <motion.h2
-          className="font-display text-display-xl text-ink-primary leading-[0.95] tracking-[-0.03em] mb-12 max-w-3xl"
+          className="display-xl text-ink-primary leading-[0.95] tracking-[-0.03em] mb-12 max-w-3xl"
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

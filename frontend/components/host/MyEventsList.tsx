@@ -49,7 +49,7 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
     if (loading) {
         return (
             <div className="glass-panel p-8 rounded-3xl">
-                <p className="text-text-secondary text-center">Loading your events...</p>
+                <p className="text-cream-dim text-center">Loading your events...</p>
             </div>
         );
     }
@@ -57,7 +57,7 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
     if (myEvents.length === 0) {
         return (
             <div className="glass-panel p-8 rounded-3xl">
-                <p className="text-text-secondary text-center">
+                <p className="text-cream-dim text-center">
                     You haven't created any events yet. Create your first event above!
                 </p>
             </div>
@@ -66,18 +66,18 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
 
     return (
         <div className="glass-panel p-8 rounded-3xl">
-            <h2 className="text-3xl font-heading font-bold mb-6 text-text-primary">My Events</h2>
+            <h2 className="text-3xl font-display font-bold mb-6 text-cream">My Events</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {myEvents.map((event) => (
-                    <div key={event.id} className="bg-surface-highlight rounded-xl overflow-hidden">
+                    <div key={event.id} className="bg-surface-2 rounded-xl overflow-hidden">
                         <img
                             src={event.image}
                             alt={event.title}
                             className="w-full h-48 object-cover"
                         />
                         <div className="p-4 space-y-3">
-                            <h3 className="text-xl font-bold text-text-primary">{event.title}</h3>
-                            <div className="text-sm text-text-secondary space-y-1">
+                            <h3 className="text-xl font-bold text-cream">{event.title}</h3>
+                            <div className="text-sm text-cream-dim space-y-1">
                                 <p> {event.date} at {event.time}</p>
                                 <p> {event.venue}</p>
                                 <p> ₹{event.price}</p>
@@ -89,7 +89,7 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
                             <div className="flex gap-2 mt-4">
                                 <button
                                     onClick={() => onEdit(event)}
-                                    className="flex-1 py-2 px-4 bg-primary text-white rounded-lg hover:opacity-90 transition-opacity"
+                                    className="flex-1 py-2 px-4 bg-lime text-void rounded-lg hover:opacity-90 transition-opacity"
                                 >
                                     ✏️ Edit
                                 </button>

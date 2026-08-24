@@ -43,7 +43,7 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.08 }}
         >
           India's platform for<br />
-          <em style={{ color: '#FF5A1F' }}>real gatherings.</em>
+          <em style={{ color: 'var(--lime)' }}>real gatherings.</em>
         </motion.h1>
         <motion.p
           className="font-sans text-xl text-ink-muted leading-relaxed max-w-2xl"

@@ -38,7 +38,7 @@ const variantConfig: Record<
   },
   category: {
     classes:
-      'bg-[rgba(244,241,234,0.08)] text-cream-dim font-mono text-[10px] tracking-widest uppercase border-0',
+      'bg-border text-cream-dim font-mono text-[10px] tracking-widest uppercase border-0',
   },
 };
 

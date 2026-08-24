@@ -59,42 +59,42 @@ Failed to connect to the AI planner. Please try again later.
     return (
         <div className="glass-panel p-8 rounded-3xl h-full flex flex-col">
             <div className="mb-6">
-                <h2 className="text-3xl font-heading font-bold text-text-primary flex items-center gap-3">
+                <h2 className="text-3xl font-display font-bold text-cream flex items-center gap-3">
                     <span className="text-4xl"></span> AI Event Planner
                 </h2>
-                <p className="text-text-muted mt-2">
+                <p className="text-cream-faint mt-2">
                     Not sure where to start? Let our AI agent help you plan the perfect event within your budget.
                 </p>
             </div>
 
             <div className="space-y-4 flex-grow">
                 <div>
-                    <label className="text-sm font-medium text-text-secondary">Total Budget (₹)</label>
+                    <label className="text-sm font-medium text-cream-dim">Total Budget (₹)</label>
                     <input
                         type="number"
                         value={input.budget}
                         onChange={(e) => setInput({ ...input, budget: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime-dim mt-1"
                         placeholder="5000"
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-text-secondary">Estimated Guests</label>
+                    <label className="text-sm font-medium text-cream-dim">Estimated Guests</label>
                     <input
                         type="number"
                         value={input.guests}
                         onChange={(e) => setInput({ ...input, guests: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime-dim mt-1"
                         placeholder="100"
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-medium text-text-secondary">Vibe / Theme</label>
+                    <label className="text-sm font-medium text-cream-dim">Vibe / Theme</label>
                     <input
                         type="text"
                         value={input.vibe}
                         onChange={(e) => setInput({ ...input, vibe: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary mt-1"
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime-dim mt-1"
                         placeholder="e.g., Cyberpunk Rave, Professional Mixer"
                     />
                 </div>
@@ -102,14 +102,14 @@ Failed to connect to the AI planner. Please try again later.
                 <button
                     onClick={handleAskAI}
                     disabled={isLoading || !input.budget}
-                    className="w-full py-4 bg-gradient-to-r from-secondary to-primary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-secondary/25 disabled:opacity-50 mt-4"
+                    className="w-full py-4 bg-gradient-to-r from-lime-dim to-lime text-void font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-lime-dim/25 disabled:opacity-50 mt-4"
                 >
                     {isLoading ? 'Analyzing...' : 'Ask AI Agent'}
                 </button>
             </div>
 
             {response && (
-                <div className="mt-8 p-6 bg-surface-highlight/50 rounded-2xl border border-white/10 animate-fade-in">
+                <div className="mt-8 p-6 bg-surface-2/50 rounded-2xl border border-white/10 animate-fade-in">
                     <div className="prose prose-invert max-w-none">
                         <div dangerouslySetInnerHTML={{ __html: response.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/### (.*)/g, '<h3 class="text-lg font-bold text-secondary mb-2">$1</h3>') }} />
                     </div>

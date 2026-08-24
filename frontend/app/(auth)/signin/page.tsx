@@ -29,7 +29,7 @@ function LimeAsterisk() {
     >
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
         {Array.from({ length: 4 }).map((_, i) => (
-          <rect key={i} x="27" y="4" width="6" height="52" rx="3" fill="#D4FF3F"
+          <rect key={i} x="27" y="4" width="6" height="52" rx="3" fill="var(--lime)"
             transform={`rotate(${i * 45} 30 30)`} />
         ))}
       </svg>
@@ -170,7 +170,7 @@ export default function SignInPage() {
               — What 2,400+ hosts say about UpSosh
             </p>
           </div>
-          <div className="bg-[rgba(244,241,234,0.08)] backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4 max-w-sm">
+          <div className="bg-border backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4 max-w-sm">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-9 h-9 rounded-full bg-lime flex items-center justify-center flex-shrink-0">
                 <span className="font-display text-void text-[15px] font-bold">P</span>

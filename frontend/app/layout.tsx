@@ -73,7 +73,7 @@ export default function RootLayout({
     >
       <body className="bg-void text-cream antialiased cursor-none md:cursor-none">
         <noscript>
-          <div style={{ padding: '20px', textAlign: 'center', background: '#D4FF3F', color: '#0A0A0B' }}>
+          <div style={{ padding: '20px', textAlign: 'center', background: 'var(--lime)', color: 'var(--void)' }}>
             JavaScript is disabled. For the best experience, please enable JavaScript or download our mobile app.
           </div>
         </noscript>
