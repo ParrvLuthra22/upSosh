@@ -1,11 +1,18 @@
+# Railway deployment — single source of truth for how the backend is built and run.
+# (backend/nixpacks.toml was deleted: it conflicted with this file on node version,
+#  install command, and the `cd backend` prefix.)
+
 [build]
 builder = "NIXPACKS"
 
 [build.nixpacksPlan]
+phases.setup = { nixPkgs = ["nodejs_22"] }
 phases.install = { cmd = "cd backend && npm ci" }
 phases.build = { cmd = "cd backend && npm run build" }
 
 [deploy]
-startCommand = "cd backend && npm run start"
+# Migrations run on every deploy, before the server accepts traffic.
+# Without this the schema drifts and has to be patched by hand.
+startCommand = "cd backend && npx prisma migrate deploy && npm run start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300

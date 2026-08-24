@@ -1,0 +1,316 @@
+# upSosh — Fix Plan
+
+Working checklist derived from `AUDIT.md` (audit of `main` @ `ed8d52b`, 2026-08-23).
+
+**How this file works:** every task is an unchecked box with a stable ID and a file:line anchor.
+After each working session, ask me to tick off what's done — I'll check the boxes and add a
+`> Changed:` note under any task whose scope shifted, plus a dated line in the Session Log.
+
+**Phase order is a dependency order, not a priority order.** Phase 0 comes first because nothing
+else is verifiable until a stranger can stand the project up. Phase 1 is the highest *severity* —
+if you only have one session, do P1-1 and P1-2.
+
+**Status:** Phase 0 complete — 12 of 16 tasks done, 4 deferred (see notes). Phase 1 is next.
+
+---
+
+## Phase 0 — Runnable by a stranger
+
+*Goal: `git clone` → `npm install` → seeded database → both servers up → book an event, on a machine that has never seen this project. Today this is impossible: `prisma migrate deploy` fails on an empty database.*
+
+### Database can be built from the repo
+
+- [x] **P0-1** — Fix migration ordering. `backend/prisma/migrations/20241220000000_add_host_fields/` sorts *before* `20251209095915_add_user_model/` (which creates `User`), so `migrate deploy` dies on `relation "User" does not exist`. Rename it to sort after, or delete it — its six columns (`avatar`, `isHost`, `hostName`, `hostVerified`, …) are no longer in `schema.prisma`.
+  > Changed: Rebuilt the history instead of renaming: all three folders deleted, one baseline `20260824040153_init` generated from `schema.prisma`. Old folders archived to the session scratchpad. Verified: `migrate deploy` on an empty DB now succeeds (it previously died on `relation "User" does not exist`).
+- [x] **P0-2** — Generate the two missing migrations. `HostApplication` (`schema.prisma:120-151`) and `Upload` (`:153-162`) exist in the schema but in **no** migration. A clean `migrate deploy` produces neither table → host applications and every upload 500.
+  > Changed: Both tables are in the baseline. Verified column-by-column against `information_schema`.
+- [x] **P0-3** — Reconcile schema vs. migration history. Run `prisma migrate diff` against a fresh DB and confirm zero drift. The presence of `backend/add-host-columns.sql`, `backend/cast-date.js`, `backend/populate-slugs.js` means production was patched by hand.
+  > Changed: Verified the six tables, three unique indexes and six FK constraints match `schema.prisma`, and that the four dead columns from the old `add_host_fields` migration (`avatar`, `isHost`, `hostName`, `hostVerified`) are absent.
+- [ ] **P0-4** — Delete or fold in the hand-patch scripts once the migrations are authoritative: `backend/add-host-columns.sql`, `backend/cast-date.js`, `backend/populate-slugs.js`. Keep `backend/make-admin.js` until an admin UI exists (P4-11).
+- [x] **P0-5** — Add `prisma migrate deploy` to the Railway start command. Neither `railway.toml` nor `backend/nixpacks.toml` runs migrations today — they go `install → build → start`.
+  > Changed: Start command is now `cd backend && npx prisma migrate deploy && npm run start`. **Production needs a one-time `prisma migrate resolve --applied 20260824040153_init` before the next deploy** — documented in README under Deployment.
+
+### Seed data
+
+- [x] **P0-6** — Wire a real seed. `backend/prisma/seed.js` is a no-op that only prints counts; `backend/src/scripts/seed.ts` (250 lines) is real but unreferenced and there is no `prisma.seed` key in `backend/package.json`. Pick one, wire it, delete the other.
+  > Changed: Deleted `prisma/seed.js` (the no-op). Added `prisma.seed` → `tsx src/scripts/seed.ts`, plus `npm run seed`. Added `tsx` to backend devDependencies.
+- [x] **P0-7** — Make the seed insert `Host` rows. **No endpoint or script anywhere creates a `Host`** — the table is permanently empty, so `GET /api/hosts` always returns `[]` and every `event.host` is `null`.
+  > Changed: Three hosts: Arjun Mehta ✓, Sana Kapoor ✓, The Lodhi Collective. Verified in the browser that all 10 event cards now render a host name instead of null.
+- [x] **P0-8** — Seed 8–12 `status: 'live'` events with **future** dates. `GET /api/events` filters `status: { in: ['live','full'] }` and `date >= now` (`backend/src/routes/events.ts:47,85`), so a naively seeded DB shows an empty `/discover`.
+  > Changed: Ten events. **Dates are computed relative to run time, never hardcoded** — the old seed used fixed May-2026 dates which are now in the past, so every event would have been filtered out. Categories switched to the seven values `CATEGORY_MAP` actually filters on; verified in-browser that "Run Clubs" narrows 10 → 2.
+
+### Environment and config
+
+- [x] **P0-9** — Create `frontend/.env.example`. It does not exist. Six client vars are read and none is documented: `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_FRONTEND_URL`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`.
+  > Changed: Created with all six vars annotated, `NEXT_PUBLIC_RAZORPAY_KEY_ID` flagged REQUIRED with the free-booking consequence spelled out.
+- [ ] **P0-10** — Set a real `RAZORPAY_WEBHOOK_SECRET`. `backend/.env` still holds the literal placeholder `"your_webhook_secret"` from `.env.example`.
+- [ ] **P0-11** — Remove the dead `BACKEND_URL` from `backend/.env.example` (documented, never read by any code).
+- [x] **P0-12** — Resolve the two conflicting deploy plans. `railway.toml` says `npm ci` with a `cd backend` prefix; `backend/nixpacks.toml` says `npm install` with no prefix. Delete one.
+  > Changed: Deleted `backend/nixpacks.toml`; `railway.toml` absorbed its `nodejs_22` setup phase and is now the only deploy descriptor.
+- [x] **P0-13** — Add frontend deploy config (`vercel.json` or equivalent) or document the host in the README. Nothing in the repo records where the frontend deploys.
+  > Changed: No `vercel.json` added; host + required env vars documented in README instead (the task allowed either).
+- [ ] **P0-14** — Fix or delete `npm run mock:api` (`frontend/package.json:11`) — it points at `mocks/db.json`, and `frontend/mocks/` does not exist.
+
+### Documentation
+
+- [x] **P0-15** — Write a root `README.md` with real setup steps: prerequisites, `npm install`, env setup, `migrate deploy`, `db seed`, the two dev commands, and the ports. There is currently no root README.
+  > Changed: Written and verified end to end. Includes prerequisites, the five setup steps, seeded credentials, Razorpay test-card walkthrough, a command table, env var reference, deployment (incl. the production baseline step) and troubleshooting.
+- [x] **P0-16** — Verify the whole thing from a clean clone in a scratch directory. **This is the gate for Phase 0** — do not tick it based on the existing working copy.
+  > Changed: Done twice. Verified from a pristine copy with no `node_modules`, no `.env` files and no database — not from the working tree.
+
+---
+
+### Added beyond the plan (Phase 0 session, 2026-08-24)
+
+These were not in the original checklist but turned out to be necessary for "runnable by a stranger":
+
+- [x] **P0-A** — `docker-compose.yml` at the repo root. Postgres 16 with a healthcheck, matching `backend/.env.example` credentials exactly. Supports `POSTGRES_PORT=5433` for machines where 5432 is taken.
+- [x] **P0-B** — Root `npm run setup` (`scripts/setup.mjs`): checks the Node version, creates both `.env` files from their examples without overwriting, warns about placeholder values, then migrates and seeds. Reads `POSTGRES_PORT` and rewrites `DATABASE_URL` accordingly.
+- [x] **P0-C** — Root `npm run dev` via `concurrently`, so both servers start with one command. Also added `db:migrate`, `db:seed`, `db:studio`.
+- [x] **P0-D** — Corrected `ENV_SETUP.md`, which documented `.env.production` as a committed file and referenced a `.env.development` that does not exist. Both now contradicted the README.
+
+### Deferred from Phase 0
+
+- [ ] **P0-4** — Delete the hand-patch scripts (`backend/add-host-columns.sql`, `cast-date.js`, `populate-slugs.js`). Now actively misleading: `add-host-columns.sql` adds four columns that no longer exist in the schema. Left in place because it was outside the session's brief — **recommend deleting early in Phase 1.**
+- [ ] **P0-10** — Set a real `RAZORPAY_WEBHOOK_SECRET`. Still the literal `"your_webhook_secret"` placeholder in `backend/.env`. Needs a value from your Razorpay dashboard; pairs naturally with P1-8.
+- [ ] **P0-11** — Remove the dead `BACKEND_URL` from `backend/.env.example`.
+- [ ] **P0-14** — Fix or delete `npm run mock:api` (`frontend/package.json`) — still points at a `mocks/db.json` that does not exist.
+
+---
+
+## Phase 1 — Security holes
+
+*Goal: close every issue where the client is trusted with something the server should own. P1-1 and P1-2 are the two that matter most; together they are the difference between "integrated Razorpay" being an honest resume claim and a false one.*
+
+### Payment integrity (do these first)
+
+- [ ] **P1-1** 🔴 — **Stop trusting the client's amount.** `backend/src/routes/payments.ts:23,39` reads `amount` from `req.body` and passes it straight to `razorpay.orders.create`. The booking row is already fetched at `:29` and its `totalAmount` is never compared. **A user can pay ₹1 for a ₹5,000 event.** Use `booking.totalAmount`; ignore the body field entirely.
+- [ ] **P1-2** 🔴 — **Bind the Razorpay order to the booking.** Add `razorpayOrderId String?` to `Booking` (`schema.prisma:89-118`), store it in `create-order`, and assert `booking.razorpayOrderId === razorpay_order_id` in `/verify` (`payments.ts:62-109`). Without this, one valid ₹1 payment can be replayed to confirm unlimited bookings.
+- [ ] **P1-3** — Add a replay guard to `/verify`: require `paymentStatus === 'unpaid'` before the update (`payments.ts:93`). The webhook already does this (`:142`); `/verify` does not.
+- [ ] **P1-4** — Charge the platform fee. The client sends `price * guestCount` (`frontend/lib/stores/booking.ts:247`) while the server computed `totalAmount = ticketPrice + 25` (`backend/src/routes/bookings.ts:34-35`). **The ₹25 fee is never collected.** Resolved automatically by P1-1.
+- [ ] **P1-5** — Honour `guestCount`. It is sent (`booking.ts:203`) and **ignored** by the backend — `bookings.ts` always creates a 1-ticket booking and increments `attendees` by 1 (`:66`). A 4-guest booking charges for 4 and reserves 1 seat.
+- [ ] **P1-6** — Delete the demo-mode payment bypass. `frontend/lib/stores/booking.ts:231-240`: if `NEXT_PUBLIC_RAZORPAY_KEY_ID` is unset it skips payment and jumps to the confirmation screen. **Every paid booking silently becomes free.** Fail loudly instead.
+- [ ] **P1-7** — Use `crypto.timingSafeEqual` for the signature comparison (`payments.ts:82`). Currently `!==` on the hex digest.
+
+### Webhook
+
+- [ ] **P1-8** 🔴 — Make webhook signature verification **unconditional**. `payments.ts:117` — `if (webhookSecret && signature)`. With the secret unset, anyone on the internet can POST `payment.captured` and mark bookings paid. Return 500 when the secret is missing.
+- [ ] **P1-9** 🔴 — Hash the **raw** body. `payments.ts:118` does `JSON.stringify(req.body)` *after* `express.json()` has parsed and discarded the raw bytes. Mount `express.raw({ type: 'application/json' })` on this route only.
+- [ ] **P1-10** 🔴 — Fix the lookup. `payments.ts:136` assigns `payload.payment.entity.order_id` to a variable named `receipt`, then queries `booking.id` with it (`:142`). An `order_xxx` never equals a cuid — **the `updateMany` has matched 0 rows every time it has ever run.** Key off the stored `razorpayOrderId` from P1-2.
+- [ ] **P1-11** — Handle `payment.failed` and `refund.processed` (`payments.ts:148-155`) — currently `console.log` only.
+
+### Session and transport
+
+- [ ] **P1-12** 🔴 — Get the JWT out of `localStorage`. `frontend/lib/stores/auth.ts:43-57` (`syncLegacyStorage`) writes it to `localStorage['token']`, `['userData']`, `['user']` and the Zustand `persist` blob; `:33-40` writes a **non-httpOnly** `upsosh_token` cookie via `js-cookie`. The backend's httpOnly cookie already works (`backend/src/routes/auth.ts:11-16`) — delete the mirrors and rely on `credentials: 'include'`.
+- [ ] **P1-13** 🔴 — Remove the auth-response logging. `frontend/src/lib/api.ts:48,56,66` — `console.log('Login response data:', data)` **prints the JWT to the browser console on every sign-in.** Also `:78,86,97` for signup.
+- [ ] **P1-14** — Remove the 10 direct `localStorage.getItem('token')` reads once P1-12 lands: `frontend/src/lib/api.ts:131,146,249,311,350,381,403,415,428,439`, `frontend/app/admin/payments/page.tsx:29,70,103`, `frontend/lib/stores/booking.ts:19`.
+- [ ] **P1-15** 🔴 — **Add server-side route protection.** There is no `frontend/middleware.ts`. `components/ProtectedRoute.tsx` is a client `useEffect` redirect (`:98-104`), `/dashboard` etc. are statically prerendered, and the guard is bypassed by writing one localStorage key. Add middleware that reads the httpOnly cookie.
+- [ ] **P1-16** — Enable a CSP. `backend/src/index.ts:34` sets `contentSecurityPolicy: false`. Relevant because Razorpay's `checkout.js` is injected at runtime with no SRI (`frontend/lib/stores/booking.ts:340-344`).
+
+### Server-side validation and authorization
+
+- [ ] **P1-17** — Add `zod` schemas to the write endpoints. **`zod` is in `package.json` and never imported** — there is no schema validation anywhere. Priority: `POST /api/bookings`, `POST /api/payments/create-order`, `POST /api/payments/verify`, `POST /api/events`, `PUT /api/events/:id`, `PATCH /api/users/me`, `POST /api/hosts/apply`, `POST /api/ai/plan`.
+- [ ] **P1-18** — Stop taking `ticketPrice` from the client. `backend/src/routes/bookings.ts:20,28-32` — for `eventId` values starting with `evt-` (the mock IDs), the price comes from `req.body`. Remove the mock code path.
+- [ ] **P1-19** — Validate `hostId` on event creation. `backend/src/routes/events.ts:211` — `hostId: hostId ?? null` straight from the body, with no check that the `Host` row belongs to the caller.
+- [ ] **P1-20** — Remove or gate `POST /api/events/:id/attend` (`events.ts:302-323`). Any authenticated user can increment `attendees` on any event, unbounded by a booking. It is never called by the frontend.
+- [ ] **P1-21** — Fix the read-then-write capacity race. `bookings.ts:23-25` checks `attendees >= capacity`, then `:64-67` increments in a separate non-transactional statement. Two concurrent bookings on the last seat both succeed.
+- [ ] **P1-22** — Invert the `NODE_ENV` check. `backend/src/index.ts:122` — `const isDev = process.env.NODE_ENV !== 'production'` is fail-open: an unset or misspelled `NODE_ENV` ships **full stack traces to every client** (`:134`). Use `=== 'development'`.
+- [ ] **P1-23** — Remove or auth-gate `GET /api/payments/health` (`payments.ts:168-177`) — it publicly discloses whether your Razorpay keys are configured.
+- [ ] **P1-24** — Rate-limit `POST /api/ai/plan` separately (`backend/src/index.ts:107`). It costs money per call and only has the global 100/15min limit. Add a per-user cap and a prompt length cap.
+- [ ] **P1-25** — Lower the body limit. `backend/src/index.ts:79-80` allows 10 MB of JSON; file uploads go through multer separately with their own caps. 100 kB is sufficient.
+- [ ] **P1-26** — Escape the JSON-LD payloads. `frontend/app/page.tsx:42`, `app/booking/page.tsx:94`, `app/events/[slug]/page.tsx` serialize API-supplied event data into `dangerouslySetInnerHTML` unescaped — a `</script>` in an event title breaks out.
+- [ ] **P1-27** — Sign the ticket QR. `backend/src/routes/bookings.ts:58` stores the literal string `` `UPSOSH-${booking.id}` `` — forgeable by anyone who can guess a cuid. (The scan/validation endpoint is P4-13.)
+
+### Repo hygiene
+
+- [ ] **P1-28** — Add `.env.production` to `.gitignore`. `.gitignore:23-27` covers `.env.production.local` but **not** `.env.production`, which is already tracked. It holds only URLs today; the next key added to it goes into git history.
+- [ ] **P1-29** — Inspect and remove `switchup-deliverable.zip` (177 KB, committed at repo root). Confirm it contains no build output or env file before deleting.
+
+---
+
+## Phase 2 — Collapse duplication
+
+*Goal: one of everything. Roughly 4,000 lines (~12% of the codebase) are unreachable, and the duplicate module trees are actively causing bugs — the API client 11 files import is not the one that ships.*
+
+### The `src/` vs. root collision (root cause)
+
+- [ ] **P2-1** 🔴 — **Resolve the two API clients.** `frontend/tsconfig.json:34-38` maps `@/*` to `["./src/*", "./*"]`, so `@/lib/api` resolves to `frontend/src/lib/api.ts` (450 lines, legacy) and **never** `frontend/lib/api.ts` (140 lines, the documented typed wrapper). Confirmed against the build: `lib/api.ts` is not in any chunk, and `authApi` has zero importers. Delete `src/lib/api.ts`, move `lib/api.ts` into its place, keep the 401 → logout → redirect behaviour.
+- [ ] **P2-2** — Collapse the duplicate source roots so `@/*` is unambiguous: `frontend/components/` vs `frontend/src/components/`, `frontend/lib/` vs `frontend/src/lib/`, `frontend/store/` vs `frontend/src/store/`, `frontend/app/globals.css` vs `frontend/src/styles/globals.css`.
+- [ ] **P2-3** — Merge the two auth helper modules: `frontend/lib/auth.ts` (67 lines) and `frontend/src/lib/auth.ts` (73 lines) — near-identical, different `User` interfaces.
+
+### Delete what nothing imports
+
+- [ ] **P2-4** — Delete the 25 never-imported files: `components/SmoothScrollProvider.tsx`, `components/HowItWorksSection.tsx`, `components/WhatIsUpSoshSection.tsx`, `components/Footer.tsx`, `components/TestimonialsSection.tsx`, `components/DownloadCTASection.tsx`, `components/Navigation.tsx`, `components/FeaturesSection.tsx`, `components/ToggleDemoSection.tsx`, `components/HeroSection.tsx`, `components/AuthBootstrap.tsx`, `components/sections/MarqueeBand.tsx`, `contexts/ThemeContext.tsx`, `src/styles/tokens.ts`, `src/styles/globals.css`, `src/components/Hero.tsx`, `src/components/Footer.tsx`, `src/components/Header.tsx`, `src/components/FeaturesSection.tsx`, `src/components/ui/AnimatedText.tsx`, and the transitively-dead `src/components/FloatingMesh3D.tsx` + `src/components/SplineToggle.tsx`.
+- [ ] **P2-5** — Delete the entire `frontend/components/discover/` directory (5 components, ~600 lines) — superseded by inline implementations in `app/discover/page.tsx`.
+- [ ] **P2-6** — Delete the orphaned `/events/[slug]/book` route (700 lines, nothing links to it, its "payment" is `setTimeout(1500)` at `:574-579`).
+- [ ] **P2-7** — Delete `backend/src/scripts/seed.ts` **or** `backend/prisma/seed.js` — whichever loses P0-6.
+- [ ] **P2-8** — Delete unused static assets: `frontend/public/scene.splinecode`, `frontend/public/fonts/BBHBartle-Regular.ttf`, `frontend/public/payment-qr.png`, `frontend/design/README.md`.
+- [ ] **P2-9** — Remove the 22 dead dependencies from `frontend/package.json`: `zod`*, `react-hook-form`, `@hookform/resolvers`, `@prisma/client`, `prisma`, `bcryptjs`, `jsonwebtoken`, `jose`, `cookie`, `@types/bcryptjs`, `@types/jsonwebtoken`, `@splinetool/react-spline`, `@splinetool/runtime`, `three`, `three-stdlib`, `three-mesh-bvh`, `troika-three-text`, `react-reconciler`, `suspend-react`, `react-use-measure`, `detect-gpu`, `@types/three`, `@react-three/fiber`, `@react-three/drei`, `animejs`, `@types/animejs`, `@gsap/react`, `@vercel/og`, `@studio-freight/lenis`, `react-composer`, `react-day-picker`, `uuid`, `json-server`. *(`zod` stays if P1-17 lands first — then it's no longer dead.)*
+- [ ] **P2-10** — Remove `@google/generative-ai` from `backend/package.json` and the commented `GEMINI_API_KEY` from `backend/.env`.
+
+### One design system
+
+- [ ] **P2-11** 🔴 — **Pick one palette and delete the other three.** Live: `tailwind.config.ts:14-51` (void/lime/cream). Dead but still hardcoded 89× : mustard `#D4A017`. Third: orange `#FF5A1F`/`#FAFAF7`/`#E8E4DC` inside `app/host/dashboard`, `app/host/payouts`, `app/about`, `app/become-a-host`. Fourth: blue/indigo/purple in `app/booking/confirmation/*`.
+- [ ] **P2-12** 🔴 — Add the missing color tokens to `tailwind.config.ts`, or rewrite the pages using them. **62 distinct class names, 614 usages, emit no CSS** — verified against `.next/static/css/`. Worst: `text-text-secondary` ×105, `text-light-text` ×72, `text-dark-text` ×72, `text-foreground` ×47, `text-primary` ×32, `text-text-primary` ×27, `border-primary` ×26, `bg-primary` ×19, `bg-surface-highlight` ×17.
+- [ ] **P2-13** — Restore the `lime-*` / `emerald-*` numeric scales. `tailwind.config.ts:24,27` redefine them as **flat strings**, which destroys Tailwind's built-in ramps — that's why `bg-emerald-600` (`app/layout.tsx:101`) and `text-emerald-400` silently vanished. Nest them instead.
+- [ ] **P2-14** — Add the missing font-family tokens or fix the call sites: `font-heading` ×37, `font-fraunces` ×18, `font-geist` ×7, `font-pixel` ×1 all emit nothing (only `display`/`sans`/`mono`/`body` exist).
+- [ ] **P2-15** — Remove references to fonts that are never loaded (they fall back silently): `Playfair Display` ×6 files, `VT323` ×8 — including the **live** `src/components/FormalInformalToggle.tsx:26,42`.
+- [ ] **P2-16** — Unify the type scale. `tailwind.config.ts:61-67` and `app/globals.css:151-171` both define `display-xl`/`display-lg`/`display-md` **with different values**.
+- [ ] **P2-17** — Replace hardcoded literals with tokens: `#D4FF3F` ×69, `#F4F1EA` ×32, `#0A0A0B` ×26, `#13131B` ×10, `#1C1C26` ×10, `#FF6F61` ×9, plus 49 distinct `rgba()` values that are the same tokens written longhand.
+- [ ] **P2-18** — Fix the near-miss literals: `#0A0A0A` (one digit off `void`) at `app/(auth)/forgot/page.tsx:146`, `app/(auth)/reset/[token]/page.tsx:198`, `app/refund/page.tsx:328`.
+- [ ] **P2-19** — Consolidate the duplicate component families: **EventCard** ×2 (`components/EventCard.tsx` lime + `src/components/booking/EventCard.tsx` mustard) · **Header** ×3 live · **Footer** ×2 live · **Marquee** ×2 live · **Button** ×4 (`ui/Button.tsx`, `ui/MagneticButton.tsx`, `.btn-primary` in CSS, raw `<button>`) · **Card** ×6 (`ui/GlassCard.tsx`, two different `.glass-card` definitions, `.glass-effect`, `.glass-panel`, `.glass-panel-dark`).
+
+### Shared logic
+
+- [ ] **P2-20** — One `sanitizeUser()`. `backend/src/routes/auth.ts:24-51` and `backend/src/routes/users.ts:25-49` have **different field sets** — this is the direct cause of P4-1.
+- [ ] **P2-21** — One `getApiUrl()`. Seven variations exist, and the production URL is hardcoded in seven places: `src/lib/api.ts:1,280`, `lib/api.ts:27`, `app/admin/payments/page.tsx:36,71,104`, `app/booking/confirmation/[bookingId]/page.tsx:22`, `ConfirmationContent.tsx:7`, `app/host/dashboard:793`, `app/events/[slug]:588`. Note `src/components/host/AIAssistant.tsx:19` falls back to `http://localhost:4000` **in production**.
+- [ ] **P2-22** — One shared Cloudinary + multer module. `backend/src/routes/uploads.ts:10-34` and `backend/src/routes/users.ts:10-23` are byte-identical apart from the size limit.
+- [ ] **P2-23** — One `unitPrice()` and one `formatINR()`. `price === 'Free' ? 0 : price` appears in 4 files; `₹${n.toLocaleString('en-IN')}` in ~13.
+- [ ] **P2-24** — One `Event` type. Three incompatible shapes exist — `src/lib/api.ts:3-16`, `types/index.ts:48+`, `lib/mockEvents.ts:3-26` — **none matching the Prisma model**. Generate from Prisma.
+- [ ] **P2-25** — Align the status vocabularies. `types/index.ts:13-18` says `draft|published|sold_out|cancelled|completed`; Prisma says `draft|live|full|past|cancelled`. `types/index.ts:33` says `host|attendee|both`; the DB says `user|host|admin`. **The frontend types describe a system that doesn't exist.**
+- [ ] **P2-26** — Collapse the duplicate auth routes: `/signin` + `/login`, `/forgot` + `/forgot-password`, `/reset/[token]` + `/reset-password` — three concepts, six routes, two visual styles. Backend mirrors it with `/signin`+`/login` and `/signout`+`/logout` aliases.
+- [ ] **P2-27** — Pick one store naming convention. Currently four: `store/authStore.ts`, `lib/stores/auth.ts`, `src/store/bookingStore.ts`, `src/store/useAppStore.ts`.
+- [ ] **P2-28** — Normalize indentation (4-space in `src/**` + `backend/**`, 2-space in `app/**` + `components/**`) and `components/ui/` casing (`Button.tsx` vs `input.tsx`). Best done by Prettier in P3-8.
+
+---
+
+## Phase 3 — Install gates
+
+*Goal: nothing reaches `main` unchecked. Today `lint` has never run, `test` errors on startup, and the build is explicitly configured to ignore both.*
+
+- [ ] **P3-1** 🔴 — Install `eslint` + `eslint-config-next`. **Neither is in `frontend/package.json` and neither is installed** — `npm run lint` fails with `Failed to load config "next/core-web-vitals"`. Linting has never executed on this codebase.
+- [ ] **P3-2** — Triage the first lint run. Expect a large backlog; fix errors, then decide which warnings to enforce.
+- [ ] **P3-3** 🔴 — Remove `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` from `frontend/next.config.js:4-11`. Until these go, a green build means nothing.
+- [ ] **P3-4** — Fix the 9 `tsc --noEmit` errors. Eight are in `src/components/FloatingMesh3D.tsx` (deleted by P2-4). The one that matters: `lib/stores/booking.ts:220` — `bookingData.booking?.id` on a type without a `booking` property, **in the payment path**.
+- [ ] **P3-5** — Turn on `strict: true` in `backend/tsconfig.json:10`. The backend's clean typecheck is currently not evidence of type safety.
+- [ ] **P3-6** — Reduce `any`. 75 frontend / 63 backend. Worst frontend files: `src/lib/api.ts` (11), `app/settings/page.tsx` (9), `app/profile/page.tsx` (7).
+- [ ] **P3-7** 🔴 — Fix the Jest harness. `npm test` errors before collecting: `Module <rootDir>/jest.setup.js ... was not found` — the file exists, but `frontend/package.json:14` declares `"type": "commonjs"` while `jest.setup.js` uses ESM `import`.
+- [ ] **P3-8** — Add Prettier + a config, and run it once across the repo (pairs with P2-28).
+- [ ] **P3-9** — Fix the Playwright config. `frontend/playwright.config.ts:4` points at `./tests`, which **does not exist**, and `:9` defaults `baseURL` to `https://www.upsosh.app` — **any E2E test written tomorrow runs against production by default.**
+- [ ] **P3-10** 🔴 — Add a CI workflow (`.github/workflows/ci.yml`). There is **no CI of any kind** — no `.github/`, no pipeline file anywhere. Run `tsc --noEmit` + `lint` + `test` + `build` on push and PR, for both workspaces.
+- [ ] **P3-11** — Add a Postgres service to CI and run `prisma migrate deploy` + seed against it, so P0-1/P0-2 can never regress.
+- [ ] **P3-12** — Add a pre-commit hook (husky + lint-staged) for lint + format on changed files.
+- [ ] **P3-13** — Set up structured logging in the backend (pino) with request IDs, replacing the 63 bare `console.*` calls. Remove the 52 frontend `console.*` (20 of them in the live `src/lib/api.ts`).
+
+---
+
+## Phase 4 — Correctness
+
+*Goal: everything the UI claims to do, it actually does. 20 frontend calls hit endpoints that don't exist; 38 interactive elements do nothing.*
+
+### Data that silently disappears
+
+- [ ] **P4-1** 🔴 — Fix `GET /api/auth/me`. `AUTH_USER_SELECT` (`backend/src/routes/auth.ts:53-59`) selects only `{id, email, name, role, createdAt}`, but `sanitizeUser` (`:24-51`) reads 15 more fields — so the endpoint **always** returns `photoUrl: null, bio: null, onboardingComplete: false, interests: '[]', city: null, hostBio: null…` regardless of the database. **Users appear to lose their onboarding data on every page load.**
+- [ ] **P4-2** — Make `middleware/auth.ts:26` read the real `User.hostStatus` column instead of deriving it: `hostStatus: user.role === 'host' ? 'verified' : 'none'`. The DB column is written by `hosts.ts:54,129,160` and then ignored by every authorization check.
+- [ ] **P4-3** — Wrap booking creation in a transaction and stop the double round-trip. `bookings.ts:37-68` does INSERT → UPDATE (just to set `qrCode`) → increment `attendees`, all non-transactional.
+- [ ] **P4-4** — Move the `attendees` increment from booking creation to payment success. Today an abandoned checkout permanently consumes a seat (`bookings.ts:63-68`).
+- [ ] **P4-5** — Move the confirmation email from booking-create to payment-success (`bookings.ts:72-83`). An abandoned checkout currently emails "Booking confirmed".
+
+### Endpoints the frontend calls that don't exist
+
+- [ ] **P4-6** — `GET /api/events/:id/attendees` — in a `Promise.all` at `app/host/events/[id]/page.tsx:48-49`, so **the whole page fails to load**.
+- [ ] **P4-7** — `PATCH /api/events/:id/attendees/:aid/checkin` (`host/events/[id]:64`) and `POST /api/events/:id/announce` (`:75`).
+- [ ] **P4-8** — Fix the `/host/events` path: the page calls `GET /api/host/events`; the backend route is `GET /api/events/host/mine`.
+- [ ] **P4-9** — `GET /api/host/payouts` + `POST /api/host/payouts/withdraw` — implement, or delete `/host/payouts` (which is orphaned anyway).
+- [ ] **P4-10** — `DELETE /api/users/me` (`app/settings/page.tsx:347`). Account deletion is advertised in the UI and impossible.
+- [ ] **P4-11** — Build the admin surface. `GET /api/hosts/admin/applications` + approve + reject **already exist and work** (`hosts.ts:83,111,141`) and **no page calls them** — host applications can currently only be approved by hand. Then either implement `/api/bookings/pending|approve|reject` or delete `/admin/payments`.
+- [ ] **P4-12** — Fix `/u/[username]`: it calls `GET /api/users/:username` but the backend matches on `id` (`users.ts:149`) → always 404. Also `GET /api/users/:id/attending` doesn't exist, and `GET /api/events?hostId=` silently ignores the param and **returns all events as that host's**.
+- [ ] **P4-13** — Build the ticket scan/validation endpoint. Nothing can verify a ticket today (pairs with P1-27).
+- [ ] **P4-14** — Implement refunds. **No `razorpay.payments.refund()` call exists anywhere**, and `PATCH /api/bookings/:id/cancel` (`bookings.ts:168-202`) never touches `paymentStatus` — a cancelled paid booking still reads `paid` with no money returned. `app/refund/page.tsx` is a 393-line policy with no mechanism.
+- [ ] **P4-15** — Add a reconciliation job for payments captured but never verified.
+- [ ] **P4-16** — Remove or implement the dead Dodo Payments client: `src/lib/api.ts:344-399` → `/api/payments/create-checkout` and `/api/payments/status/:id`, wired into `src/components/booking/CheckoutModal.tsx:171,501`. Resolved by P2-1.
+- [ ] **P4-17** — `POST /api/payments/manual-proof` (`lib/stores/booking.ts:313`) — implement or remove. It's fired with `.catch(() => {})` so the failure is invisible.
+- [ ] **P4-18** — Fix `getEvents()`. `src/lib/api.ts:106-110` types it `Event[]`; the backend returns `{events, total, page, pages}` — **this is why `/booking` and `/host` are broken**. Also `app/host/events/[id]/page.tsx:48` expects `{event}` while `GET /api/events/:slug` returns the object bare.
+- [ ] **P4-19** — Remove the pointless `POST /api/auth/register` call (`lib/stores/auth.ts:168`) — always 404s, then falls back to `/signup`.
+
+### The 38 dead interactive elements
+
+- [ ] **P4-20** — Add handlers to the 14 buttons with no `onClick`: `pricing:70,92,111` (all three CTAs) · `u/[username]:294,298` (Follow, Message) · `discover:422` (Notify me) · `dashboard:213` (⋮ menu) · `host/dashboard:425` (Manage) · `host/dashboard:709` (Open AI Planner) · `signup:348,358` (Google, Apple) · `HorizontalEventSlider:23` (See All) · plus `events/[slug]/book:462,469` if that route survives P2-6.
+- [ ] **P4-21** — Make the settings saves real. `app/settings/page.tsx:233-234` and `:279-280` — `onClick={() => toast.success('… saved.')}` **is the entire implementation**.
+- [ ] **P4-22** — Apply the distance filter or remove the slider. `app/discover/page.tsx:338-339` updates state and **counts toward the active-filter badge** (`:548`), but `applyFilters()` (`:102-125`) never reads it.
+- [ ] **P4-23** — Bind the "Remember me" checkbox (`app/login/page.tsx:93-98` — no `checked`, no `onChange`) and the three uncontrolled contact inputs (`app/contact/page.tsx:71,75,81`).
+- [ ] **P4-24** — Fix the broken links: `href="#"` ×3 in `components/layout/GlobalFooter.tsx:22,30,35`; `/blog`, `/cookies`, `/bookings` (×2, should be `/my-bookings`), `/host/events/${id}/edit` (×2, route doesn't exist).
+- [ ] **P4-25** — Implement or remove Google/Apple sign-in. Two buttons have no handler (P4-20); the other two (`app/(auth)/signin/page.tsx:137,173`) need `NEXT_PUBLIC_GOOGLE_CLIENT_ID` / `NEXT_PUBLIC_APPLE_CLIENT_ID` **and** the `/api/auth/google` + `/api/auth/apple` endpoints, none of which exist.
+- [ ] **P4-26** — Give `/contact` a real endpoint. `app/contact/page.tsx:23` does `window.location.href = 'mailto:…'` then fakes a 500ms delay before showing "success".
+- [ ] **P4-27** — Replace `alert()` ×5 and the blocking `prompt()` (`app/admin/payments/page.tsx:62,92,96,101,126,130`) with real UI.
+
+### Mock data still shipping as real
+
+- [ ] **P4-28** 🔴 — Wire `/dashboard` to the API. It makes **zero** API calls — every stat, chart, booking row and revenue figure comes from `lib/mockHostData.ts` and `MOCK_BOOKINGS` (`app/dashboard/page.tsx:42`). Replace with `/api/events/host/mine` + `/api/bookings`. Also `:316` renders the literal `"Analytics coming soon."`
+- [ ] **P4-29** — Remove the `/discover` mock fallback. `app/discover/page.tsx:517` seeds state with 12 fake events and `:530` `catch { /* keep mock */ }` restores them on any error — a cold DB or a backend hiccup shows a convincing fake grid.
+- [ ] **P4-30** — Remove the `/planner` mock fallback. `app/planner/page.tsx:523-525` `catch { setResult(mockPlannerResult) }` — an AI failure produces a polished fake plan with **no indication it isn't real**.
+- [ ] **P4-31** — Remove the `/events/[slug]` mock fallback (`:599`) and delete `lib/mockEvents.ts`, `lib/mockHostData.ts`, `lib/mockPlannerResult.ts` (725 lines total) once nothing reads them.
+- [ ] **P4-32** — Persist planner history. `app/planner/page.tsx:489` — `pastPlans` is `useState` only; "Save plan" is lost on refresh.
+- [ ] **P4-33** — Fix the fake QR on `/events/[slug]/book:441-449` — a CSS gradient that looks like a QR code, labelled "QR Ticket". Moot if P2-6 lands.
+
+### Schema and query correctness
+
+- [ ] **P4-34** — Convert the six string state machines to Prisma enums: `User.role`, `User.hostStatus`, `Event.status`, `Booking.status`, `Booking.paymentStatus`, `Booking.paymentMethod`. All are unconstrained `String` documented only in `//` comments.
+- [ ] **P4-35** — Add a `failed` state to `paymentStatus`. The schema **cannot represent a failed payment**.
+- [ ] **P4-36** — Add the missing indexes: `Event @@index([status, date])`, `@@index([city])`, `@@index([category])`, `@@index([userId])`; `Booking @@index([userId, createdAt])`; `User @@index([resetToken])` — the last one is a `findFirst` on an unindexed column on **every password reset** (`auth.ts:267`).
+- [ ] **P4-37** — Move JSON-in-String columns to Prisma `Json`: `User.interests`, `User.hostCategories`, `Event.tags`. They're currently hand-parsed (`events.ts:7-13`) and unqueryable.
+- [ ] **P4-38** — Drop the dead-provider columns: `Booking.items`, `Booking.customer` (both commented `// JSON for legacy compat`), `Booking.paymentProof`.
+- [ ] **P4-39** — Resolve the two host concepts: standalone `Host` (name/avatar/verified) vs `User.role='host'` + `User.hostStatus`. `Event` has both `hostId` and `userId`, both optional, nothing keeps them in sync.
+- [ ] **P4-40** — Fix `HostApplication.sampleEventDate` — currently `String`, should be `DateTime`.
+- [ ] **P4-41** — Replace `ILIKE '%q%'` search (`events.ts:53-58`, three columns, `mode: 'insensitive'`) with `pg_trgm` or full-text search before it sees real volume.
+- [ ] **P4-42** — Implement or remove the ignored `?city=` filter on `GET /api/hosts` (`hosts.ts:177-179` is an empty `if` block).
+
+### Visual and platform correctness
+
+- [ ] **P4-43** — Decide the theme story. `tailwind.config.ts:11` opts out of `darkMode` (so `dark:` compiles under `prefers-color-scheme`) while `app/globals.css:38-42` forces `#0A0A0B !important`. **A visitor on a Light OS gets the light variant of every `dark:` block painted on a hard-black page.** Either commit to single-theme and strip the ~150 `dark:` classes, or implement a real toggle.
+- [ ] **P4-44** — Fix the pages that break because of it: `/terms` (45 light-mode classes), `/privacy` (32), `/safety` (11), `/booking` (`bg-white` root at `:52`), `/booking/confirmation`, `/admin/payments`, `CheckoutModal` (13), `/host`, `/pricing`.
+- [ ] **P4-45** — Fix the radius drift. Only 350 of ~925 applications land in the intended 12–16px band; the rest are 4px (`rounded` ×54), 8px (`rounded-lg` ×99), 24px (`rounded-3xl` ×43), plus arbitrary 28/40/48px.
+- [ ] **P4-46** — Tokenize shadows. `tailwind.config.ts` has **no `boxShadow` key** — 14 distinct shadows across 4 glow colors, all ad hoc.
+- [ ] **P4-47** — Add per-page `metadata`. **0 of 48 pages export `metadata` or `generateMetadata`** — every route shares one root title. Requires splitting each route into a server `page.tsx` + client child, since 46 of 48 are `'use client'`. Prioritize `/events/[slug]`.
+- [ ] **P4-48** — Add `frontend/public/favicon.ico`. Declared at `app/layout.tsx:53`, file absent → 404 on every page load.
+- [ ] **P4-49** — Replace the 39 raw `<img>` tags (27 files, only 2 use `next/image`) and add `loading="lazy"`. `next.config.js:13-22` already configures `remotePatterns` for Unsplash.
+- [ ] **P4-50** — Dynamic-import `recharts` in `app/dashboard/page.tsx:6` — 89.8 kB of page-specific JS (248 kB first load) for a page whose data is mocked.
+- [ ] **P4-51** — Fix responsiveness. 15 routes have **zero** breakpoints (the whole onboarding funnel, both auth-alt pages, `/dashboard/new`, `/events/[slug]/book`); 16 more have fewer than 5. Wrap the two unwrapped `<table>`s (`app/planner/page.tsx:146`, `app/dashboard/page.tsx:140`) in `overflow-x-auto`.
+- [ ] **P4-52** — Fix contrast. `cream-faint` = `rgba(244,241,234,0.25)` on `#0A0A0B` ≈ **2.0:1** — fails WCAG AA — and it's used **106 times** for real body copy.
+- [ ] **P4-53** — Add `aria-label` to the 14 icon-only buttons, and Escape handlers + focus traps to the 6 `div`-with-onClick modal backdrops (`settings:386`, `host/events/[id]:227`, `host/events:50`, `QRTicketModal:43`, `EventDetailsModal:68`, `CheckoutModal:357`) — **modals currently cannot be dismissed by keyboard**.
+- [ ] **P4-54** — Fix the heading-hierarchy skips: `app/booking/page.tsx:78→117` (h1→h3), `app/contact/page.tsx:34→46` (h1→h3).
+- [ ] **P4-55** — Add a fallback for `body { cursor: none }` (`app/globals.css:94-98`, `app/layout.tsx:74`). If `CustomCursor` fails to mount, the user has **no visible pointer**.
+- [ ] **P4-56** — Add route-level `loading.tsx` / `error.tsx` to the high-traffic routes. **42 of 48 routes have neither** — only `/`, `/dashboard`, `/discover`, `/events/[slug]`, `/host/dashboard`, `/planner` are covered.
+
+---
+
+## Phase 5 — Prove it
+
+*Goal: the claims in the audit's resume section become defensible, and regressions get caught. Coverage is 0% today — on auth, booking and payment alike.*
+
+### Tests that defend the Phase 1 fixes
+
+- [ ] **P5-1** 🔴 — Test that a tampered amount is rejected — POST `create-order` with `amount: 1` for a ₹5,000 booking and assert the Razorpay order is created for `booking.totalAmount`. **This is the test that makes "I found and fixed a payment vulnerability" a story you can tell.**
+- [ ] **P5-2** — Test signature verification: valid signature accepted; bit-flipped signature rejected with 400; missing fields rejected.
+- [ ] **P5-3** — Test order↔booking binding: a valid `{order_id, payment_id, signature}` triple for booking A is rejected against booking B.
+- [ ] **P5-4** — Test webhook signature: unsigned request rejected; wrong signature rejected; valid signature updates exactly one booking; duplicate delivery is idempotent.
+- [ ] **P5-5** — Test IDOR across all 9 `:id` endpoints: user B gets 403 on user A's booking, cancel, create-order and verify. *(These already pass — lock the behaviour in.)*
+- [ ] **P5-6** — Test the capacity race: N concurrent bookings on the last seat produce exactly one success.
+- [ ] **P5-7** — Test auth: bcrypt round-trip, expired JWT → 401, deleted-user JWT → 401, reset token single-use, reset token expiry, no user enumeration on `/forgot-password` or `/signin`.
+- [ ] **P5-8** — Test `GET /api/auth/me` returns the full onboarding profile (regression guard for P4-1).
+- [ ] **P5-9** — Test the zod schemas from P1-17 reject malformed input on all 8 write endpoints.
+
+### End-to-end
+
+- [ ] **P5-10** 🔴 — Playwright happy path: **signup → browse `/discover` → open an event → book → pay (Razorpay test mode) → land on confirmation → see the ticket in `/my-bookings`.** This is the demo; make it a test.
+- [ ] **P5-11** — Playwright failure paths: modal dismissed, payment failed, refresh mid-payment. Assert no orphaned `pending` booking holds a seat.
+- [ ] **P5-12** — Playwright host path: apply → admin approves → create event → it appears on `/discover`.
+- [ ] **P5-13** — Run the mobile projects already configured in `playwright.config.ts` (Pixel 5, iPhone 12) against the routes fixed in P4-51.
+
+### Wire it up and verify
+
+- [ ] **P5-14** — Add the test job to CI (P3-10) with a coverage floor on `backend/src/routes/payments.ts`, `bookings.ts`, `auth.ts` and `middleware/auth.ts`.
+- [ ] **P5-15** — Re-run the full audit sweep: `tsc --noEmit` (0 errors), `next lint` (passes), `npm test` (passes), `next build` **without** the ignore flags, and the Tailwind class-vs-compiled-CSS diff (expect 0 no-op classes).
+- [ ] **P5-16** — Re-verify from a clean clone on a machine that has never run this project (the P0-16 gate, but end-to-end this time).
+- [ ] **P5-17** — Update the resume claims. From `AUDIT.md` §12(d), these become honest once their phase lands: *"integrated Razorpay payments"* (P1-1, P1-2) · *"handled payment webhooks"* (P1-8→P1-10) · *"protected routes with authentication"* (P1-15) · *"secure session management"* (P1-12, P1-13) · *"input validation with Zod"* (P1-17) · *"responsive across devices"* (P4-51) · *"type-safe end to end"* (P3-3→P3-5) · *"tested"* (Phase 5) · *"CI/CD pipeline"* (P3-10) · *"data-driven host dashboard"* (P4-28) · *"admin dashboard for host approvals"* (P4-11) · *"deployed with automated migrations"* (P0-1, P0-5).
+
+---
+
+## Session log
+
+_Ask me to update this after each session._
+
+| Date | Phase | Tasks completed | Notes |
+|---|---|---|---|
+| 2026-08-24 | — | Plan created from `AUDIT.md` | No fixes started. |
+| 2026-08-24 | 0 | P0-1, P0-2, P0-3, P0-5, P0-6, P0-7, P0-8, P0-9, P0-12, P0-13, P0-15, P0-16 | Clone-to-running verified twice from a pristine copy. Four tasks deferred: P0-4, P0-10, P0-11, P0-14. Three things were added that were not in the original plan — see "Added beyond the plan" below. |

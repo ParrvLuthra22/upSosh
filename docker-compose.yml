@@ -1,0 +1,36 @@
+# Local Postgres for development. Nothing else runs in Docker — the two Node
+# servers run on the host via `npm run dev`.
+#
+#   docker compose up -d      start
+#   docker compose down       stop (data survives)
+#   docker compose down -v    stop and wipe the database
+#
+# Port 5432 is the default. If something else on your machine already uses it
+# (another project's Postgres is the usual culprit), start it on a free port:
+#
+#   POSTGRES_PORT=5433 docker compose up -d
+#
+# and change the port in backend/.env to match.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: upsosh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: upsosh
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - upsosh-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # `npm run setup` waits on this before running migrations.
+      test: ["CMD-SHELL", "pg_isready -U postgres -d upsosh"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  upsosh-pgdata:

@@ -21,9 +21,13 @@ out
 *.pem
 .env
 .env.local
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
+# Never ignore the templates — they are the only documentation of what is needed.
+!.env.example
+!**/.env.example
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

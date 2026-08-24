@@ -1,5 +1,15 @@
 # Environment Configuration Guide
 
+> **Start with [README.md](./README.md) instead.** That is the authoritative setup guide;
+> this file is older background reference kept for the deployment details near the end.
+>
+> Two things below are now out of date:
+> - **`.env.production` is no longer committed to git.** It was untracked because a tracked
+>   env file is one commit away from leaking a key. Set `NEXT_PUBLIC_*` variables in your
+>   host's dashboard (Vercel project settings) instead.
+> - **`.env.development` does not exist** in this repo. Local development uses `frontend/.env`,
+>   created for you by `npm run setup` from `frontend/.env.example`.
+
 ## Overview
 This project uses environment variables to configure URLs for different environments (development, production).
 

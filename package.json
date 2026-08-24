@@ -9,6 +9,14 @@
     "scripts": {
         "dev:backend": "npm run dev --workspace=upsosh-backend",
         "dev:frontend": "npm run dev --workspace=upsosh-website",
-        "build": "npm run build --workspaces"
+        "build": "npm run build --workspaces",
+        "setup": "node scripts/setup.mjs",
+        "dev": "concurrently --names backend,frontend --prefix-colors cyan,magenta \"npm:dev:backend\" \"npm:dev:frontend\"",
+        "db:migrate": "npm exec --workspace=upsosh-backend -- prisma migrate deploy",
+        "db:seed": "npm run seed --workspace=upsosh-backend",
+        "db:studio": "npm exec --workspace=upsosh-backend -- prisma studio"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2"
     }
 }
