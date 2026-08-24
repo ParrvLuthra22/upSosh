@@ -20,20 +20,15 @@ export default function LoginPage() {
         const password = formData.get('password') as string;
 
         try {
-            const data = await api.login({ email, password });
-            
-            
-            localStorage.setItem('user', data.user.name);
-            
-            localStorage.setItem('userData', JSON.stringify(data.user));
-            
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
+            await api.login({ email, password });
+            // The JWT is NOT stored client-side. api.login's response sets an
+            // httpOnly cookie; writing the token (or the user blob) into
+            // localStorage here is what previously exposed a 7-day credential
+            // to any injected script.
             window.dispatchEvent(new Event('storage'));
             router.push('/');
         } catch (error: any) {
-            console.error('Login error:', error);
+            console.error('Login request failed');
             alert(error.message || 'An error occurred. Please try again.');
         } finally {
             setIsLoading(false);

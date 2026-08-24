@@ -158,9 +158,15 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
       return res.status(403).json({ message: 'Host verification required to create events' });
     }
 
+    // hostId is deliberately NOT accepted from the client. Host has no ownership
+    // column (no Host.userId), so there is nothing to validate a client-supplied
+    // value against — accepting it let any verified host attribute an event to
+    // any Host row by guessing its id. Ownership is carried by userId below,
+    // which is what every authorization check actually reads.
+    // Unifying Host and User is tracked as P4-39.
     const {
       title, type, category, date, time, venue, city, price, isFree,
-      description, image, tags, capacity, status, isSuperhost, hostId,
+      description, image, tags, capacity, status, isSuperhost,
     } = req.body;
 
     if (!title || title.trim().length < 5) {
@@ -208,7 +214,6 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<a
         capacity: parsedCapacity,
         status: status || 'live',
         isSuperhost: Boolean(isSuperhost),
-        hostId: hostId ?? null,
         userId: user.id,
       },
       include: { host: true },

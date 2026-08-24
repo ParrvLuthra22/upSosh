@@ -791,10 +791,8 @@ function HostDashboard() {
     async function fetchHostEvents() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         const res = await fetch(`${apiUrl}/api/events/host/mine`, {
           credentials: 'include',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (res.ok) {
           const data = await res.json();

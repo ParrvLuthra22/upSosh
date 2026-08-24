@@ -119,7 +119,10 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-  const isDev = process.env.NODE_ENV !== 'production';
+  // Fail CLOSED: only an explicit NODE_ENV=development gets stack traces.
+  // The previous `!== 'production'` leaked them whenever NODE_ENV was unset or
+  // misspelled, which is exactly the situation you cannot detect from outside.
+  const isDev = process.env.NODE_ENV === 'development';
 
   if (err.message?.startsWith('CORS:')) {
     return res.status(403).json({ message: 'CORS policy violation', code: 'CORS_ERROR' });

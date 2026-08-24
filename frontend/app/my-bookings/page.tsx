@@ -305,27 +305,30 @@ function EmptyState({ tab }: { tab: TabType }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyBookingsPage() {
-  const { isAuth, loading } = useAuth();
+  const { isAuth, loading, hydrated } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<TabType>('upcoming');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fetching, setFetching] = useState(true);
   const [selected, setSelected] = useState<Booking | null>(null);
 
-  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
+  // Guard on `hydrated`, not just `loading`: the store's initial isLoading is
+  // false until refresh() sets it, so without this a returning logged-in user
+  // would be redirected to /signin on the very first render, before Zustand
+  // finishes reading the persisted user and refresh() has had a chance to run.
+  useEffect(() => {
+    if (!hydrated || loading) return;
+    if (!isAuth) router.push('/signin?from=/my-bookings');
+  }, [hydrated, loading, isAuth, router]);
 
   useEffect(() => {
-    if (!loading && !isAuth && !hasToken) router.push('/signin?from=/my-bookings');
-  }, [loading, isAuth, hasToken, router]);
-
-  useEffect(() => {
-    if (!isAuth && !hasToken) return;
+    if (!hydrated || loading || !isAuth) return;
     setFetching(true);
     api.get<{ bookings: Booking[] }>('/api/bookings')
       .then((d) => setBookings(d.bookings ?? []))
       .catch(() => setBookings([]))
       .finally(() => setFetching(false));
-  }, [isAuth, hasToken]);
+  }, [hydrated, loading, isAuth]);
 
   function handleCancel(id: string) {
     setBookings((prev) =>
@@ -353,7 +356,7 @@ export default function MyBookingsPage() {
     { id: 'cancelled', label: 'Cancelled' },
   ];
 
-  if (!hasToken && !isAuth && !loading) return null;
+  if (!hydrated || (loading && !isAuth)) return null;
 
   return (
     <div className="min-h-screen bg-void">

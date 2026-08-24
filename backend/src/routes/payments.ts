@@ -17,13 +17,36 @@ function getRazorpayClient(): Razorpay {
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 }
 
+/**
+ * Constant-time signature comparison.
+ *
+ * `a !== b` on a hex digest short-circuits at the first differing character, so
+ * how long it takes to fail leaks how much of the prefix was correct. That is a
+ * usable oracle for forging a signature byte by byte. timingSafeEqual always
+ * compares the full buffer.
+ *
+ * It throws when the two buffers differ in length, so the length check has to
+ * come first — and that check is safe to short-circuit, since the length of a
+ * SHA-256 hex digest is public knowledge.
+ */
+function signaturesMatch(expected: string, received: string): boolean {
+  const a = Buffer.from(expected, 'utf8');
+  const b = Buffer.from(received, 'utf8');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 // POST /api/payments/create-order — create Razorpay order (requireAuth)
+//
+// The amount is NEVER taken from the request. It is read from the booking row
+// the server itself created. Trusting a client-supplied amount here previously
+// allowed anyone to pay ₹1 for any event.
 router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response): Promise<any> => {
   try {
-    const { bookingId, amount } = req.body;
+    const { bookingId } = req.body;
 
-    if (!bookingId || !amount) {
-      return res.status(400).json({ message: 'bookingId and amount are required' });
+    if (!bookingId) {
+      return res.status(400).json({ message: 'bookingId is required' });
     }
 
     const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
@@ -33,12 +56,30 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    if (booking.paymentStatus === 'paid') {
+      return res.status(409).json({ message: 'This booking is already paid' });
+    }
+
+    // totalAmount = ticketPrice + platformFee, computed server-side in
+    // POST /api/bookings. This is the only figure we will ever charge.
+    const amountInPaise = Math.round(booking.totalAmount * 100);
+    if (!Number.isFinite(amountInPaise) || amountInPaise < 100) {
+      return res.status(400).json({ message: 'Booking amount is not payable' });
+    }
+
     const razorpay = getRazorpayClient();
 
     const order = await razorpay.orders.create({
-      amount: Math.round(Number(amount) * 100), // paise
+      amount: amountInPaise,
       currency: 'INR',
       receipt: bookingId,
+    });
+
+    // Persist the order id before returning it. /verify uses this to prove the
+    // payment being verified belongs to this booking and no other.
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { razorpayOrderId: order.id },
     });
 
     return res.json({
@@ -72,14 +113,14 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
       return res.status(503).json({ message: 'Payment service not configured' });
     }
 
-    // Verify signature
+    // ── 1. Verify the signature ──────────────────────────────────────────────
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
     const expectedSignature = crypto
       .createHmac('sha256', keySecret)
       .update(body)
       .digest('hex');
 
-    if (expectedSignature !== razorpay_signature) {
+    if (!signaturesMatch(expectedSignature, String(razorpay_signature))) {
       return res.status(400).json({ message: 'Invalid payment signature' });
     }
 
@@ -90,14 +131,45 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    const updatedBooking = await prisma.booking.update({
-      where: { id: bookingId },
+    // ── 2. Prove the payment belongs to THIS booking ─────────────────────────
+    // A signature only proves Razorpay issued the order/payment pair — not that
+    // it was for this booking. Without this check a valid triple from a cheap
+    // booking could be replayed against any other booking the user owns.
+    if (!booking.razorpayOrderId || booking.razorpayOrderId !== razorpay_order_id) {
+      console.warn(
+        `[Payments] Order mismatch on booking ${bookingId}: ` +
+        `expected ${booking.razorpayOrderId ?? 'none'}, got ${razorpay_order_id}`,
+      );
+      return res.status(400).json({ message: 'Payment does not match this booking' });
+    }
+
+    // ── 3. Refuse to re-confirm an already-paid booking ──────────────────────
+    if (booking.paymentStatus === 'paid') {
+      return res.status(409).json({ message: 'This booking is already paid' });
+    }
+    if (booking.paymentStatus !== 'unpaid') {
+      return res.status(409).json({ message: `Cannot pay a booking in state "${booking.paymentStatus}"` });
+    }
+
+    // Conditional update — the WHERE clause is the last line of defence against
+    // two concurrent verifications both marking the same booking paid.
+    const { count } = await prisma.booking.updateMany({
+      where: { id: bookingId, paymentStatus: 'unpaid' },
       data: {
         paymentStatus: 'paid',
         paymentId: razorpay_payment_id,
         status: 'confirmed',
         paymentMethod: 'razorpay',
+        paidAt: new Date(),
       },
+    });
+
+    if (count === 0) {
+      return res.status(409).json({ message: 'This booking is already paid' });
+    }
+
+    const updatedBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
       include: { event: true },
     });
 

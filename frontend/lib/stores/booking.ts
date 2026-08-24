@@ -11,20 +11,15 @@
  */
 
 import { create } from 'zustand';
-import Cookies from 'js-cookie';
 
-/** Get auth token for API calls */
-function getAuthToken(): string {
-  if (typeof window === 'undefined') return '';
-  return Cookies.get('upsosh_token') ?? localStorage.getItem('token') ?? '';
-}
-
+/**
+ * Requests authenticate with the backend's httpOnly `token` cookie, which every
+ * fetch below sends via `credentials: 'include'`. There is deliberately no
+ * bearer token here — reading a JWT out of localStorage is what made an XSS
+ * able to steal a 7-day credential.
+ */
 function authHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  return { 'Content-Type': 'application/json' };
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -209,12 +204,20 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
         }),
       });
 
-      let bookingData: { id?: string; bookingId?: string; error?: string };
+      let bookingData: {
+        id?: string;
+        bookingId?: string;
+        booking?: { id?: string };
+        error?: string;
+        message?: string;
+      };
       try { bookingData = await bookingRes.json(); }
       catch { bookingData = {}; }
 
       if (!bookingRes.ok) {
-        throw new Error(bookingData.error ?? `Booking failed (${bookingRes.status})`);
+        throw new Error(
+          bookingData.message ?? bookingData.error ?? `Booking failed (${bookingRes.status})`,
+        );
       }
 
       const returnedBookingId = bookingData.booking?.id || bookingData.bookingId || bookingData.id;
@@ -231,12 +234,13 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? '';
 
           if (!razorpayKey) {
-            // No key configured — skip payment and go straight to confirmation
-            // so the UX works in demo/development environments.
-            console.warn('[UpSosh] NEXT_PUBLIC_RAZORPAY_KEY_ID not set — skipping payment in demo mode');
-            set({ isProcessing: false });
-            get().goTo(3);
-            return;
+            // Previously this skipped payment entirely and jumped to the
+            // confirmation screen, so a missing env var silently turned every
+            // paid booking into a free one. Fail loudly instead: an
+            // unconfigured gateway is an outage, not a discount.
+            throw new Error(
+              'Payments are not configured. Please contact support — your booking was not charged.',
+            );
           }
 
           // 1. Create Razorpay order on backend
@@ -244,7 +248,10 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
             method: 'POST',
             headers: authHeaders(),
             credentials: 'include',
-            body: JSON.stringify({ bookingId: returnedBookingId, amount: price * guestCount }),
+            // No amount: the server charges booking.totalAmount, which it
+            // computed itself. A client-supplied amount was how you could pay
+            // ₹1 for a ₹5,000 event.
+            body: JSON.stringify({ bookingId: returnedBookingId }),
           });
 
           if (!orderRes.ok) {
@@ -254,6 +261,15 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
           const orderData = await orderRes.json();
           const orderId: string = orderData.orderId ?? orderData.order_id ?? '';
+          // Amount and currency come back from the server so the modal shows
+          // exactly what will be charged, rather than a locally recomputed
+          // figure that could disagree (it used to omit the platform fee).
+          const orderAmount: number = orderData.amount;
+          const orderCurrency: string = orderData.currency ?? 'INR';
+
+          if (!orderId) {
+            throw new Error('Payment order was not created. Please try again.');
+          }
 
           // 2. Load Razorpay SDK
           await loadRazorpayScript();
@@ -266,8 +282,8 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           }>((resolve, reject) => {
             const rp = new (window as any).Razorpay({
               key:         razorpayKey,
-              amount:      price * guestCount * 100, // paise
-              currency:    event.currency ?? 'INR',
+              amount:      orderAmount,   // paise, authoritative (server-computed)
+              currency:    orderCurrency,
               name:        'UpSosh',
               description: event.title,
               order_id:    orderId,
@@ -308,12 +324,11 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
         const fd = new FormData();
         fd.append('bookingId', returnedBookingId);
         fd.append('file', proofFile);
-        const manualToken = getAuthToken();
-        // Fire-and-forget; don't block confirmation step
+        // Fire-and-forget; don't block confirmation step.
+        // (Note: this endpoint does not exist on the backend — tracked as P4-17.)
         fetch('/api/payments/manual-proof', {
           method: 'POST',
           credentials: 'include',
-          headers: manualToken ? { Authorization: `Bearer ${manualToken}` } : {},
           body: fd,
         }).catch(() => {});
       }

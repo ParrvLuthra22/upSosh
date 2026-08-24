@@ -4,8 +4,22 @@
  * lib/stores/auth.ts
  * ─────────────────
  * Canonical Zustand auth store for UpSosh.
- * Persisted to localStorage (token + user) and synced to a "upsosh_token"
- * cookie so the AuthProvider can read it server-side on mount.
+ *
+ * THE JWT IS NEVER STORED HERE.
+ *
+ * Authentication rides entirely on the httpOnly `token` cookie that the backend
+ * sets on signup/signin. That cookie is unreadable from JavaScript, which is the
+ * whole point: script injected by an XSS cannot exfiltrate it.
+ *
+ * This store previously mirrored the same 7-day token into localStorage under
+ * three keys AND into a js-cookie (non-httpOnly) cookie, which handed all of
+ * that protection back. Every request now authenticates with
+ * `credentials: 'include'` instead.
+ *
+ * What IS persisted: the user profile, so the UI can render without a flash
+ * while /api/auth/me revalidates. It is display data, not a credential — if
+ * someone forges it locally they get a misleading avatar and nothing else,
+ * because the server authorises every request from the cookie.
  *
  * Import paths for the rest of the app:
  *   import { useAuthStore, useAuth } from '@/lib/stores/auth';
@@ -15,44 +29,26 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import Cookies from 'js-cookie';
 import type { User } from '@/types/index';
-
-// ─── Cookie key ───────────────────────────────────────────────────────────────
-
-const COOKIE_KEY = 'upsosh_token';
-const COOKIE_OPTS: Cookies.CookieAttributes = {
-  expires: 30,        // 30 days
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production',
-  path: '/',
-};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function writeTokenCookie(token: string | null) {
+/**
+ * Clear credential material this app used to write before the cookie-only
+ * migration. Without this, anyone with an existing session keeps a readable JWT
+ * in localStorage indefinitely — the vulnerability would persist for every
+ * current user even though the code no longer creates it.
+ */
+function purgeLegacyCredentials() {
   if (typeof window === 'undefined') return;
-  if (token) {
-    Cookies.set(COOKIE_KEY, token, COOKIE_OPTS);
-  } else {
-    Cookies.remove(COOKIE_KEY, { path: '/' });
-  }
-}
-
-/** Keep legacy localStorage keys alive so old pages don't break. */
-function syncLegacyStorage(user: User | null, token: string | null) {
-  if (typeof window === 'undefined') return;
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
+  try {
     localStorage.removeItem('token');
-  }
-  if (user) {
-    localStorage.setItem('userData', JSON.stringify(user));
-    localStorage.setItem('user', user.name ?? '');
-  } else {
     localStorage.removeItem('userData');
     localStorage.removeItem('user');
+    // The old non-httpOnly mirror of the JWT.
+    document.cookie = 'upsosh_token=; Max-Age=0; path=/';
+  } catch {
+    // Private mode / storage disabled — nothing to purge.
   }
 }
 
@@ -73,6 +69,7 @@ interface RegisterPayload {
 interface AuthStore {
   // ── State ──
   user: User | null;
+  /** @deprecated Always null. The JWT lives only in the httpOnly cookie. */
   token: string | null;
   isLoading: boolean;
   /** True once Zustand has rehydrated from localStorage */
@@ -80,6 +77,7 @@ interface AuthStore {
 
   // ── Setters (escape hatch for AuthProvider) ──
   setUser: (user: User | null) => void;
+  /** @deprecated No-op — kept so existing callers compile. */
   setToken: (token: string | null) => void;
   setLoading: (loading: boolean) => void;
 
@@ -124,13 +122,16 @@ export const useAuthStore = create<AuthStore>()(
 
       setUser: (user) => {
         set({ user });
-        syncLegacyStorage(user, get().token);
       },
 
-      setToken: (token) => {
-        set({ token });
-        writeTokenCookie(token);
-        syncLegacyStorage(get().user, token);
+      /**
+       * @deprecated No-op. The JWT lives only in the backend's httpOnly cookie
+       * and is never held in JS. Kept so existing callers compile; they pass the
+       * token into an `if (token)` Authorization header that is now simply
+       * omitted, and their requests authenticate via `credentials: 'include'`.
+       */
+      setToken: () => {
+        purgeLegacyCredentials();
       },
 
       setLoading: (isLoading) => set({ isLoading }),
@@ -150,10 +151,12 @@ export const useAuthStore = create<AuthStore>()(
           const body = await res.json();
           if (!res.ok) throw new Error(body.message ?? body.error ?? 'Login failed');
 
-          const { token, user } = body as { token: string; user: User };
-          writeTokenCookie(token);
-          syncLegacyStorage(user, token);
-          set({ user, token, isLoading: false });
+          // The JWT arrives in the response body too, but we deliberately
+          // ignore it — the httpOnly cookie set by this same response is the
+          // only credential we keep.
+          const { user } = body as { user: User };
+          purgeLegacyCredentials();
+          set({ user, token: null, isLoading: false });
         } catch (err) {
           set({ isLoading: false });
           throw err;
@@ -187,10 +190,9 @@ export const useAuthStore = create<AuthStore>()(
             throw new Error(body.message ?? body.error ?? 'Registration failed');
           }
 
-          const { token, user } = body as { token: string; user: User };
-          writeTokenCookie(token);
-          syncLegacyStorage(user, token);
-          set({ user, token, isLoading: false });
+          const { user } = body as { user: User };
+          purgeLegacyCredentials();
+          set({ user, token: null, isLoading: false });
         } catch (err) {
           set({ isLoading: false });
           throw err;
@@ -205,22 +207,19 @@ export const useAuthStore = create<AuthStore>()(
         } catch {
           // swallow — we clear state regardless
         }
-        writeTokenCookie(null);
-        syncLegacyStorage(null, null);
+        // The server clears the httpOnly cookie; we clear local display state
+        // and any credential left over from before the cookie-only migration.
+        purgeLegacyCredentials();
         set({ user: null, token: null, isLoading: false });
       },
 
       // ── Refresh (validate token on app load) ───────────────────────────────
 
       refresh: async () => {
-        const token = get().token ?? Cookies.get(COOKIE_KEY) ?? null;
-
-        // Nothing to validate
-        if (!token) {
-          set({ isLoading: false });
-          return;
-        }
-
+        // We cannot see the httpOnly cookie from JS, so there is nothing to
+        // check locally — just ask the server who we are. The browser attaches
+        // the cookie because of `credentials: 'include'`. An unauthenticated
+        // visitor simply gets a 401 and we settle on user: null.
         set({ isLoading: true });
         try {
           const controller = new AbortController();
@@ -228,14 +227,12 @@ export const useAuthStore = create<AuthStore>()(
 
           const res = await fetch('/api/auth/me', {
             credentials: 'include',
-            headers: { Authorization: `Bearer ${token}` },
             signal: controller.signal,
           });
           clearTimeout(id);
 
           if (res.status === 401) {
-            writeTokenCookie(null);
-            syncLegacyStorage(null, null);
+            purgeLegacyCredentials();
             set({ user: null, token: null, isLoading: false });
             return;
           }
@@ -249,23 +246,40 @@ export const useAuthStore = create<AuthStore>()(
           const user: User | null = data?.user ?? null;
 
           if (user) {
-            writeTokenCookie(token);
-            syncLegacyStorage(user, token);
-            set({ user, token, isLoading: false });
+            set({ user, token: null, isLoading: false });
           } else {
             set({ isLoading: false });
           }
         } catch {
+          // Network error or timeout — keep whatever we had rather than
+          // logging the user out on a flaky connection.
           set({ isLoading: false });
         }
       },
 
       // ── Internal ───────────────────────────────────────────────────────────
 
-      _onRehydrate: (user, token) => {
-        writeTokenCookie(token);
-        syncLegacyStorage(user, token);
-        useAuthStore.setState({ hydrated: true });
+      _onRehydrate: () => {
+        // Anything a previous version of this app left in localStorage is a
+        // credential we no longer want on disk.
+        purgeLegacyCredentials();
+        // Use the closure's own `set`, not `useAuthStore.setState`.
+        //
+        // Automatic hydration runs SYNCHRONOUSLY inside `create(persist(...))`
+        // when the storage backend is synchronous (real localStorage is).
+        // `_onRehydrate` can therefore execute before the right-hand side of
+        // `export const useAuthStore = create(...)` has finished evaluating —
+        // referencing `useAuthStore` by name at that point throws
+        // "Cannot access 'useAuthStore' before initialization" (a temporal
+        // dead zone error on the module-level const). Zustand's persist
+        // middleware swallows that throw internally, so it never surfaces as
+        // a visible error: `hydrated` just silently never becomes true, on
+        // every single page load, for every user. (This exact bug predates
+        // this file's Phase 1 rewrite — the original code had the identical
+        // `useAuthStore.setState(...)` call in this exact spot.) `set`, in
+        // contrast, is a function parameter bound when the creator runs — it
+        // is never subject to the const's TDZ.
+        set({ hydrated: true, token: null });
       },
     }),
     {
@@ -273,11 +287,11 @@ export const useAuthStore = create<AuthStore>()(
       storage: createJSONStorage(() =>
         typeof window !== 'undefined' ? localStorage : ({} as Storage)
       ),
-      partialize: (s) => ({ user: s.user, token: s.token }),
+      // `user` only — NEVER the token. Persisting the JWT here is what put a
+      // 7-day bearer credential in reach of any injected script.
+      partialize: (s) => ({ user: s.user }),
       onRehydrateStorage: () => (state) => {
-        const user = state?.user ?? null;
-        const token = state?.token ?? null;
-        state?._onRehydrate(user, token);
+        state?._onRehydrate(null, null);
       },
     }
   )
@@ -296,7 +310,7 @@ export function useAuth() {
   return {
     /** Authenticated user, or null if logged out */
     user: store.user,
-    /** JWT token, or null */
+    /** @deprecated Always null — the JWT is in an httpOnly cookie. */
     token: store.token,
     /** True while an auth request is in flight or the token is being validated */
     isLoading: store.isLoading,

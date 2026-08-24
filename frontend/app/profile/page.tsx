@@ -41,14 +41,9 @@ function AvatarUpload({
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
       const res = await fetch('/api/users/me/avatar', {
         method: 'POST',
         body: formData,
-        headers,
         credentials: 'include',
       });
 

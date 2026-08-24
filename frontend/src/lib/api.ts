@@ -45,7 +45,6 @@ export interface Booking {
 export const api = {
     login: async (credentials: any) => {
         try {
-            console.log('Attempting login to:', `${API_URL}/auth/login`);
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -53,29 +52,26 @@ export const api = {
                 credentials: 'include',
             });
             
-            console.log('Login response status:', res.status);
             
             const contentType = res.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const text = await res.text();
-                console.error('Non-JSON response:', text);
+                console.error('Expected JSON, got a non-JSON response');
                 throw new Error('Server returned invalid response. Please try again.');
             }
             
             const data = await res.json();
-            console.log('Login response data:', data);
             
             if (!res.ok) throw new Error(data.message || 'Login failed');
             return data;
         } catch (error: any) {
-            console.error('Login error:', error);
+            console.error('Login request failed');
             throw error;
         }
     },
 
     signup: async (data: any) => {
         try {
-            console.log('Attempting signup to:', `${API_URL}/auth/signup`);
             const res = await fetch(`${API_URL}/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -83,22 +79,20 @@ export const api = {
                 credentials: 'include',
             });
             
-            console.log('Signup response status:', res.status);
             
             const contentType = res.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const text = await res.text();
-                console.error('Non-JSON response:', text);
+                console.error('Expected JSON, got a non-JSON response');
                 throw new Error('Server returned invalid response. Please try again.');
             }
             
             const responseData = await res.json();
-            console.log('Signup response data:', responseData);
             
             if (!res.ok) throw new Error(responseData.message || 'Signup failed');
             return responseData;
         } catch (error: any) {
-            console.error('Signup error:', error);
+            console.error('Signup request failed');
             throw error;
         }
     },
@@ -128,12 +122,7 @@ export const api = {
     },
 
     getBookings: async (): Promise<Booking[]> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
 
         const res = await fetch(`${API_URL}/bookings`, { 
             credentials: 'include',
@@ -143,14 +132,9 @@ export const api = {
         return res.json();
     },
     createBooking: async (booking: Omit<Booking, 'id'>): Promise<Booking> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
         };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
 
         const res = await fetch(`${API_URL}/bookings`, {
             method: 'POST',
@@ -162,7 +146,7 @@ export const api = {
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             const text = await res.text();
-            console.error('Non-JSON response from create booking:', text);
+            console.error('Expected JSON from create booking, got a non-JSON response');
             throw new Error('Server returned invalid response. Please try again.');
         }
 
@@ -195,8 +179,6 @@ export const api = {
 
     updateEvent: async (eventId: string, event: Partial<Event>): Promise<Event> => {
         try {
-            console.log(`Calling PUT ${API_URL}/events/${eventId}`);
-            console.log('Event data size:', JSON.stringify(event).length, 'bytes');
             
             
             const controller = new AbortController();
@@ -213,16 +195,14 @@ export const api = {
             });
             
             clearTimeout(timeoutId);
-            console.log('Update response status:', res.status);
             const data = await res.json();
-            console.log('Update response data:', data);
             
             if (!res.ok) {
                 throw new Error(data.error || data.details || 'Failed to update event');
             }
             return data;
         } catch (error: any) {
-            console.error('Update event error:', error);
+            console.error('Update event request failed');
             if (error.name === 'AbortError') {
                 throw new Error('Request timed out. The server took too long to respond. This might be due to a large image size. Try using a smaller image or an image URL instead.');
             }
@@ -246,12 +226,7 @@ export const api = {
 
     getMe: async () => {
         
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
         
         const res = await fetch(`${API_URL}/auth/me`, {
             credentials: 'include',
@@ -300,23 +275,11 @@ export const api = {
         hostBio?: string;
     }) => {
         try {
-            
-            const storedUserData = localStorage.getItem('userData');
-            let headers: Record<string, string> = { 'Content-Type': 'application/json' };
-            
-            if (storedUserData) {
-                try {
-                    const userData = JSON.parse(storedUserData);
-                    
-                    const token = localStorage.getItem('token');
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
-                } catch (e) {
-                    console.error('Error parsing userData:', e);
-                }
-            }
-            
+            // Auth comes from the httpOnly cookie via credentials: 'include'.
+            // This used to read a JWT (and a parsed-but-unused userData blob)
+            // out of localStorage to build a bearer header.
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
             const res = await fetch(`${API_URL}/auth/me`, {
                 method: 'PUT',
                 headers,
@@ -326,12 +289,12 @@ export const api = {
             
             const data = await res.json();
             if (!res.ok) {
-                console.error('Update profile failed:', data);
+                console.error('Update profile failed');
                 throw new Error(data.message || 'Failed to update profile');
             }
             return data;
         } catch (error: any) {
-            console.error('Update profile error:', error);
+            console.error('Update profile request failed');
             if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                 throw new Error('Cannot connect to server. Please check if the backend is running.');
             }
@@ -347,12 +310,7 @@ export const api = {
         returnUrl?: string;
         metadata?: Record<string, string>;
     }) => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
 
         const res = await fetch(`${API_URL}/payments/create-checkout`, {
             method: 'POST',
@@ -364,7 +322,7 @@ export const api = {
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             const text = await res.text();
-            console.error('Non-JSON response from Dodo checkout:', text);
+            console.error('Expected JSON from checkout, got a non-JSON response');
             throw new Error('Server returned invalid response. Please try again.');
         }
 
@@ -378,12 +336,7 @@ export const api = {
 
     
     getDodoPaymentStatus: async (paymentId: string) => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
 
         const res = await fetch(`${API_URL}/payments/status/${paymentId}`, {
             headers,
@@ -400,9 +353,7 @@ export const api = {
 
     // ─── Generic typed methods (used by new feature pages) ───────────────────
     get: async <T>(path: string): Promise<T> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch(path, { credentials: 'include', headers });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -412,9 +363,7 @@ export const api = {
     },
 
     post: async <T>(path: string, body?: unknown): Promise<T> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch(path, { method: 'POST', headers, body: body ? JSON.stringify(body) : undefined, credentials: 'include' });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -424,9 +373,7 @@ export const api = {
     },
 
     patch: async <T>(path: string, body?: unknown): Promise<T> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch(path, { method: 'PATCH', headers, body: body ? JSON.stringify(body) : undefined, credentials: 'include' });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -436,9 +383,7 @@ export const api = {
     },
 
     delete: async <T>(path: string): Promise<T> => {
-        const token = localStorage.getItem('token');
         const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch(path, { method: 'DELETE', headers, credentials: 'include' });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));

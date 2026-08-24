@@ -417,35 +417,26 @@ function DangerZone() {
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const { user: authUser, isAuth, loading } = useAuth();
+  const { user: authUser, isAuthenticated, hydrated, isLoading } = useAuth();
   const router = useRouter();
   const [active, setActive] = useState<Section>('account');
-  const [user, setUser] = useState<any>(null);
+  // Initialise directly — no loading flash
+  const [user, setUser] = useState<any>(authUser ?? null);
 
-  const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
+  // Keep in sync with store updates
+  useEffect(() => { if (authUser) setUser(authUser); }, [authUser]);
 
+  // Redirect unauthenticated users. Gated on `hydrated` (and not `isLoading`):
+  // without this, a returning logged-in user is bounced to /signin on the very
+  // first render, before the store finishes rehydrating and /api/auth/me has
+  // had a chance to confirm the session — there is no longer a synchronous
+  // localStorage token to fall back on while that resolves.
   useEffect(() => {
-    if (!loading && !isAuth && !hasToken) router.push('/signin?from=/settings');
-  }, [loading, isAuth, hasToken, router]);
+    if (!hydrated || isLoading) return;
+    if (!authUser) router.push('/signin?from=/settings');
+  }, [hydrated, isLoading, authUser, router]);
 
-  useEffect(() => {
-    if (authUser) setUser(authUser);
-    else if (hasToken) {
-      // Try localStorage fallback
-      try {
-        const s = localStorage.getItem('userData');
-        if (s) setUser(JSON.parse(s));
-      } catch {}
-    }
-  }, [authUser]);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-        <span className="w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (!user) return null;
 
   const filteredNav = NAV_ITEMS.filter((item) => {
     if (item.id === 'host') return user.hostStatus === 'verified';

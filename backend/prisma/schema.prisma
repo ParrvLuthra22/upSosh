@@ -107,6 +107,12 @@ model Booking {
   paymentId     String?
   paymentMethod String?   // "razorpay" | "upi" | "free"
 
+  // Binds a Razorpay order to this specific booking. Without it, /verify cannot
+  // tell whether a valid {order_id, payment_id, signature} triple belongs here,
+  // so one cheap payment could be replayed to confirm any number of bookings.
+  razorpayOrderId String? @unique
+  paidAt          DateTime?
+
   qrCode        String?   // ticket QR data
 
   items         String    @default("[]") // JSON for legacy compat

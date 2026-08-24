@@ -26,12 +26,6 @@ export default function AdminPaymentsPage() {
 
   const fetchPendingBookings = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       
       const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
         ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
@@ -40,9 +34,6 @@ export default function AdminPaymentsPage() {
       console.log('Fetching pending bookings from:', `${API_URL}/bookings/pending`);
       
       const response = await fetch(`${API_URL}/bookings/pending`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         credentials: 'include',
       });
 
@@ -67,7 +58,6 @@ export default function AdminPaymentsPage() {
 
   const approvePayment = async (bookingId: string) => {
     try {
-      const token = localStorage.getItem('token');
       const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
         ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
         : 'https://upsosh-production.up.railway.app/api';
@@ -76,10 +66,7 @@ export default function AdminPaymentsPage() {
         `${API_URL}/bookings/${bookingId}/approve`,
         {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         }
       );
@@ -100,7 +87,6 @@ export default function AdminPaymentsPage() {
   const rejectPayment = async (bookingId: string) => {
     const reason = prompt('Reason for rejection (optional):');
     try {
-      const token = localStorage.getItem('token');
       const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
         ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` 
         : 'https://upsosh-production.up.railway.app/api';
@@ -109,10 +95,7 @@ export default function AdminPaymentsPage() {
         `${API_URL}/bookings/${bookingId}/reject`,
         {
           method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ reason }),
         }

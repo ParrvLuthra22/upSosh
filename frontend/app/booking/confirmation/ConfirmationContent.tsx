@@ -27,13 +27,9 @@ export default function ConfirmationContent() {
             if (isPaymentSuccess && pendingBookingId) {
                 try {
                     
-                    const token = localStorage.getItem('token');
                     const response = await fetch(`${API_URL}/bookings/${pendingBookingId}/confirm-payment`, {
                         method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...(token && { 'Authorization': `Bearer ${token}` })
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         credentials: 'include',
                         body: JSON.stringify({ 
                             paymentId: paymentId || 'dodo_payment',
