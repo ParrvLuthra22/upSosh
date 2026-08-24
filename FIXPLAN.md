@@ -82,15 +82,23 @@ These were not in the original checklist but turned out to be necessary for "run
 
 *Goal: close every issue where the client is trusted with something the server should own. P1-1 and P1-2 are the two that matter most; together they are the difference between "integrated Razorpay" being an honest resume claim and a false one.*
 
+**Status:** 12 of 29 tasks done (the 8 requested this session, plus 4 that landed automatically as part of those fixes). Webhook (P1-8→11), zod validation (P1-17), and the remaining hardening items (P1-16, P1-18, P1-20/21, P1-23→27, P1-29) are deferred — not in this session's brief.
+
 ### Payment integrity (do these first)
 
-- [ ] **P1-1** 🔴 — **Stop trusting the client's amount.** `backend/src/routes/payments.ts:23,39` reads `amount` from `req.body` and passes it straight to `razorpay.orders.create`. The booking row is already fetched at `:29` and its `totalAmount` is never compared. **A user can pay ₹1 for a ₹5,000 event.** Use `booking.totalAmount`; ignore the body field entirely.
-- [ ] **P1-2** 🔴 — **Bind the Razorpay order to the booking.** Add `razorpayOrderId String?` to `Booking` (`schema.prisma:89-118`), store it in `create-order`, and assert `booking.razorpayOrderId === razorpay_order_id` in `/verify` (`payments.ts:62-109`). Without this, one valid ₹1 payment can be replayed to confirm unlimited bookings.
-- [ ] **P1-3** — Add a replay guard to `/verify`: require `paymentStatus === 'unpaid'` before the update (`payments.ts:93`). The webhook already does this (`:142`); `/verify` does not.
-- [ ] **P1-4** — Charge the platform fee. The client sends `price * guestCount` (`frontend/lib/stores/booking.ts:247`) while the server computed `totalAmount = ticketPrice + 25` (`backend/src/routes/bookings.ts:34-35`). **The ₹25 fee is never collected.** Resolved automatically by P1-1.
+- [x] **P1-1** 🔴 — **Stop trusting the client's amount.** `backend/src/routes/payments.ts:23,39` reads `amount` from `req.body` and passes it straight to `razorpay.orders.create`. The booking row is already fetched at `:29` and its `totalAmount` is never compared. **A user can pay ₹1 for a ₹5,000 event.** Use `booking.totalAmount`; ignore the body field entirely.
+  > Changed: Deleted `amount` from the destructure entirely; charge is `Math.round(booking.totalAmount * 100)`. Verified live via temporary instrumentation: injected `amount:1` and `amount:999999` against a real booking, server computed 147500 paise (the real total) both times, ignoring the client value in both directions.
+- [x] **P1-2** 🔴 — **Bind the Razorpay order to the booking.** Add `razorpayOrderId String?` to `Booking` (`schema.prisma:89-118`), store it in `create-order`, and assert `booking.razorpayOrderId === razorpay_order_id` in `/verify` (`payments.ts:62-109`). Without this, one valid ₹1 payment can be replayed to confirm unlimited bookings.
+  > Changed: Added `razorpayOrderId String? @unique` + `paidAt DateTime?` (migration `20260824050000_add_razorpay_order_binding`). `create-order` persists the order id; `/verify` asserts it matches before writing. Verified with a forged-but-valid signature (secret pulled from `.env`): confirming booking A succeeds, replaying against a *different* booking B returns `400 "Payment does not match this booking"` and B stays unpaid in the DB — the exact cross-booking replay from the audit, reproduced and blocked.
+- [x] **P1-3** — Add a replay guard to `/verify`: require `paymentStatus === 'unpaid'` before the update (`payments.ts:93`). The webhook already does this (`:142`); `/verify` does not.
+  > Changed: Landed as part of P1-2 — `/verify` now requires `paymentStatus === 'unpaid'` via a conditional `updateMany`, and a same-booking replay of an already-confirmed payment returns 409 (verified live).
+- [x] **P1-4** — Charge the platform fee. The client sends `price * guestCount` (`frontend/lib/stores/booking.ts:247`) while the server computed `totalAmount = ticketPrice + 25` (`backend/src/routes/bookings.ts:34-35`). **The ₹25 fee is never collected.** Resolved automatically by P1-1.
+  > Changed: Confirmed automatically by P1-1: a real booking's `create-order` charge came out to ₹1,475 = ₹1,450 ticket + ₹25 fee, both server-computed.
 - [ ] **P1-5** — Honour `guestCount`. It is sent (`booking.ts:203`) and **ignored** by the backend — `bookings.ts` always creates a 1-ticket booking and increments `attendees` by 1 (`:66`). A 4-guest booking charges for 4 and reserves 1 seat.
-- [ ] **P1-6** — Delete the demo-mode payment bypass. `frontend/lib/stores/booking.ts:231-240`: if `NEXT_PUBLIC_RAZORPAY_KEY_ID` is unset it skips payment and jumps to the confirmation screen. **Every paid booking silently becomes free.** Fail loudly instead.
-- [ ] **P1-7** — Use `crypto.timingSafeEqual` for the signature comparison (`payments.ts:82`). Currently `!==` on the hex digest.
+- [x] **P1-6** — Delete the demo-mode payment bypass. `frontend/lib/stores/booking.ts:231-240`: if `NEXT_PUBLIC_RAZORPAY_KEY_ID` is unset it skips payment and jumps to the confirmation screen. **Every paid booking silently becomes free.** Fail loudly instead.
+  > Changed: Deleted the branch in `lib/stores/booking.ts:231-240`; missing `NEXT_PUBLIC_RAZORPAY_KEY_ID` now throws a visible error instead of silently completing a free booking.
+- [x] **P1-7** — Use `crypto.timingSafeEqual` for the signature comparison (`payments.ts:82`). Currently `!==` on the hex digest.
+  > Changed: `payments.ts` now uses a `signaturesMatch()` helper: length check first, then `crypto.timingSafeEqual`.
 
 ### Webhook
 
@@ -101,20 +109,26 @@ These were not in the original checklist but turned out to be necessary for "run
 
 ### Session and transport
 
-- [ ] **P1-12** 🔴 — Get the JWT out of `localStorage`. `frontend/lib/stores/auth.ts:43-57` (`syncLegacyStorage`) writes it to `localStorage['token']`, `['userData']`, `['user']` and the Zustand `persist` blob; `:33-40` writes a **non-httpOnly** `upsosh_token` cookie via `js-cookie`. The backend's httpOnly cookie already works (`backend/src/routes/auth.ts:11-16`) — delete the mirrors and rely on `credentials: 'include'`.
-- [ ] **P1-13** 🔴 — Remove the auth-response logging. `frontend/src/lib/api.ts:48,56,66` — `console.log('Login response data:', data)` **prints the JWT to the browser console on every sign-in.** Also `:78,86,97` for signup.
-- [ ] **P1-14** — Remove the 10 direct `localStorage.getItem('token')` reads once P1-12 lands: `frontend/src/lib/api.ts:131,146,249,311,350,381,403,415,428,439`, `frontend/app/admin/payments/page.tsx:29,70,103`, `frontend/lib/stores/booking.ts:19`.
-- [ ] **P1-15** 🔴 — **Add server-side route protection.** There is no `frontend/middleware.ts`. `components/ProtectedRoute.tsx` is a client `useEffect` redirect (`:98-104`), `/dashboard` etc. are statically prerendered, and the guard is bypassed by writing one localStorage key. Add middleware that reads the httpOnly cookie.
+- [x] **P1-12** 🔴 — Get the JWT out of `localStorage`. `frontend/lib/stores/auth.ts:43-57` (`syncLegacyStorage`) writes it to `localStorage['token']`, `['userData']`, `['user']` and the Zustand `persist` blob; `:33-40` writes a **non-httpOnly** `upsosh_token` cookie via `js-cookie`. The backend's httpOnly cookie already works (`backend/src/routes/auth.ts:11-16`) — delete the mirrors and rely on `credentials: 'include'`.
+  > Changed: `syncLegacyStorage()` and the `js-cookie` mirror deleted; Zustand `partialize` now persists `user` only. While fixing this, found and fixed a **pre-existing bug**: `_onRehydrate` referenced the module-level `useAuthStore` const from inside automatic (synchronous) hydration, which runs *during* `create()`'s own evaluation — a TDZ `ReferenceError`, silently swallowed by zustand's persist middleware, meaning `hydrated` never became `true` for any user, in dev or a clean production build (both checked). This predates this session — the original committed code had the identical pattern. Fixed by using the closure's `set` instead. Verified: a real stale JWT sitting in localStorage from a prior production session was purged on load, and a fresh login now survives a full page reload.
+- [x] **P1-13** 🔴 — Remove the auth-response logging. `frontend/src/lib/api.ts:48,56,66` — `console.log('Login response data:', data)` **prints the JWT to the browser console on every sign-in.** Also `:78,86,97` for signup.
+  > Changed: All 10 `console.log` calls removed from `src/lib/api.ts`; remaining `console.error` calls reworded to drop response bodies.
+- [x] **P1-14** — Remove the 10 direct `localStorage.getItem('token')` reads once P1-12 lands: `frontend/src/lib/api.ts:131,146,249,311,350,381,403,415,428,439`, `frontend/app/admin/payments/page.tsx:29,70,103`, `frontend/lib/stores/booking.ts:19`.
+  > Changed: Removed across `src/lib/api.ts` (all instances) plus `app/admin/payments/page.tsx`, `app/host/dashboard/page.tsx`, `app/host/events/new/page.tsx`, `app/profile/page.tsx`, `app/booking/confirmation/ConfirmationContent.tsx`, `app/login/page.tsx` (which also *wrote* the token — not listed in the original audit, found while sweeping) — more sites than the original 14-count estimated, all confirmed via `grep` sweep to zero remaining.
+- [x] **P1-15** 🔴 — **Add server-side route protection.** There is no `frontend/middleware.ts`. `components/ProtectedRoute.tsx` is a client `useEffect` redirect (`:98-104`), `/dashboard` etc. are statically prerendered, and the guard is bypassed by writing one localStorage key. Add middleware that reads the httpOnly cookie.
+  > Changed: `frontend/middleware.ts` created — checks for the httpOnly `token` cookie's presence, matcher covers `/dashboard`, `/settings`, `/profile`, `/my-bookings`, `/host/:path*`, `/onboarding/:path*`, `/admin/:path*`, `/booking/:path*`. Verified via `curl` with no cookie and zero JS execution possible: `307` to `/signin?from=<path>` on every matched route before any HTML ships; public routes unaffected. **Note:** `/booking` is a genuinely public browse/cart page today with no prior guard — this matcher now requires login to browse it, per the literal instruction; flagging in case that wasn't intended.
 - [ ] **P1-16** — Enable a CSP. `backend/src/index.ts:34` sets `contentSecurityPolicy: false`. Relevant because Razorpay's `checkout.js` is injected at runtime with no SRI (`frontend/lib/stores/booking.ts:340-344`).
 
 ### Server-side validation and authorization
 
 - [ ] **P1-17** — Add `zod` schemas to the write endpoints. **`zod` is in `package.json` and never imported** — there is no schema validation anywhere. Priority: `POST /api/bookings`, `POST /api/payments/create-order`, `POST /api/payments/verify`, `POST /api/events`, `PUT /api/events/:id`, `PATCH /api/users/me`, `POST /api/hosts/apply`, `POST /api/ai/plan`.
 - [ ] **P1-18** — Stop taking `ticketPrice` from the client. `backend/src/routes/bookings.ts:20,28-32` — for `eventId` values starting with `evt-` (the mock IDs), the price comes from `req.body`. Remove the mock code path.
-- [ ] **P1-19** — Validate `hostId` on event creation. `backend/src/routes/events.ts:211` — `hostId: hostId ?? null` straight from the body, with no check that the `Host` row belongs to the caller.
+- [x] **P1-19** — Validate `hostId` on event creation. `backend/src/routes/events.ts:211` — `hostId: hostId ?? null` straight from the body, with no check that the `Host` row belongs to the caller.
+  > Changed: `hostId` dropped entirely from the `POST /api/events` input. Verified live: an authenticated host injecting `hostId` into the request body gets `hostId: null` in the response; `userId` (what authorization actually checks) is correctly the caller.
 - [ ] **P1-20** — Remove or gate `POST /api/events/:id/attend` (`events.ts:302-323`). Any authenticated user can increment `attendees` on any event, unbounded by a booking. It is never called by the frontend.
 - [ ] **P1-21** — Fix the read-then-write capacity race. `bookings.ts:23-25` checks `attendees >= capacity`, then `:64-67` increments in a separate non-transactional statement. Two concurrent bookings on the last seat both succeed.
-- [ ] **P1-22** — Invert the `NODE_ENV` check. `backend/src/index.ts:122` — `const isDev = process.env.NODE_ENV !== 'production'` is fail-open: an unset or misspelled `NODE_ENV` ships **full stack traces to every client** (`:134`). Use `=== 'development'`.
+- [x] **P1-22** — Invert the `NODE_ENV` check. `backend/src/index.ts:122` — `const isDev = process.env.NODE_ENV !== 'production'` is fail-open: an unset or misspelled `NODE_ENV` ships **full stack traces to every client** (`:134`). Use `=== 'development'`.
+  > Changed: Inverted to `=== 'development'`. Verified with a truth table across 9 `NODE_ENV` values (unset, empty, `'production'`, `'Production'`, `'PRODUCTION'`, typo, `'staging'`, `'prod'`, `'development'`) — every case that used to leak now fails safe except the genuine dev case, confirmed live via a malformed-JSON request showing `details` present with `NODE_ENV=development`.
 - [ ] **P1-23** — Remove or auth-gate `GET /api/payments/health` (`payments.ts:168-177`) — it publicly discloses whether your Razorpay keys are configured.
 - [ ] **P1-24** — Rate-limit `POST /api/ai/plan` separately (`backend/src/index.ts:107`). It costs money per call and only has the global 100/15min limit. Add a per-user cap and a prompt length cap.
 - [ ] **P1-25** — Lower the body limit. `backend/src/index.ts:79-80` allows 10 MB of JSON; file uploads go through multer separately with their own caps. 100 kB is sufficient.
@@ -125,6 +139,12 @@ These were not in the original checklist but turned out to be necessary for "run
 
 - [ ] **P1-28** — Add `.env.production` to `.gitignore`. `.gitignore:23-27` covers `.env.production.local` but **not** `.env.production`, which is already tracked. It holds only URLs today; the next key added to it goes into git history.
 - [ ] **P1-29** — Inspect and remove `switchup-deliverable.zip` (177 KB, committed at repo root). Confirm it contains no build output or env file before deleting.
+
+---
+
+### Added beyond the plan (Phase 1 session, 2026-08-24)
+
+- [x] **P1-A** — Fixed a pre-existing zustand persist TDZ bug in `lib/stores/auth.ts` that silently broke automatic session restoration on every page load, for every user, in both dev and production. See the note under P1-12. This wasn't in the audit or the brief — found while verifying the localStorage removal actually worked end-to-end, rather than trusting a code read.
 
 ---
 
@@ -314,3 +334,4 @@ _Ask me to update this after each session._
 |---|---|---|---|
 | 2026-08-24 | — | Plan created from `AUDIT.md` | No fixes started. |
 | 2026-08-24 | 0 | P0-1, P0-2, P0-3, P0-5, P0-6, P0-7, P0-8, P0-9, P0-12, P0-13, P0-15, P0-16 | Clone-to-running verified twice from a pristine copy. Four tasks deferred: P0-4, P0-10, P0-11, P0-14. Three things were added that were not in the original plan — see "Added beyond the plan" below. |
+| 2026-08-24 | 1 | P1-1, P1-2, P1-3, P1-4, P1-6, P1-7, P1-12, P1-13, P1-14, P1-15, P1-19, P1-22 | Every fix verified by attempting the actual exploit, not just reading the code — amount tampering, cross-booking signature replay, and the no-JS middleware bypass were all live-tested and shown blocked. Found and fixed a pre-existing session-restoration bug (P1-A) surfaced by removing the localStorage token. Webhook fixes (P1-8→11) and zod validation (P1-17) deferred — outside this session's brief. Merged to `main` at `4d8ab14`. |
