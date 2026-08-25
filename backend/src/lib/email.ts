@@ -1,6 +1,17 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy, not `new Resend(process.env.RESEND_API_KEY)` at module scope — the
+// SDK throws synchronously in its constructor when the key is missing, so a
+// module-level instance took down the ENTIRE server at import time (every
+// route file transitively imports this module) whenever RESEND_API_KEY was
+// unset, not just email sending. Every function below already has its own
+// `if (!process.env.RESEND_API_KEY)` guard and no-ops correctly; the
+// constructor never got a chance to respect that.
+let resendClient: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
+}
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -140,7 +151,7 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
 </html>`;
 
   try {
-    await resend.emails.send({
+    await getResendClient().emails.send({
       from: FROM,
       to: data.guestEmail,
       subject,
@@ -205,7 +216,7 @@ export async function sendEventAnnouncement(data: EventAnnouncementData): Promis
 </html>`;
 
   try {
-    await resend.emails.send({
+    await getResendClient().emails.send({
       from: FROM,
       to: data.guestEmail,
       subject: `Update: ${data.eventTitle}`,
@@ -262,7 +273,7 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string): P
 </html>`;
 
   try {
-    await resend.emails.send({
+    await getResendClient().emails.send({
       from: FROM,
       to: email,
       subject: 'Reset your upSosh password',
