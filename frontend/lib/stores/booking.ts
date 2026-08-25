@@ -11,6 +11,7 @@
  */
 
 import { create } from 'zustand';
+import { unitPrice } from '@/lib/utils';
 
 /**
  * Requests authenticate with the backend's httpOnly `token` cookie, which every
@@ -104,10 +105,6 @@ interface BookingStore {
 
 const INITIAL_GUEST_DETAILS: GuestDetails = { name: '', phone: '', email: '' };
 
-function unitPrice(price: BookingEventData['price']): number {
-  if (price === 'Free') return 0;
-  return price as number;
-}
 
 export const useBookingStore = create<BookingStore>()((set, get) => ({
   // ── Initial state ──────────────────────────────────────────────────────────

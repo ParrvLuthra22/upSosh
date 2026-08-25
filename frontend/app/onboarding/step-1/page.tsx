@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useOnboardingStore } from '@/store/onboardingStore';
@@ -138,10 +139,13 @@ export default function OnboardingStep1() {
           >
             {photoPreview ? (
               <>
-                <img
+                <Image
                   src={photoPreview}
                   alt="Profile preview"
-                  className="w-full h-full object-cover"
+                  fill
+                  unoptimized
+                  sizes="120px"
+                  className="object-cover"
                 />
                 {photoHovered && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

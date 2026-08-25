@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { api, Event } from '@/lib/api';
 
 interface MyEventsListProps {
@@ -69,10 +70,13 @@ const MyEventsList: React.FC<MyEventsListProps> = ({ onEdit }) => {
             <h2 className="text-3xl font-display font-bold mb-6 text-cream">My Events</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {myEvents.map((event) => (
-                    <div key={event.id} className="bg-surface-2 rounded-xl overflow-hidden">
-                        <img
+                    <div key={event.id} className="relative bg-surface-2 rounded-xl overflow-hidden">
+                        <Image
                             src={event.image}
                             alt={event.title}
+                            width={400}
+                            height={192}
+                            sizes="(min-width: 768px) 50vw, 100vw"
                             className="w-full h-48 object-cover"
                         />
                         <div className="p-4 space-y-3">

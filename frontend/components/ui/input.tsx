@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative flex items-center">
           {leadingIcon && (
-            <span className="absolute left-4 flex items-center text-cream-faint pointer-events-none z-10">
+            <span className="absolute left-4 flex items-center text-cream-dim pointer-events-none z-10">
               {leadingIcon}
             </span>
           )}
@@ -65,7 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               onChange?.(e);
             }}
             className={cn(
-              'h-12 w-full bg-surface border border-border rounded-xl px-4 font-sans text-[15px] text-cream placeholder:text-cream-faint transition-all outline-none',
+              'h-12 w-full bg-surface border border-border rounded-xl px-4 font-sans text-[15px] text-cream placeholder:text-cream-dim transition-all outline-none',
               'focus:border-lime focus:ring-2 focus:ring-lime/20',
               error && 'border-coral ring-2 ring-coral/20',
               leadingIcon && 'pl-10',
@@ -78,7 +78,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {floatLabel && label && (
             <label
               className={cn(
-                'absolute pointer-events-none transition-all duration-150 text-cream-faint',
+                'absolute pointer-events-none transition-all duration-150 text-cream-dim',
                 leadingIcon ? 'left-10' : 'left-4',
                 isFloated ? 'top-2 text-[11px]' : 'top-3.5 text-[15px]',
               )}
@@ -87,7 +87,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </label>
           )}
           {trailingIcon && (
-            <span className="absolute right-4 flex items-center text-cream-faint pointer-events-none z-10">
+            <span className="absolute right-4 flex items-center text-cream-dim pointer-events-none z-10">
               {trailingIcon}
             </span>
           )}

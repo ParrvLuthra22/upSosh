@@ -33,6 +33,10 @@ const CartDrawer = () => {
                 ref={overlayRef}
                 className="absolute inset-0 bg-void/80 backdrop-blur-sm opacity-0"
                 onClick={() => toggleCart(false)}
+                role="button"
+                tabIndex={0}
+                aria-label="Close cart"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleCart(false); }}
             />
 
             <div
@@ -44,6 +48,7 @@ const CartDrawer = () => {
                     <h2 className="text-xl font-semibold tracking-tight text-cream">Your Cart</h2>
                     <button
                         onClick={() => toggleCart(false)}
+                        aria-label="Close cart"
                         className="p-2 text-cream/50 hover:text-cream transition-colors"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,11 +90,13 @@ const CartDrawer = () => {
                                         <div className="flex items-center border border-border rounded-full h-8">
                                             <button
                                                 onClick={() => updateCartQty(item.id, item.qty - 1)}
+                                                aria-label="Decrease quantity"
                                                 className="w-8 h-full flex items-center justify-center text-cream hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-l-full"
                                             >-</button>
                                             <span className="w-6 text-center text-sm font-medium">{item.qty}</span>
                                             <button
                                                 onClick={() => updateCartQty(item.id, item.qty + 1)}
+                                                aria-label="Increase quantity"
                                                 className="w-8 h-full flex items-center justify-center text-cream hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-r-full"
                                             >+</button>
                                         </div>

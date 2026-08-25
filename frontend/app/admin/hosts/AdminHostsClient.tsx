@@ -6,6 +6,7 @@ import { IconCheck, IconX, IconExternalLink } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import { EASE_VERCEL } from '@/lib/motion';
 import { api } from '@/lib/api';
+import { useEscapeKey } from '@/lib/a11y';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -365,6 +366,8 @@ function DetailModal({
   const categories = parseCategories(app.categories);
   const hasSampleEvent = !!(app.sampleEventTitle || app.sampleEventDesc || app.sampleEventVenue);
 
+  useEscapeKey(onClose, true);
+
   return (
     <>
       <motion.div
@@ -373,6 +376,10 @@ function DetailModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
+        role="button"
+        tabIndex={0}
+        aria-label="Close"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
         <motion.div
@@ -554,6 +561,8 @@ function RejectModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  useEscapeKey(onCancel, true);
+
   return (
     <>
       <motion.div
@@ -562,6 +571,10 @@ function RejectModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onCancel}
+        role="button"
+        tabIndex={0}
+        aria-label="Close"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onCancel(); }}
       />
       <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
         <motion.div

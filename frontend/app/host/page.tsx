@@ -129,7 +129,7 @@ function HostPageContent() {
                     <h1 className="text-5xl font-display font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-lime to-lime-dim">
                         Host Your Next Big Thing
                     </h1>
-                    <p className="text-xl text-cream-faint max-w-2xl mx-auto">
+                    <p className="text-xl text-cream-dim max-w-2xl mx-auto">
                         Create memorable experiences for your community. Use our AI tools to plan, budget, and launch your event in minutes.
                     </p>
                 </div>

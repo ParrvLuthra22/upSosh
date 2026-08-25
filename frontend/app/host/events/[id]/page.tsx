@@ -7,6 +7,7 @@ import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useEscapeKey } from '@/lib/a11y';
 
 interface Attendee {
   id: string;
@@ -37,6 +38,8 @@ export default function HostEventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [announcementText, setAnnouncementText] = useState('');
   const [showAnnouncement, setShowAnnouncement] = useState(false);
+
+  useEscapeKey(() => setShowAnnouncement(false), showAnnouncement);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -120,7 +123,7 @@ export default function HostEventDetailPage() {
       <div className="max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-24">
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">[ MANAGE EVENT ]</p>
             <h1 className="font-display text-3xl text-ink-primary" style={{ letterSpacing: '-0.03em' }}>{event.title}</h1>
@@ -141,7 +144,7 @@ export default function HostEventDetailPage() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {[
             { label: 'Bookings', value: `${event.bookingsCount ?? 0} / ${event.capacity ?? '∞'}` },
             { label: 'Revenue', value: event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—' },
@@ -200,6 +203,7 @@ export default function HostEventDetailPage() {
                     </span>
                     <button
                       onClick={() => toggleCheckIn(attendee.id, !!attendee.checkedIn)}
+                      aria-label={attendee.checkedIn ? 'Undo check-in' : 'Check in attendee'}
                       className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${
                         attendee.checkedIn
                           ? 'bg-verified border-verified text-white'
@@ -219,7 +223,14 @@ export default function HostEventDetailPage() {
       {/* Announcement modal */}
       {showAnnouncement && (
         <>
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowAnnouncement(false)} />
+          <div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowAnnouncement(false)}
+            role="button"
+            tabIndex={0}
+            aria-label="Close"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowAnnouncement(false); }}
+          />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div className="bg-bg-primary border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl">
               <h3 className="font-display text-xl text-ink-primary mb-4">Send announcement</h3>

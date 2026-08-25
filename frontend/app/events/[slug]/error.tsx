@@ -25,7 +25,7 @@ export default function EventDetailError({
         transition={{ duration: 0.65, ease: EASE }}
         className="max-w-md"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-faint mb-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-6">
           [ Event · Error ]
         </p>
         <h1 className="font-display text-[32px] text-cream leading-tight mb-4">

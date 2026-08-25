@@ -2,35 +2,18 @@ import { Router, Response, RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { z } from 'zod';
-import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { updateProfileSchema } from '../lib/schemas';
 import { sanitizeUser } from '../lib/sanitizeUser';
-import { v2 as cloudinary } from 'cloudinary';
-import multer from 'multer';
+import { imageUpload, isCloudinaryConfigured, uploadBufferToCloudinary } from '../lib/cloudinary';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
 const router = Router();
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (_, file, cb) => {
-    if (/^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only image files are allowed'));
-  },
-});
 
 // PATCH /api/users/me — update profile fields
 router.patch('/me', requireAuth, validateBody(updateProfileSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
@@ -138,35 +121,20 @@ router.post(
   // @types/cookie-parser's `@types/express: "*"` peer dependency — a
   // workspace-level dependency conflict, not an untyped value. The cast is
   // narrowly scoped to just this line.
-  upload.single('avatar') as unknown as RequestHandler,
+  imageUpload.single('avatar') as unknown as RequestHandler,
   async (req: AuthRequest, res: Response): Promise<Response> => {
     try {
       if (!req.file) return res.status(400).json({ message: 'No file provided' });
 
-      let photoUrl: string;
-
-      const isCloudinaryConfigured = !!(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-      );
-
-      if (isCloudinaryConfigured) {
-        const fileBuffer = req.file.buffer;
-        const result = await new Promise<UploadApiResponse>((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: 'upsosh/avatars', transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }] },
-            (err?: UploadApiErrorResponse, r?: UploadApiResponse) => {
-              if (err || !r) reject(err ?? new Error('Cloudinary upload returned no result'));
-              else resolve(r);
-            },
-          );
-          stream.end(fileBuffer);
-        });
-        photoUrl = result.secure_url;
-      } else {
+      if (!isCloudinaryConfigured) {
         return res.status(503).json({ message: 'Image upload not configured' });
       }
+
+      const result = await uploadBufferToCloudinary(req.file.buffer, {
+        folder: 'upsosh/avatars',
+        transformation: [{ width: 400, height: 400, crop: 'fill', quality: 'auto' }],
+      });
+      const photoUrl = result.secure_url;
 
       await prisma.user.update({ where: { id: req.user!.id }, data: { photoUrl } });
       return res.json({ photoUrl, avatarUrl: photoUrl });

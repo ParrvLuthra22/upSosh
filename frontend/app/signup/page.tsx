@@ -78,12 +78,12 @@ function Field({
       'relative flex items-center h-12 rounded-xl bg-surface border transition-all',
       error ? 'border-coral ring-2 ring-coral/20' : focused ? 'border-lime ring-2 ring-lime/20' : 'border-border',
     )}>
-      <span className="absolute left-4 text-cream-faint">{leadingIcon}</span>
+      <span className="absolute left-4 text-cream-dim">{leadingIcon}</span>
       <input
         type={type} value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} autoComplete={autoComplete}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        className="flex-1 bg-transparent pl-10 pr-10 h-full font-sans text-[15px] text-cream placeholder:text-cream-faint outline-none"
+        className="flex-1 bg-transparent pl-10 pr-10 h-full font-sans text-[15px] text-cream placeholder:text-cream-dim outline-none"
       />
       {trailingSlot && <div className="absolute right-4">{trailingSlot}</div>}
     </div>
@@ -112,7 +112,7 @@ function RoleCard({ role, selected, onSelect }: { role: typeof ROLES[0]; selecte
           : 'bg-surface border-border text-cream-dim hover:border-border-strong hover:text-cream',
       )}
     >
-      <div className={cn('transition-colors', selected ? 'text-lime' : 'text-cream-faint')}>
+      <div className={cn('transition-colors', selected ? 'text-lime' : 'text-cream-dim')}>
         {role.icon}
       </div>
       <span className="font-sans text-[13px] font-medium">{role.label}</span>
@@ -220,7 +220,7 @@ export default function SignUpPage() {
             ].map(({ n, l }) => (
               <div key={l} className="bg-border backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4">
                 <p className="font-display text-[24px] text-cream leading-none">{n}</p>
-                <p className="font-mono text-[10px] text-cream-faint uppercase tracking-widest mt-1">{l}</p>
+                <p className="font-mono text-[10px] text-cream-dim uppercase tracking-widest mt-1">{l}</p>
               </div>
             ))}
           </div>
@@ -275,7 +275,7 @@ export default function SignUpPage() {
                 leadingIcon={<IconLock size={16} />}
                 trailingSlot={
                   <button type="button" onClick={() => setShowPwd(v => !v)}
-                    className="text-cream-faint hover:text-cream transition-colors"
+                    className="text-cream-dim hover:text-cream transition-colors"
                     aria-label={showPwd ? 'Hide' : 'Show'}>
                     {showPwd ? <IconEyeOff size={16} /> : <IconEye size={16} />}
                   </button>
@@ -287,7 +287,7 @@ export default function SignUpPage() {
 
             {/* Role selector */}
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-widest text-cream-faint mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-3">
                 I want to…
               </p>
               <div className="flex gap-2">

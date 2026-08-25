@@ -10,7 +10,7 @@ import FormalInformalToggle from '@/components/FormalInformalToggle';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { useAppStore } from '@/lib/stores/useAppStore';
 import { api } from '@/lib/api';
-import { generateEventSchema } from '@/lib/structuredData';
+import { generateEventSchema, safeJsonLd } from '@/lib/structuredData';
 
 import dynamic from 'next/dynamic';
 
@@ -92,7 +92,7 @@ export default function BookingPage() {
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
-                        __html: JSON.stringify(filteredEvents.map(event => generateEventSchema(event)))
+                        __html: safeJsonLd(filteredEvents.map(event => generateEventSchema(event)))
                     }}
                 />
 
@@ -114,13 +114,13 @@ export default function BookingPage() {
                         <div className="flex flex-col lg:flex-row gap-8">
                             
                             <aside className="lg:w-1/4">
-                                <h3 className="text-xl font-bold mb-6 text-gray-900">Filters</h3>
+                                <h2 className="text-xl font-bold mb-6 text-gray-900">Filters</h2>
                                 <Filters />
                             </aside>
 
                             
                             <main className="lg:w-3/4">
-                                <h3 className="text-2xl font-bold mb-6 text-gray-900">All Events</h3>
+                                <h2 className="text-2xl font-bold mb-6 text-gray-900">All Events</h2>
                                 <EventGrid />
                                 <div className="mt-8">
                                     <Pagination />

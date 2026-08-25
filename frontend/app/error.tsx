@@ -31,7 +31,7 @@ export default function RouteError({
         transition={{ duration: 0.7, ease: EASE }}
         className="max-w-md"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-faint mb-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-6">
           [ Something went wrong ]
         </p>
         <h1 className="font-display text-[32px] text-cream leading-tight mb-4">
@@ -57,7 +57,7 @@ export default function RouteError({
           </Link>
         </div>
         {error.digest && process.env.NODE_ENV !== 'production' && (
-          <p className="mt-8 font-mono text-[10px] text-cream-faint">
+          <p className="mt-8 font-mono text-[10px] text-cream-dim">
             digest: {error.digest}
           </p>
         )}

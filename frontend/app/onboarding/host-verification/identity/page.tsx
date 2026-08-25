@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import MagneticButton from '@/components/ui/MagneticButton';
 
@@ -43,7 +44,7 @@ function UploadZone({ label, sublabel, icon, preview, onFile }: UploadZoneProps)
       >
         {preview ? (
           <div className="relative w-full h-full rounded-2xl overflow-hidden">
-            <img src={preview} alt={label} className="w-full h-full object-cover" />
+            <Image src={preview} alt={label} fill unoptimized sizes="(min-width: 768px) 500px, 100vw" className="object-cover" />
             {/* Checkmark overlay */}
             <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-verified flex items-center justify-center">
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none">

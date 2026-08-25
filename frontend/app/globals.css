@@ -105,8 +105,12 @@ body {
     z-index: 9999;
   }
 
+  /* Only hidden once CustomCursor confirms it has mounted (see
+     components/ui/CustomCursor.tsx) — if that component fails to mount,
+     this attribute is never set and the OS pointer stays visible instead
+     of vanishing with no replacement. */
   @media (pointer: fine) {
-    body {
+    body[data-custom-cursor='active'] {
       cursor: none;
     }
   }

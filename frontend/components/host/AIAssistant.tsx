@@ -62,7 +62,7 @@ Failed to connect to the AI planner. Please try again later.
                 <h2 className="text-3xl font-display font-bold text-cream flex items-center gap-3">
                     <span className="text-4xl"></span> AI Event Planner
                 </h2>
-                <p className="text-cream-faint mt-2">
+                <p className="text-cream-dim mt-2">
                     Not sure where to start? Let our AI agent help you plan the perfect event within your budget.
                 </p>
             </div>

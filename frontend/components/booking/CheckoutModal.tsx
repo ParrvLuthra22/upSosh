@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { api } from '@/lib/api';
@@ -326,13 +327,20 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
     return (
         <div ref={modalRef} className="fixed inset-0 z-[70] flex items-center justify-center p-4 opacity-0 pointer-events-none" role="dialog" aria-modal="true">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={status === 'uploading' ? undefined : onClose} />
+            <div
+                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                onClick={status === 'uploading' ? undefined : onClose}
+                role="button"
+                tabIndex={status === 'uploading' ? -1 : 0}
+                aria-label="Close"
+                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && status !== 'uploading') onClose(); }}
+            />
             <div ref={contentRef} className="relative w-full max-w-2xl bg-black border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black sticky top-0 z-10">
                     <h2 className="text-2xl font-display font-bold text-white">
                         {status === 'success' ? '✅ Booking Submitted!' : status === 'payment-details' ? '💳 Payment Details' : 'Complete Your Purchase'}
                     </h2>
-                    {status !== 'uploading' && <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
+                    {status !== 'uploading' && <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
                 </div>
                 <div className="p-8">
                     {status === 'success' ? (
@@ -373,9 +381,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                             <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center space-y-4">
                                 <h3 className="text-lg font-bold text-white">Scan QR Code to Pay</h3>
                                 <div className="bg-white p-4 rounded-xl">
-                                    <img 
-                                        src="/payment-qr.png" 
-                                        alt="Payment QR Code" 
+                                    <Image
+                                        src="/payment-qr.png"
+                                        alt="Payment QR Code"
+                                        width={256}
+                                        height={256}
                                         className="w-64 h-64 object-contain"
                                     />
                                 </div>
@@ -420,7 +430,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                     <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-lime/50 cursor-pointer transition-colors">
                                         {previewUrl ? (
                                             <div className="space-y-3">
-                                                <img src={previewUrl} alt="Payment proof" className="max-h-48 mx-auto rounded-lg" />
+                                                <Image src={previewUrl} alt="Payment proof" unoptimized width={400} height={300} className="max-h-48 w-auto mx-auto rounded-lg object-contain" />
                                                 <p className="text-sm text-lime">✓ Image uploaded</p>
                                             </div>
                                         ) : (

@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   motion,
   AnimatePresence,
@@ -39,20 +40,13 @@ import {
 } from '@/lib/stores/booking';
 import { getLenis } from '@/components/ui/SmoothScroll';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { cn, unitPrice, formatINR as fmtRupee } from '@/lib/utils';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const SPRING = { type: 'spring', stiffness: 320, damping: 28 } as const;
 
-function unitPrice(price: BookingEventData['price']): number {
-  return price === 'Free' ? 0 : (price as number);
-}
-
-function fmtRupee(n: number): string {
-  return `₹${n.toLocaleString('en-IN')}`;
-}
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
@@ -144,7 +138,7 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
       {/* Thumbnail + title */}
       <div className="flex items-center gap-3 bg-cream/5 rounded-xl p-3">
         <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-surface">
-          {img && <img src={img} alt={event.title} className="w-full h-full object-cover" />}
+          {img && <Image src={img} alt={event.title} width={56} height={56} className="w-full h-full object-cover" />}
         </div>
         <div className="min-w-0">
           <p className="font-sans text-[14px] font-medium text-cream line-clamp-2 leading-snug">
@@ -237,7 +231,7 @@ function Step1Review() {
 
         {/* Guest details form */}
         <div className="mt-6 space-y-3">
-          <p className="font-mono text-[11px] text-cream-faint uppercase tracking-widest">
+          <p className="font-mono text-[11px] text-cream-dim uppercase tracking-widest">
             Your details
           </p>
           <Input
@@ -477,7 +471,7 @@ function Step3Confirmation() {
         transition={{ duration: 0.5, ease: EASE, delay: 0.85 }}
       >
         <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-surface">
-          {img && <img src={img} alt={event.title} className="w-full h-full object-cover" />}
+          {img && <Image src={img} alt={event.title} width={56} height={56} className="w-full h-full object-cover" />}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-sans text-[14px] font-medium text-cream line-clamp-2 leading-snug">

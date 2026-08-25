@@ -66,7 +66,7 @@ export default function Testimonials() {
         >
           <motion.p
             variants={fadeInUp}
-            className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-faint mb-10"
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-10"
           >
             [ 04 — SOCIAL PROOF ]
           </motion.p>
@@ -84,7 +84,7 @@ export default function Testimonials() {
             </div>
             <div>
               <p className="font-sans text-[14px] font-medium text-cream">Arjun S.</p>
-              <p className="font-mono text-[11px] text-cream-faint">Sunday Run Club founder · Delhi</p>
+              <p className="font-mono text-[11px] text-cream-dim">Sunday Run Club founder · Delhi</p>
             </div>
           </motion.footer>
         </motion.div>
@@ -104,7 +104,7 @@ export default function Testimonials() {
               transition={{ duration: 0.6, ease: EASE_VERCEL, delay: i * 0.1 }}
             >
               <CountUp end={stat.value} suffix={stat.suffix} active={statsInView} />
-              <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-faint mt-2">
+              <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim mt-2">
                 {stat.label}
               </span>
             </motion.div>

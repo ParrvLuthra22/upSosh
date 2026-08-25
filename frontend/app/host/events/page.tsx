@@ -8,6 +8,7 @@ import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useEscapeKey } from '@/lib/a11y';
 
 type EventStatus = 'live' | 'draft' | 'past' | 'cancelled';
 
@@ -36,10 +37,13 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
+  useEscapeKey(() => setOpen(false), open);
+
   return (
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
+        aria-label="More actions"
         className="w-8 h-8 flex items-center justify-center text-ink-muted hover:text-ink-primary transition-colors rounded-lg hover:bg-bg-secondary"
       >
         ···
@@ -47,7 +51,14 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
       <AnimatePresence>
         {open && (
           <>
-            <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setOpen(false)}
+              role="button"
+              tabIndex={0}
+              aria-label="Close menu"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen(false); }}
+            />
             <motion.div
               className="absolute right-0 top-full mt-1 w-48 bg-bg-primary border border-border rounded-xl shadow-lg z-20 overflow-hidden"
               initial={{ opacity: 0, scale: 0.95, y: -4 }}

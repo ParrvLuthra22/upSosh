@@ -1,3 +1,9 @@
+// JSON.stringify doesn't escape `<`, so a host-supplied event title/description
+// containing `</script>` would close the JSON-LD script tag early and let
+// arbitrary markup execute. `<` round-trips to the same `<` once a JSON-LD
+// parser (or JSON.parse) reads it back, so this only affects the raw HTML.
+export const safeJsonLd = (data: unknown): string => JSON.stringify(data).replace(/</g, '\\u003c');
+
 export const generateOrganizationSchema = () => {
     return {
         '@context': 'https://schema.org',

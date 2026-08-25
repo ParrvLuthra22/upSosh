@@ -21,7 +21,7 @@ import {
   IconTrash,
 } from '@tabler/icons-react';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, formatINR as fmtRupee } from '@/lib/utils';
 import {
   type PlannerResult,
   type BudgetItem,
@@ -68,9 +68,6 @@ function formatTs(d: Date) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-function fmtRupee(n: number) {
-  return `₹${n.toLocaleString('en-IN')}`;
-}
 
 // ─── Rotating loading text ─────────────────────────────────────────────────────
 
@@ -107,7 +104,7 @@ function VenueCard({ venue }: { venue: VenueSuggestion }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-sans text-[14px] font-medium text-cream">{venue.name}</p>
-          <p className="font-mono text-[11px] text-cream-faint mt-0.5 flex items-center gap-1">
+          <p className="font-mono text-[11px] text-cream-dim mt-0.5 flex items-center gap-1">
             <IconMapPin size={10} /> {venue.neighbourhood}
           </p>
         </div>
@@ -115,7 +112,7 @@ function VenueCard({ venue }: { venue: VenueSuggestion }) {
           <p className="font-mono text-[13px] text-lime font-medium">
             {venue.price === 'Free' ? 'Free' : fmtRupee(venue.price as number)}
           </p>
-          <p className="font-mono text-[10px] text-cream-faint flex items-center justify-end gap-0.5 mt-0.5">
+          <p className="font-mono text-[10px] text-cream-dim flex items-center justify-end gap-0.5 mt-0.5">
             <IconStar size={9} className="fill-current text-lime" /> {venue.rating}
           </p>
         </div>
@@ -125,13 +122,13 @@ function VenueCard({ venue }: { venue: VenueSuggestion }) {
         {venue.tags.map((tag) => (
           <span
             key={tag}
-            className="font-mono text-[10px] uppercase tracking-widest text-cream-faint bg-cream/5 px-2 py-0.5 rounded-full border border-border"
+            className="font-mono text-[10px] uppercase tracking-widest text-cream-dim bg-cream/5 px-2 py-0.5 rounded-full border border-border"
           >
             {tag}
           </span>
         ))}
       </div>
-      <p className="font-mono text-[11px] text-cream-faint flex items-center gap-1 pt-0.5">
+      <p className="font-mono text-[11px] text-cream-dim flex items-center gap-1 pt-0.5">
         <IconUsers size={10} /> Up to {venue.capacity} guests
       </p>
     </div>
@@ -142,12 +139,12 @@ function VenueCard({ venue }: { venue: VenueSuggestion }) {
 
 function BudgetTable({ items, total }: { items: BudgetItem[]; total: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <table className="w-full">
+    <div className="overflow-x-auto rounded-xl border border-border">
+      <table className="w-full min-w-[420px]">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left font-mono text-[10px] uppercase tracking-widest text-cream-faint px-4 py-3">Item</th>
-            <th className="text-right font-mono text-[10px] uppercase tracking-widest text-cream-faint px-4 py-3">Cost</th>
+            <th className="text-left font-mono text-[10px] uppercase tracking-widest text-cream-dim px-4 py-3">Item</th>
+            <th className="text-right font-mono text-[10px] uppercase tracking-widest text-cream-dim px-4 py-3">Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -155,7 +152,7 @@ function BudgetTable({ items, total }: { items: BudgetItem[]; total: number }) {
             <tr key={item.item} className="border-b border-border last:border-0">
               <td className="px-4 py-3">
                 <p className="font-sans text-[13px] text-cream">{item.item}</p>
-                <p className="font-mono text-[11px] text-cream-faint mt-0.5">{item.note}</p>
+                <p className="font-mono text-[11px] text-cream-dim mt-0.5">{item.note}</p>
               </td>
               <td className="px-4 py-3 text-right font-mono text-[13px] text-cream whitespace-nowrap">
                 {item.cost === 0 ? <span className="text-emerald">Free</span> : fmtRupee(item.cost)}
@@ -206,7 +203,7 @@ function MarketingCard({ result }: { result: PlannerResult }) {
     <div className="space-y-4">
       {/* Caption */}
       <div>
-        <p className="label text-cream-faint mb-2">Caption draft</p>
+        <p className="label text-cream-dim mb-2">Caption draft</p>
         <div className="bg-surface-2 border border-border rounded-xl p-4 font-sans text-[13px] text-cream-dim leading-relaxed whitespace-pre-line">
           {marketing.caption}
         </div>
@@ -214,7 +211,7 @@ function MarketingCard({ result }: { result: PlannerResult }) {
 
       {/* Hashtags */}
       <div>
-        <p className="label text-cream-faint mb-2">Hashtags</p>
+        <p className="label text-cream-dim mb-2">Hashtags</p>
         <div className="flex flex-wrap gap-1.5">
           {marketing.hashtags.map((tag) => (
             <span key={tag} className="font-mono text-[11px] text-lime bg-lime/10 px-2 py-0.5 rounded-full border border-lime/20">
@@ -227,13 +224,13 @@ function MarketingCard({ result }: { result: PlannerResult }) {
       {/* Timing + platform */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-surface-2 border border-border rounded-xl p-3">
-          <p className="label text-cream-faint mb-1">Best post time</p>
+          <p className="label text-cream-dim mb-1">Best post time</p>
           <p className="font-sans text-[13px] text-cream flex items-center gap-1.5">
             <IconClock size={13} className="text-lime" /> {marketing.bestPostTime}
           </p>
         </div>
         <div className="bg-surface-2 border border-border rounded-xl p-3">
-          <p className="label text-cream-faint mb-1">Platform</p>
+          <p className="label text-cream-dim mb-1">Platform</p>
           <p className="font-sans text-[13px] text-cream flex items-center gap-1.5">
             <IconBrandInstagram size={13} className="text-coral" /> {marketing.bestPlatform}
           </p>
@@ -398,8 +395,8 @@ function PastPlansSidebar({
   if (plans.length === 0) {
     return (
       <div className="text-center py-10 px-4">
-        <p className="font-mono text-[11px] text-cream-faint uppercase tracking-widest">No past plans</p>
-        <p className="font-sans text-[13px] text-cream-faint mt-2">Plans you generate will appear here.</p>
+        <p className="font-mono text-[11px] text-cream-dim uppercase tracking-widest">No past plans</p>
+        <p className="font-sans text-[13px] text-cream-dim mt-2">Plans you generate will appear here.</p>
       </div>
     );
   }
@@ -413,11 +410,12 @@ function PastPlansSidebar({
             className="w-full text-left bg-surface border border-border rounded-xl p-3 hover:border-border-strong transition-colors"
           >
             <p className="font-sans text-[13px] text-cream line-clamp-2 leading-snug">{plan.query}</p>
-            <p className="font-mono text-[10px] text-cream-faint mt-1.5">{formatTs(plan.timestamp)}</p>
+            <p className="font-mono text-[10px] text-cream-dim mt-1.5">{formatTs(plan.timestamp)}</p>
           </button>
           <button
             onClick={() => onDelete(plan.id)}
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-cream-faint hover:text-coral p-1 rounded"
+            aria-label="Delete plan"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-cream-dim hover:text-coral p-1 rounded"
           >
             <IconTrash size={12} />
           </button>
@@ -447,6 +445,7 @@ function NumberStepper({
       <button
         type="button"
         onClick={() => onChange(Math.max(min, value - step))}
+        aria-label="Decrease guests"
         className="w-11 h-full flex items-center justify-center text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors font-sans text-lg flex-shrink-0 border-r border-border"
       >
         −
@@ -465,6 +464,7 @@ function NumberStepper({
       <button
         type="button"
         onClick={() => onChange(Math.min(max, value + step))}
+        aria-label="Increase guests"
         className="w-11 h-full flex items-center justify-center text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors font-sans text-lg flex-shrink-0 border-l border-border"
       >
         +
@@ -617,7 +617,7 @@ function PlannerPage() {
                 <div className="mt-12 bg-surface border border-border rounded-3xl p-6 sm:p-8 space-y-6">
                   {/* Event type */}
                   <div>
-                    <label className="label text-cream-faint block mb-2">What kind of event?</label>
+                    <label className="label text-cream-dim block mb-2">What kind of event?</label>
                     <textarea
                       ref={textareaRef}
                       value={form.eventType}
@@ -626,14 +626,14 @@ function PlannerPage() {
                       placeholder="A Sunday morning run club for 30 people in South Delhi, budget ₹8,000…"
                       rows={3}
                       autoFocus
-                      className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 font-sans text-[15px] text-cream placeholder:text-cream-faint resize-none outline-none focus:border-lime focus:ring-2 focus:ring-lime/20 transition-all min-h-[80px]"
+                      className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 font-sans text-[15px] text-cream placeholder:text-cream-dim resize-none outline-none focus:border-lime focus:ring-2 focus:ring-lime/20 transition-all min-h-[80px]"
                     />
                   </div>
 
                   {/* Guests + Budget */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="label text-cream-faint block mb-2">How many guests?</label>
+                      <label className="label text-cream-dim block mb-2">How many guests?</label>
                       <NumberStepper
                         value={form.guestCount}
                         onChange={(n) => setForm((f) => ({ ...f, guestCount: n }))}
@@ -643,7 +643,7 @@ function PlannerPage() {
                       />
                     </div>
                     <div>
-                      <label className="label text-cream-faint block mb-2">Budget?</label>
+                      <label className="label text-cream-dim block mb-2">Budget?</label>
                       <div className="flex items-center h-12 bg-surface border border-border rounded-xl px-4 gap-2 focus-within:border-lime focus-within:ring-2 focus-within:ring-lime/20 transition-all">
                         <span className="font-mono text-[15px] text-cream-dim flex-shrink-0">₹</span>
                         <input
@@ -651,7 +651,7 @@ function PlannerPage() {
                           value={form.budget}
                           onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
                           placeholder="8000"
-                          className="flex-1 bg-transparent text-cream font-sans text-[15px] outline-none placeholder:text-cream-faint [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="flex-1 bg-transparent text-cream font-sans text-[15px] outline-none placeholder:text-cream-dim [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                       </div>
                     </div>
@@ -659,7 +659,7 @@ function PlannerPage() {
 
                   {/* Vibe picker */}
                   <div>
-                    <label className="label text-cream-faint block mb-2">Vibe</label>
+                    <label className="label text-cream-dim block mb-2">Vibe</label>
                     <div className="flex flex-wrap gap-2">
                       {VIBES.map((vibe) => {
                         const active = form.vibes.includes(vibe);
@@ -727,7 +727,7 @@ function PlannerPage() {
 
                 {/* Subtle query preview */}
                 {form.eventType && (
-                  <p className="font-mono text-[12px] text-cream-faint max-w-sm text-center line-clamp-2 px-4">
+                  <p className="font-mono text-[12px] text-cream-dim max-w-sm text-center line-clamp-2 px-4">
                     "{form.eventType}"
                   </p>
                 )}
@@ -751,11 +751,11 @@ function PlannerPage() {
         {/* Past plans sidebar — visible on xl+ */}
         <div className="hidden xl:block px-6 py-20 overflow-y-auto max-h-screen sticky top-0">
           <div className="flex items-center justify-between mb-4">
-            <p className="label text-cream-faint">Past plans</p>
+            <p className="label text-cream-dim">Past plans</p>
             {pastPlans.length > 0 && (
               <button
                 onClick={() => setPastPlans([])}
-                className="font-mono text-[10px] text-cream-faint hover:text-coral transition-colors uppercase tracking-wider"
+                className="font-mono text-[10px] text-cream-dim hover:text-coral transition-colors uppercase tracking-wider"
               >
                 Clear all
               </button>
@@ -782,7 +782,7 @@ function PlannerPage() {
                   onClick={() => setForm((f) => ({ ...f, eventType: prompt }))}
                   className="w-full text-left mt-2 font-sans text-[12px] text-cream-dim hover:text-cream transition-colors py-1 border-b border-border last:border-0 flex items-start gap-1.5"
                 >
-                  <span className="text-cream-faint mt-0.5">→</span> {prompt}
+                  <span className="text-cream-dim mt-0.5">→</span> {prompt}
                 </button>
               ))}
             </div>

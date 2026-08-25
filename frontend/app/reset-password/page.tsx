@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,7 @@ function ResetPasswordContent() {
         setStatus('resetting');
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+            const apiUrl = getApiUrl();
             const res = await fetch(`${apiUrl}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -146,7 +147,7 @@ function ResetPasswordContent() {
                                         )}
                                     </button>
                                 </div>
-                                <p className="text-xs text-cream-faint mt-1">Must be at least 8 characters</p>
+                                <p className="text-xs text-cream-dim mt-1">Must be at least 8 characters</p>
                             </div>
 
                             <div>
@@ -187,7 +188,7 @@ function ResetPasswordContent() {
                     )}
                 </div>
 
-                <p className="text-center text-sm text-cream-faint mt-6">
+                <p className="text-center text-sm text-cream-dim mt-6">
                     Remember your password?{' '}
                     <Link href="/signin" className="text-lime hover:text-lime/90 font-medium">
                         Sign in

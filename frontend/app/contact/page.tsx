@@ -13,7 +13,7 @@ export default function ContactPage() {
                     
                     <div className="lg:w-1/3 space-y-8">
                         <div className="bg-surface p-8 rounded-3xl border border-white/10">
-                            <h3 className="text-xl font-bold mb-4">Contact Information</h3>
+                            <h2 className="text-xl font-bold mb-4">Contact Information</h2>
                             <div className="space-y-4 text-cream-dim">
                                 <p className="flex items-start gap-3">
                                     <span className="text-lime text-xl"></span> 
@@ -35,7 +35,7 @@ export default function ContactPage() {
 
                     <div className="lg:w-2/3">
                         <div className="bg-surface p-8 md:p-10 rounded-3xl border border-white/10 space-y-4">
-                            <h3 className="text-xl font-bold">Send us an email</h3>
+                            <h2 className="text-xl font-bold">Send us an email</h2>
                             <p className="text-cream-dim">
                                 Tap the button below to open your email app with our address filled in.
                             </p>

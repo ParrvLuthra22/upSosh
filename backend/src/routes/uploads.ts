@@ -1,42 +1,13 @@
 import { Router, Response, RequestHandler } from 'express';
-import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
-import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import prisma from '../lib/prisma';
+import { imageUpload, isCloudinaryConfigured, uploadBufferToCloudinary } from '../lib/cloudinary';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
 const router = Router();
-
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const isCloudinaryConfigured = !!(
-  process.env.CLOUDINARY_CLOUD_NAME &&
-  process.env.CLOUDINARY_API_KEY &&
-  process.env.CLOUDINARY_API_SECRET
-);
-
-// Use memory storage — we stream the buffer straight to Cloudinary
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (_, file, cb) => {
-    const allowedMime = /^image\/(jpeg|jpg|png|gif|webp)$/i;
-    if (allowedMime.test(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files (jpeg, jpg, png, gif, webp) are allowed'));
-    }
-  },
-});
 
 // POST /api/uploads — upload a file (requireAuth)
 router.post(
@@ -47,39 +18,25 @@ router.post(
   // @types/cookie-parser's `@types/express: "*"` peer dependency — a
   // workspace-level dependency conflict, not an untyped value. The cast is
   // narrowly scoped to just this line.
-  upload.single('file') as unknown as RequestHandler,
+  imageUpload.single('file') as unknown as RequestHandler,
   async (req: AuthRequest, res: Response): Promise<Response> => {
     try {
       if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-      let url: string;
-
-      if (isCloudinaryConfigured) {
-        // Upload to Cloudinary
-        const fileBuffer = req.file.buffer;
-        const result = await new Promise<UploadApiResponse>((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'upsosh',
-              transformation: [
-                { width: 1200, height: 840, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
-              ],
-            },
-            (error?: UploadApiErrorResponse, result?: UploadApiResponse) => {
-              if (error || !result) reject(error ?? new Error('Cloudinary upload returned no result'));
-              else resolve(result);
-            },
-          );
-          stream.end(fileBuffer);
-        });
-        url = result.secure_url;
-      } else {
-        // Fallback: return a placeholder if Cloudinary isn't configured
+      if (!isCloudinaryConfigured) {
         console.warn('[Upload] Cloudinary not configured — returning placeholder URL');
         return res.status(503).json({
           message: 'Image upload service not configured. Please set CLOUDINARY_* environment variables.',
         });
       }
+
+      const result = await uploadBufferToCloudinary(req.file.buffer, {
+        folder: 'upsosh',
+        transformation: [
+          { width: 1200, height: 840, crop: 'limit', quality: 'auto', fetch_format: 'auto' },
+        ],
+      });
+      const url = result.secure_url;
 
       await prisma.upload.create({
         data: {

@@ -17,6 +17,8 @@ export default function CustomCursor() {
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
+    document.body.dataset.customCursor = 'active';
+
     function tick() {
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate(${pos.current.x}px, ${pos.current.y}px)`;
@@ -52,6 +54,7 @@ export default function CustomCursor() {
       cancelAnimationFrame(raf.current);
       window.removeEventListener('mousemove', onMove);
       mo.disconnect();
+      delete document.body.dataset.customCursor;
     };
   }, [onMove]);
 

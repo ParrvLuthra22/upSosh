@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
@@ -70,9 +71,9 @@ function AvatarUpload({
 
   return (
     <div className="relative group w-28 h-28 flex-shrink-0">
-      <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-border bg-bg-secondary flex items-center justify-center">
+      <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-border bg-bg-secondary flex items-center justify-center">
         {preview ? (
-          <img src={preview} alt={name ?? 'Avatar'} className="w-full h-full object-cover" />
+          <Image src={preview} alt={name ?? 'Avatar'} fill unoptimized sizes="112px" className="object-cover" />
         ) : (
           <span className="font-display text-4xl text-ink-muted">{initial}</span>
         )}

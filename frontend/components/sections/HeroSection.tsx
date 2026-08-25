@@ -249,7 +249,7 @@ export default function HeroSection() {
         {/* 5 — Social proof */}
         <FadeUp delay={0.65} className="mt-14 flex items-center gap-4">
           <AvatarStack />
-          <p className="font-sans text-[13px] text-cream-faint">
+          <p className="font-sans text-[13px] text-cream-dim">
             Trusted by 2,400+ hosts across India
           </p>
         </FadeUp>
@@ -258,7 +258,7 @@ export default function HeroSection() {
       {/* Scroll indicator */}
       <div className="flex flex-col items-center gap-2 pb-10 mt-12">
         <motion.p
-          className="font-mono text-[10px] uppercase tracking-widest text-cream-faint"
+          className="font-mono text-[10px] uppercase tracking-widest text-cream-dim"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1, duration: 0.6 }}
@@ -274,7 +274,7 @@ export default function HeroSection() {
             animate={{ y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <IconChevronDown size={18} className="text-cream-faint" />
+            <IconChevronDown size={18} className="text-cream-dim" />
           </motion.div>
         </motion.div>
       </div>

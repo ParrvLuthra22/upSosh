@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { toast } from 'sonner';
 
@@ -151,7 +152,7 @@ export default function ReviewPage() {
         <div className="flex gap-4">
           {data.idPreview ? (
             <div className="relative w-[60px] h-[60px] rounded-xl overflow-hidden flex-shrink-0">
-              <img src={data.idPreview} alt="Government ID" className="w-full h-full object-cover" />
+              <Image src={data.idPreview} alt="Government ID" fill unoptimized sizes="60px" className="object-cover" />
               <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-verified flex items-center justify-center">
                 <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
                   <path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -165,7 +166,7 @@ export default function ReviewPage() {
           )}
           {data.selfiePreview ? (
             <div className="relative w-[60px] h-[60px] rounded-xl overflow-hidden flex-shrink-0">
-              <img src={data.selfiePreview} alt="Selfie with ID" className="w-full h-full object-cover" />
+              <Image src={data.selfiePreview} alt="Selfie with ID" fill unoptimized sizes="60px" className="object-cover" />
               <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-verified flex items-center justify-center">
                 <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
                   <path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />

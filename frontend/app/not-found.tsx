@@ -44,7 +44,7 @@ export default function NotFound() {
       </div>
 
       {/* Decorative mono label */}
-      <p className="mt-16 font-mono text-[10px] uppercase tracking-[0.25em] text-cream-faint">
+      <p className="mt-16 font-mono text-[10px] uppercase tracking-[0.25em] text-cream-dim">
         UpSosh · Where plans become moments.
       </p>
     </div>

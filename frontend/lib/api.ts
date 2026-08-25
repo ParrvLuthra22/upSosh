@@ -38,6 +38,13 @@ import { useAuthStore } from '@/lib/stores/auth';
 const BASE_URL: string =
   (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) || '';
 
+// For the handful of call sites that need a raw `fetch()` (file uploads,
+// server-side generateMetadata, etc.) instead of the api.* methods below —
+// same NEXT_PUBLIC_API_URL-or-rewrite-proxy resolution, one place to change it.
+export function getApiUrl(): string {
+  return BASE_URL;
+}
+
 // ─── Domain types ───────────────────────────────────────────────────────────
 // Kept for the legacy src/components/booking and src/components/host tree.
 // Not the source of truth for the API shape (that's the Prisma schema) — just

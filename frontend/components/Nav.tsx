@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/stores/auth';
 
@@ -113,7 +114,7 @@ export default function Nav() {
                 title="My profile"
               >
                 {user.photoUrl ? (
-                  <img src={user.photoUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image src={user.photoUrl} alt={user.name} width={36} height={36} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 14, fontWeight: 700, color: 'var(--lime)' }}>
                     {(user.name?.[0] ?? 'U').toUpperCase()}

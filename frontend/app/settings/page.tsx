@@ -7,6 +7,7 @@ import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useEscapeKey } from '@/lib/a11y';
 
 type Section = 'account' | 'profile' | 'host' | 'danger';
 
@@ -221,6 +222,8 @@ function HostSection({ user }: { user: any }) {
 function DangerZone() {
   const [deleteInput, setDeleteInput] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  useEscapeKey(() => setShowDeleteModal(false), showDeleteModal);
   const { signOut } = useAuth();
   const router = useRouter();
 
@@ -260,6 +263,10 @@ function DangerZone() {
               className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowDeleteModal(false)}
+              role="button"
+              tabIndex={0}
+              aria-label="Close"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowDeleteModal(false); }}
             />
             <motion.div
               className="fixed inset-0 z-50 flex items-center justify-center px-6"

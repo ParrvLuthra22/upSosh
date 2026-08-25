@@ -28,7 +28,7 @@ const SearchBar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search events, hosts..."
-                className="w-full py-4 pl-8 pr-4 text-xl font-light text-cream bg-transparent border-b border-border focus:border-lime focus:outline-none transition-all placeholder:text-cream-faint"
+                className="w-full py-4 pl-8 pr-4 text-xl font-light text-cream bg-transparent border-b border-border focus:border-lime focus:outline-none transition-all placeholder:text-cream-dim"
                 aria-label="Search events"
             />
         </div>

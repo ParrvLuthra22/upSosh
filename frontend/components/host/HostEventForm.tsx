@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { api, Event } from '@/lib/api';
 
 interface HostEventFormProps {
@@ -253,10 +254,13 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     <div className="flex flex-col gap-4">
                         
                         <div className="relative w-full h-64 rounded-xl overflow-hidden bg-surface-2">
-                            <img
+                            <Image
                                 src={imagePreview}
                                 alt="Event preview"
-                                className="w-full h-full object-cover"
+                                fill
+                                unoptimized
+                                sizes="(min-width: 768px) 600px, 100vw"
+                                className="object-cover"
                             />
                         </div>
 
@@ -315,6 +319,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                                 <button
                                     type="button"
                                     onClick={() => removeMenuItem(index)}
+                                    aria-label={`Remove ${item}`}
                                     className="text-red-500 hover:text-red-400"
                                 >
                                     ×

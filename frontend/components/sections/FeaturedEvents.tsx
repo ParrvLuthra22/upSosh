@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import ImageReveal from '@/components/ui/ImageReveal';
 import { EASE_VERCEL, staggerContainer, fadeInUp } from '@/lib/motion';
@@ -67,11 +68,13 @@ function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?:
       transition={{ duration: 0.7, ease: EASE_VERCEL, delay }}
     >
       <div className="relative overflow-hidden aspect-[4/5] md:h-full md:aspect-auto min-h-[280px]">
-        <ImageReveal direction="top" delay={delay + 0.1}>
-          <img
+        <ImageReveal direction="top" delay={delay + 0.1} className="relative w-full h-full">
+          <Image
             src={event.image}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-vercel"
+            fill
+            sizes="(min-width: 768px) 33vw, 100vw"
+            className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-vercel"
           />
         </ImageReveal>
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

@@ -53,12 +53,12 @@ function Field({
         'relative flex items-center h-12 rounded-xl bg-surface border transition-all',
         error ? 'border-coral ring-2 ring-coral/20' : focused ? 'border-lime ring-2 ring-lime/20' : 'border-border',
       )}>
-        <span className="absolute left-4 text-cream-faint">{leadingIcon}</span>
+        <span className="absolute left-4 text-cream-dim">{leadingIcon}</span>
         <input
           type={type} value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder} autoComplete={autoComplete}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          className="flex-1 bg-transparent pl-10 pr-10 h-full font-sans text-[15px] text-cream placeholder:text-cream-faint outline-none"
+          className="flex-1 bg-transparent pl-10 pr-10 h-full font-sans text-[15px] text-cream placeholder:text-cream-dim outline-none"
         />
         {trailingSlot && <div className="absolute right-4">{trailingSlot}</div>}
       </div>
@@ -119,7 +119,7 @@ function SignInForm() {
             leadingIcon={<IconLock size={16} />}
             trailingSlot={
               <button type="button" onClick={() => setShowPwd(v => !v)}
-                className="text-cream-faint hover:text-cream transition-colors"
+                className="text-cream-dim hover:text-cream transition-colors"
                 aria-label={showPwd ? 'Hide password' : 'Show password'}>
                 {showPwd ? <IconEyeOff size={16} /> : <IconEye size={16} />}
               </button>

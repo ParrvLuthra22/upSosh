@@ -236,6 +236,7 @@ export default function SampleEventPage() {
               <button
                 type="button"
                 onClick={() => setCapacity((c) => Math.max(2, c - 1))}
+                aria-label="Decrease capacity"
                 className="w-9 h-9 rounded-full border border-border flex items-center justify-center font-sans text-lg text-ink-muted hover:border-accent hover:text-accent transition-colors"
               >
                 –
@@ -251,6 +252,7 @@ export default function SampleEventPage() {
               <button
                 type="button"
                 onClick={() => setCapacity((c) => Math.min(200, c + 1))}
+                aria-label="Increase capacity"
                 className="w-9 h-9 rounded-full border border-border flex items-center justify-center font-sans text-lg text-ink-muted hover:border-accent hover:text-accent transition-colors"
               >
                 +

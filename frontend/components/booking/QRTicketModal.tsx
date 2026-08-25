@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import QRCode from 'react-qr-code';
 import { Booking } from '@/lib/api';
 import { downloadQRCode, generateICS } from '@/lib/ticketUtils';
+import { useEscapeKey } from '@/lib/a11y';
 
 interface QRTicketModalProps {
     booking: Booking;
@@ -30,8 +31,8 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
         }
     }, [isOpen]);
 
-    
-    
+    useEscapeKey(onClose, isOpen);
+
     const event = booking.items[0];
     const qrValue = JSON.stringify({ bookingId: booking.id, eventId: event.id, user: booking.customer?.email || 'guest' });
 
@@ -40,7 +41,14 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
             ref={modalRef}
             className="fixed inset-0 z-[80] flex items-center justify-center p-4 opacity-0 pointer-events-none"
         >
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+            <div
+                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                onClick={onClose}
+                role="button"
+                tabIndex={0}
+                aria-label="Close"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
+            />
 
             <div
                 ref={ticketRef}

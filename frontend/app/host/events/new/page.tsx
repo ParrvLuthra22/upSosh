@@ -2,10 +2,11 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
-import { api } from '@/lib/api';
+import { api, getApiUrl } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface EventFormData {
@@ -50,7 +51,7 @@ function NewEventPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/uploads`, {
         method: 'POST',
         credentials: 'include',
@@ -109,7 +110,7 @@ function NewEventPage() {
     <div className="sticky top-28 border border-border rounded-2xl overflow-hidden bg-bg-secondary">
       <div className="h-48 bg-bg-dark flex items-center justify-center relative">
         {form.image ? (
-          <img src={form.image} alt="preview" className="w-full h-full object-cover" />
+          <Image src={form.image} alt="preview" fill unoptimized sizes="(min-width: 768px) 400px, 100vw" className="object-cover" />
         ) : (
           <p className="font-mono text-xs text-white/30">Add an image URL</p>
         )}
@@ -281,10 +282,10 @@ function NewEventPage() {
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="w-full h-36 border border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-accent/50 hover:bg-accent/3 transition-colors mb-3"
+                className="relative w-full h-36 border border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-accent/50 hover:bg-accent/3 transition-colors mb-3"
               >
                 {form.image ? (
-                  <img src={form.image} alt="preview" className="w-full h-full object-cover rounded-xl" />
+                  <Image src={form.image} alt="preview" fill unoptimized sizes="(min-width: 768px) 400px, 100vw" className="object-cover rounded-xl" />
                 ) : (
                   <>
                     <svg className="w-6 h-6 text-ink-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

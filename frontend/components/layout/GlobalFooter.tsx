@@ -34,7 +34,7 @@ const SOCIAL = [
 function LinkColumn({ heading, links }: { heading: string; links: { label: string; href: string }[] }) {
   return (
     <div>
-      <p className="label text-cream-faint mb-4">{heading}</p>
+      <p className="label text-cream-dim mb-4">{heading}</p>
       <ul className="space-y-1">
         {links.map(({ label, href }) => (
           <li key={label}>
@@ -94,10 +94,10 @@ export default function GlobalFooter() {
 
         {/* Bottom strip */}
         <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="font-sans text-[13px] text-cream-faint">
+          <p className="font-sans text-[13px] text-cream-dim">
             © {new Date().getFullYear()} UpSosh. All rights reserved.
           </p>
-          <p className="font-sans text-[13px] text-cream-faint flex items-center gap-1.5">
+          <p className="font-sans text-[13px] text-cream-dim flex items-center gap-1.5">
             Made with <IconHeartFilled size={13} className="text-coral" aria-label="love" /> in India
           </p>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { api } from '@/lib/api';
@@ -65,7 +66,14 @@ const EventDetailsModal = () => {
             role="dialog"
             aria-modal="true"
         >
-            <div className="absolute inset-0 bg-void/80 backdrop-blur-sm" onClick={handleClose} />
+            <div
+                className="absolute inset-0 bg-void/80 backdrop-blur-sm"
+                onClick={handleClose}
+                role="button"
+                tabIndex={0}
+                aria-label="Close"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClose(); }}
+            />
 
             <div
                 ref={contentRef}
@@ -74,6 +82,7 @@ const EventDetailsModal = () => {
                 
                 <button
                     onClick={handleClose}
+                    aria-label="Close"
                     className="absolute top-4 right-4 z-20 p-2 text-cream/50 hover:text-cream transition-colors"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,10 +92,12 @@ const EventDetailsModal = () => {
 
                 
                 <div className="md:w-1/2 h-64 md:h-auto relative bg-neutral-100 dark:bg-neutral-900">
-                    <img
+                    <Image
                         src={selectedEvent.image}
                         alt={selectedEvent.title}
-                        className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700 ease-out"
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover filter grayscale hover:grayscale-0 transition-all duration-700 ease-out"
                     />
                 </div>
 
@@ -128,7 +139,7 @@ const EventDetailsModal = () => {
                         
                         {host && (
                             <div className="flex items-center gap-4 py-4 border-y border-border">
-                                <img src={host.avatar} alt={host.name} className="w-12 h-12 rounded-full grayscale" />
+                                <Image src={host.avatar} alt={host.name} width={48} height={48} className="w-12 h-12 rounded-full grayscale" />
                                 <div>
                                     <p className="font-medium text-cream">Hosted by {host.name}</p>
                                     <p className="text-sm text-cream/50">{host.rating} ★ ({host.reviews} reviews)</p>
@@ -156,11 +167,13 @@ const EventDetailsModal = () => {
                             <div className="flex items-center border border-border rounded-full">
                                 <button
                                     onClick={() => setQty(Math.max(1, qty - 1))}
+                                    aria-label="Decrease quantity"
                                     className="w-10 h-10 flex items-center justify-center text-cream hover:bg-cream/5 transition-colors rounded-l-full"
                                 >-</button>
                                 <span className="w-8 text-center font-medium">{qty}</span>
                                 <button
                                     onClick={() => setQty(qty + 1)}
+                                    aria-label="Increase quantity"
                                     className="w-10 h-10 flex items-center justify-center text-cream hover:bg-cream/5 transition-colors rounded-r-full"
                                 >+</button>
                             </div>

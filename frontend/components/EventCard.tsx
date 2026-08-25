@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   IconClock,
@@ -82,10 +83,12 @@ export function EventCard({
       <Link href={`/events/${id}`} legacyBehavior={false} className="block">
         {/* Image area */}
         <div className="relative overflow-hidden">
-          <img
+          <Image
             src={imageUrl}
             alt={title}
-            className="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-[350ms]"
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-[350ms]"
             style={{ transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)' }}
           />
 
@@ -122,9 +125,11 @@ export function EventCard({
           {/* Host row */}
           <div className="flex items-center gap-2">
             {hostAvatar ? (
-              <img
+              <Image
                 src={hostAvatar}
                 alt={host}
+                width={24}
+                height={24}
                 className="w-6 h-6 rounded-full object-cover"
               />
             ) : (

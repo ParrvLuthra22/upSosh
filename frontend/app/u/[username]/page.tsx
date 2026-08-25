@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
@@ -49,8 +50,14 @@ function EventCard({ event }: { event: Event }) {
         whileHover={{ y: -2, transition: { duration: 0.2 } }}
       >
         {event.image && (
-          <div className="h-36 overflow-hidden">
-            <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="relative h-36 overflow-hidden">
+            <Image
+              src={event.image}
+              alt={event.title}
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
           </div>
         )}
         <div className="p-4">
@@ -207,9 +214,9 @@ export default function PublicProfilePage() {
             animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
             transition={{ duration: 0.8, ease: EASE_VERCEL }}
           >
-            <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-bg-secondary border border-border">
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-bg-secondary border border-border">
               {profile.photoUrl ? (
-                <img src={profile.photoUrl} alt={profile.name} className="w-full h-full object-cover" />
+                <Image src={profile.photoUrl} alt={profile.name} fill sizes="(min-width: 768px) 256px, 192px" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="font-display text-5xl text-ink-muted">{initials}</span>

@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/lib/stores/auth';
 import { type HostEvent } from '@/lib/hostEventTypes';
+import { getApiUrl } from '@/lib/api';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -198,7 +200,7 @@ function SidebarProfile() {
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-border bg-surface flex items-center justify-center">
           {user?.photoUrl ? (
-            <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+            <Image src={user.photoUrl} alt={user.name} width={36} height={36} className="w-full h-full object-cover" />
           ) : (
             <span className="font-mono text-xs text-cream font-bold">{initials}</span>
           )}
@@ -332,10 +334,12 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
     >
       {/* Image */}
       <div className="relative h-[140px] overflow-hidden">
-        <img
+        <Image
           src={event.image}
           alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+          fill
+          sizes="280px"
+          className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         {/* Date badge */}
@@ -506,7 +510,7 @@ function HostDashboard() {
   useEffect(() => {
     async function fetchHostEvents() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const apiUrl = getApiUrl();
         const res = await fetch(`${apiUrl}/api/events/host/mine`, {
           credentials: 'include',
         });
@@ -519,7 +523,7 @@ function HostDashboard() {
     }
     async function fetchHostStats() {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const apiUrl = getApiUrl();
         const res = await fetch(`${apiUrl}/api/events/host/stats`, {
           credentials: 'include',
         });

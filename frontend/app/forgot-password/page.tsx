@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { getApiUrl } from '@/lib/api';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
     setStatus('loading');
     setError('');
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +89,7 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full h-12 bg-surface border border-border rounded-2xl px-4 font-sans text-[15px] text-cream placeholder:text-cream-faint outline-none focus:border-lime focus:ring-2 focus:ring-lime/20 transition-all"
+                  className="w-full h-12 bg-surface border border-border rounded-2xl px-4 font-sans text-[15px] text-cream placeholder:text-cream-dim outline-none focus:border-lime focus:ring-2 focus:ring-lime/20 transition-all"
                 />
               </div>
 

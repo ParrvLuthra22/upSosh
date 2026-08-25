@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
@@ -9,6 +10,7 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import { useAuth } from '@/store/authStore';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { useEscapeKey } from '@/lib/a11y';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -55,6 +57,8 @@ function NotificationPanel({
 }) {
   const unread = notifications.filter((n) => !n.read);
 
+  useEscapeKey(onClose, isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -66,10 +70,14 @@ function NotificationPanel({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
+            role="button"
+            tabIndex={0}
+            aria-label="Close notifications"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
           />
           {/* Panel */}
           <motion.div
-            className="absolute right-0 top-full mt-3 w-[380px] max-h-[80vh] overflow-y-auto bg-bg-primary border border-border rounded-2xl shadow-2xl z-50"
+            className="absolute right-0 top-full mt-3 w-[380px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto bg-bg-primary border border-border rounded-2xl shadow-2xl z-50"
             initial={{ opacity: 0, scale: 0.95, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -8 }}
@@ -131,7 +139,7 @@ function NotificationPanel({
 function UserAvatar({ src, name }: { src?: string; name?: string }) {
   const initial = name?.[0]?.toUpperCase() ?? 'U';
   if (src) {
-    return <img src={src} alt={name ?? 'User'} className="w-full h-full object-cover" />;
+    return <Image src={src} alt={name ?? 'User'} width={32} height={32} className="w-full h-full object-cover" />;
   }
   return <span className="font-sans text-sm font-medium text-ink-primary">{initial}</span>;
 }

@@ -6,7 +6,7 @@ import FeaturedEvents from '@/components/sections/FeaturedEvents';
 import AIPlanner from '@/components/sections/AIPlanner';
 import Testimonials from '@/components/sections/Testimonials';
 import CTAFooterSection from '@/components/sections/CTAFooterSection';
-import { generateOrganizationSchema } from '@/lib/structuredData';
+import { generateOrganizationSchema, safeJsonLd } from '@/lib/structuredData';
 
 // ─── Shared content arrays ────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(generateOrganizationSchema()) }}
       />
 
       {/* Standalone nav — ConditionalHeader hides GlobalHeader on "/" */}

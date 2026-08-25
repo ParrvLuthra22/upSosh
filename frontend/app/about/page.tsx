@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 
@@ -157,11 +158,13 @@ export default function AboutPage() {
               <div className="border border-border rounded-2xl p-8 bg-bg-primary hover:bg-bg-secondary transition-colors group">
                 <div className="flex items-center gap-5 mb-5">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border flex-shrink-0 bg-bg-secondary">
-                    <img
+                    <Image
                       src={founder.img}
                       alt={founder.name}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
                     />
                   </div>
                   <div>

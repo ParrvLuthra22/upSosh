@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import gsap from 'gsap';
+import Image from 'next/image';
 import { api, Booking } from '@/lib/api';
 import QRTicketModal from '@/components/booking/QRTicketModal';
 
@@ -122,7 +123,7 @@ export default function ConfirmationPage() {
                         <p className="text-cream-dim">
                             Our team is reviewing your payment proof. This usually takes <span className="font-bold text-white">6-8 hours</span>.
                         </p>
-                        <p className="text-cream-faint text-sm">
+                        <p className="text-cream-dim text-sm">
                             Once approved, your tickets will be available in <span className="font-semibold">My Profile → My Tickets</span>
                         </p>
                     </div>
@@ -133,10 +134,10 @@ export default function ConfirmationPage() {
                     <div className="space-y-4">
                         {booking.items.map((item: any) => (
                             <div key={item.id} className="flex items-center gap-4 bg-surface-2 rounded-xl p-4 text-left">
-                                <img src={item.image} alt={item.title} className="w-16 h-16 rounded-lg object-cover" />
+                                <Image src={item.image} alt={item.title} width={64} height={64} className="rounded-lg object-cover" />
                                 <div className="flex-1">
                                     <h3 className="font-bold text-cream">{item.title}</h3>
-                                    <p className="text-sm text-cream-faint">{item.date} • {item.time}</p>
+                                    <p className="text-sm text-cream-dim">{item.date} • {item.time}</p>
                                 </div>
                                 {booking.status === 'confirmed' ? (
                                     <button

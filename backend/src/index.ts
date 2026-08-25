@@ -49,9 +49,24 @@ const PORT = process.env.PORT || 4000;
 
 app.set('trust proxy', 1);
 
+// This API never serves HTML itself (every route returns JSON), so this CSP
+// is defense-in-depth rather than the policy that actually governs the
+// Razorpay checkout script — that script runs in the Next.js frontend, which
+// needs its own matching CSP header (set via next.config.js/middleware,
+// not here) to meaningfully constrain it.
 app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
+            connectSrc: ["'self'", 'https://api.razorpay.com'],
+            frameSrc: ["'self'", 'https://api.razorpay.com', 'https://checkout.razorpay.com'],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            objectSrc: ["'none'"],
+        },
+    },
 }));
 
 const generalLimiter = rateLimit({
@@ -107,8 +122,11 @@ console.log('[CORS] Allowed origins:', allowedOrigins);
 // Buffer.
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// File uploads go through multer (routes/uploads.ts) with its own size caps —
+// nothing on the JSON/urlencoded path legitimately needs more than a few KB
+// of text, so 10mb here was just unused attack surface for body-based DoS.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ limit: '100kb', extended: true }));
 app.use(cookieParser());
 
 // Health check

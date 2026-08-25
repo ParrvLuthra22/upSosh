@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
+import { useEscapeKey } from '@/lib/a11y';
 
 type TabType = 'upcoming' | 'past' | 'cancelled';
 
@@ -44,7 +46,7 @@ interface Booking {
 const STATUS = {
   confirmed: { label: 'Confirmed', bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
   pending:   { label: 'Pending',   bg: 'bg-lime/10',        text: 'text-lime',        dot: 'bg-lime' },
-  cancelled: { label: 'Cancelled', bg: 'bg-cream/8',        text: 'text-cream-faint', dot: 'bg-cream-faint' },
+  cancelled: { label: 'Cancelled', bg: 'bg-cream/8',        text: 'text-cream-dim', dot: 'bg-cream-faint' },
 } as const;
 
 // ─── Booking row ──────────────────────────────────────────────────────────────
@@ -63,8 +65,8 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
     >
       {/* Event image or date block */}
       {ev?.image ? (
-        <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden">
-          <img src={ev.image} alt={title} className="w-full h-full object-cover" />
+        <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden">
+          <Image src={ev.image} alt={title} fill sizes="56px" className="object-cover" />
         </div>
       ) : (
         <div className="flex-shrink-0 w-14 h-14 bg-surface-2 border border-border rounded-xl flex flex-col items-center justify-center">
@@ -86,7 +88,7 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
           {ev?.venue ? ` · ${ev.venue}` : ''}
         </p>
         {booking.totalAmount > 0 && (
-          <p className="font-mono text-[11px] text-cream-faint mt-0.5">
+          <p className="font-mono text-[11px] text-cream-dim mt-0.5">
             ₹{booking.totalAmount.toLocaleString('en-IN')} paid
           </p>
         )}
@@ -118,6 +120,8 @@ function TicketModal({ booking, onClose, onCancel }: {
   const qrValue = booking.qrCode ?? `UPSOSH-${booking.id}`;
   const [cancelling, setCancelling] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+
+  useEscapeKey(onClose, true);
 
   async function handleCancel() {
     if (!confirmCancel) { setConfirmCancel(true); return; }
@@ -166,6 +170,10 @@ function TicketModal({ booking, onClose, onCancel }: {
           className="fixed inset-0 z-50 bg-void/80 backdrop-blur-sm"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
+          role="button"
+          tabIndex={0}
+          aria-label="Close"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
         />
 
         {/* Modal */}
@@ -184,10 +192,11 @@ function TicketModal({ booking, onClose, onCancel }: {
             {/* Event image header */}
             {ev?.image && (
               <div className="h-36 overflow-hidden relative">
-                <img src={ev.image} alt={title} className="w-full h-full object-cover" />
+                <Image src={ev.image} alt={title} fill sizes="(min-width: 640px) 480px, 100vw" className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
                 <button
                   onClick={onClose}
+                  aria-label="Close ticket"
                   className="absolute top-3 right-3 w-8 h-8 rounded-full bg-void/60 backdrop-blur-sm flex items-center justify-center text-cream hover:bg-void/80 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -200,8 +209,8 @@ function TicketModal({ booking, onClose, onCancel }: {
             <div className="p-6">
               {!ev?.image && (
                 <div className="flex items-center justify-between mb-4">
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-cream-faint">Your ticket</p>
-                  <button onClick={onClose} className="text-cream-dim hover:text-cream transition-colors text-lg leading-none">✕</button>
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Your ticket</p>
+                  <button onClick={onClose} aria-label="Close ticket" className="text-cream-dim hover:text-cream transition-colors text-lg leading-none">✕</button>
                 </div>
               )}
 
@@ -221,7 +230,7 @@ function TicketModal({ booking, onClose, onCancel }: {
               <div className="bg-white rounded-2xl p-4 flex items-center justify-center mb-5">
                 <QRCode value={qrValue} size={160} level="M" />
               </div>
-              <p className="font-mono text-[10px] text-cream-faint text-center mb-5 tracking-widest">
+              <p className="font-mono text-[10px] text-cream-dim text-center mb-5 tracking-widest">
                 {qrValue}
               </p>
 
@@ -380,7 +389,7 @@ export default function MyBookingsPage() {
               {t.label}
               {counts[t.id] > 0 && (
                 <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-full ${
-                  tab === t.id ? 'bg-lime text-void' : 'bg-surface-2 text-cream-faint'
+                  tab === t.id ? 'bg-lime text-void' : 'bg-surface-2 text-cream-dim'
                 }`}>
                   {counts[t.id]}
                 </span>
