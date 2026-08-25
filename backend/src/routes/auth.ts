@@ -3,9 +3,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Prisma } from '@prisma/client';
+import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { signupSchema, signinSchema, resetPasswordSchema } from '../lib/schemas';
 import { sendPasswordResetEmail } from '../lib/email';
+import { sanitizeUser } from '../lib/sanitizeUser';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -26,91 +30,23 @@ function generateToken(userId: string): string {
   return jwt.sign({ userId }, secret, { expiresIn: '7d' });
 }
 
-const AUTH_USER_SELECT = {
-  id: true,
-  email: true,
-  name: true,
-  role: true,
-  createdAt: true,
-};
-
-type AuthSelectedUser = Prisma.UserGetPayload<{ select: typeof AUTH_USER_SELECT }>;
-
-// Every field below AUTH_USER_SELECT's five is a hardcoded default, not a
-// read of the user row — this query never selects them, so they were always
-// undefined here regardless of the real value in the DB (falling through
-// every `??`). Typing the parameter to what's actually selected made that
-// explicit; behavior is unchanged. `routes/users.ts` has its own
-// sanitizeUser() over the full User row — unifying the two is tracked
-// separately (P2-20).
-function sanitizeUser(user: AuthSelectedUser) {
-  const role = user.role ?? 'user';
-  const hostStatus = role === 'host' ? 'verified' : 'none';
-
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    photoUrl: null,
-    bio: null,
-    role,
-    hostStatus,
-    onboardingComplete: false,
-    interests: '[]',
-    city: null,
-    groupSize: null,
-    vibe: null,
-    frequency: null,
-    wantsToHost: false,
-    hostBio: null,
-    hostExperience: null,
-    hostCategories: '[]',
-    hostInstagram: null,
-    hostLinkedin: null,
-    hostWebsite: null,
-    createdAt: user.createdAt,
-  };
-}
-
 // POST /api/auth/signup
-router.post('/signup', async (req: Request, res: Response): Promise<Response> => {
+router.post('/signup', validateBody(signupSchema), async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body as z.infer<typeof signupSchema>;
 
-    const trimmedName = (name ?? '').trim();
-    const trimmedEmail = (email ?? '').trim().toLowerCase();
-    const trimmedPassword = (password ?? '');
-
-    if (!trimmedEmail || !trimmedPassword || !trimmedName) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
-    }
-
-    if (trimmedName.length < 2) {
-      return res.status(400).json({ message: 'Name must be at least 2 characters' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      return res.status(400).json({ message: 'Invalid email format' });
-    }
-
-    if (trimmedPassword.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters' });
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email: trimmedEmail } });
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res.status(400).json({ message: 'An account with this email already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(trimmedPassword, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
       data: {
-        name: trimmedName,
-        email: trimmedEmail,
+        name,
+        email,
         password: hashedPassword,
       },
-      select: AUTH_USER_SELECT,
     });
 
     const token = generateToken(user.id);
@@ -126,25 +62,15 @@ router.post('/signup', async (req: Request, res: Response): Promise<Response> =>
 // POST /api/auth/signin (and /login alias)
 async function signinHandler(req: Request, res: Response): Promise<Response> {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body as z.infer<typeof signinSchema>;
 
-    const trimmedEmail = (email ?? '').trim().toLowerCase();
-    const trimmedPassword = (password ?? '');
-
-    if (!trimmedEmail || !trimmedPassword) {
-      return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: trimmedEmail },
-      select: { ...AUTH_USER_SELECT, password: true },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const isValid = await bcrypt.compare(trimmedPassword, user.password);
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -152,16 +78,15 @@ async function signinHandler(req: Request, res: Response): Promise<Response> {
     const token = generateToken(user.id);
     res.cookie('token', token, COOKIE_OPTS);
 
-    const { password: _pw, ...userWithoutPw } = user;
-    return res.status(200).json({ user: sanitizeUser(userWithoutPw), token, message: 'Login successful' });
+    return res.status(200).json({ user: sanitizeUser(user), token, message: 'Login successful' });
   } catch (err: unknown) {
     console.error('Signin error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
 
-router.post('/signin', signinHandler);
-router.post('/login', signinHandler);
+router.post('/signin', validateBody(signinSchema), signinHandler);
+router.post('/login', validateBody(signinSchema), signinHandler);
 
 // POST /api/auth/signout (and /logout alias)
 function signoutHandler(req: Request, res: Response): void {
@@ -179,10 +104,7 @@ router.post('/logout', signoutHandler);
 // GET /api/auth/me
 router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user!.id },
-      select: AUTH_USER_SELECT,
-    });
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
 
     if (!user) return res.status(404).json({ message: 'User not found' });
     return res.json({ user: sanitizeUser(user) });
@@ -201,15 +123,8 @@ router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promis
     if (name !== undefined) updateData.name = String(name).trim();
 
     const user = Object.keys(updateData).length
-      ? await prisma.user.update({
-          where: { id: req.user!.id },
-          data: updateData,
-          select: AUTH_USER_SELECT,
-        })
-      : await prisma.user.findUnique({
-          where: { id: req.user!.id },
-          select: AUTH_USER_SELECT,
-        });
+      ? await prisma.user.update({ where: { id: req.user!.id }, data: updateData })
+      : await prisma.user.findUnique({ where: { id: req.user!.id } });
 
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -264,19 +179,11 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<Res
 });
 
 // POST /api/auth/reset-password
-router.post('/reset-password', async (req: Request, res: Response): Promise<Response> => {
+router.post('/reset-password', validateBody(resetPasswordSchema), async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { token, password } = req.body;
+    const { token, password } = req.body as z.infer<typeof resetPasswordSchema>;
 
-    if (!token || !password) {
-      return res.status(400).json({ message: 'Token and new password are required' });
-    }
-
-    if (String(password).length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters' });
-    }
-
-    const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await prisma.user.findFirst({
       where: {
@@ -289,7 +196,7 @@ router.post('/reset-password', async (req: Request, res: Response): Promise<Resp
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    const hashedPassword = await bcrypt.hash(String(password), 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     await prisma.user.update({
       where: { id: user.id },

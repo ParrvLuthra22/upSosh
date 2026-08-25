@@ -3,14 +3,27 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { sendBookingConfirmation } from '../lib/email';
 
 function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+  if (err instanceof Error) return err.message;
+  // The Razorpay SDK doesn't throw Error instances — it rejects with
+  // { statusCode, error: { code, description, ... } } (see
+  // razorpay/dist/api.js's normalizeError), which the instanceof check above
+  // misses entirely. Without this, every Razorpay API failure logged as the
+  // useless literal string "[object Object]".
+  if (err && typeof err === 'object' && 'error' in err) {
+    const inner = (err as { error?: unknown }).error;
+    if (inner && typeof inner === 'object' && 'description' in inner) {
+      return String((inner as { description?: unknown }).description);
+    }
+  }
+  return String(err);
 }
 
 const router = Router();
 
-function getRazorpayClient(): Razorpay {
+export function getRazorpayClient(): Razorpay {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -157,7 +170,10 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     }
 
     // Conditional update — the WHERE clause is the last line of defence against
-    // two concurrent verifications both marking the same booking paid.
+    // two concurrent verifications both marking the same booking paid. This is
+    // also the seat reservation point for a paid booking (free events reserve
+    // at creation instead — see POST /api/bookings) — an abandoned checkout
+    // that never reaches here never held a seat.
     const { count } = await prisma.booking.updateMany({
       where: { id: bookingId, paymentStatus: 'unpaid' },
       data: {
@@ -173,10 +189,36 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
       return res.status(409).json({ message: 'This booking is already paid' });
     }
 
+    // Money is already captured by Razorpay at this point, so this increments
+    // unconditionally rather than being capacity-gated like the free-event
+    // path — refusing to seat a customer who has already been charged would
+    // trade a rare last-seat race for a guaranteed billing dispute.
+    if (booking.eventId) {
+      await prisma.event.update({
+        where: { id: booking.eventId },
+        data: { attendees: { increment: 1 } },
+      });
+    }
+
     const updatedBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: { event: true },
     });
+
+    sendBookingConfirmation({
+      guestName: updatedBooking!.guestName,
+      guestEmail: updatedBooking!.guestEmail,
+      eventTitle: updatedBooking!.event?.title ?? 'your event',
+      eventDate: updatedBooking!.event?.date
+        ? new Date(updatedBooking!.event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : '',
+      eventTime: updatedBooking!.event?.time ?? '',
+      eventVenue: updatedBooking!.event?.venue ?? '',
+      bookingId: updatedBooking!.id,
+      totalAmount: updatedBooking!.totalAmount,
+      qrCode: updatedBooking!.qrCode ?? updatedBooking!.id,
+      isFree: false,
+    }).catch(() => {});
 
     return res.json({ success: true, booking: updatedBooking });
   } catch (err: unknown) {
@@ -185,49 +227,129 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
   }
 });
 
-// POST /api/payments/webhook — Razorpay webhook (no auth, verify webhook signature)
+interface RazorpayWebhookPayload {
+  event: string;
+  payload?: {
+    payment?: { entity?: { id?: string; order_id?: string } };
+    refund?: { entity?: { id?: string; payment_id?: string } };
+  };
+}
+
+// POST /api/payments/webhook — Razorpay webhook (no requireAuth: this is
+// called by Razorpay's servers, not a logged-in user. Trust is established
+// entirely by the signature check below, which is why it is unconditional.)
+//
+// req.body is a raw Buffer here (see the express.raw() mount in index.ts) —
+// Razorpay signs the exact bytes it sent, and re-serializing a parsed object
+// with JSON.stringify does not reliably reproduce them (whitespace, unicode
+// escaping), which silently broke this check even with the correct secret.
 router.post('/webhook', async (req: Request, res: Response): Promise<Response> => {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers['x-razorpay-signature'];
 
-    if (webhookSecret && signature) {
-      const body = JSON.stringify(req.body);
-      const expectedSig = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(body)
-        .digest('hex');
-
-      if (expectedSig !== signature) {
-        console.warn('[Webhook] Invalid signature');
-        return res.status(400).json({ message: 'Invalid webhook signature' });
-      }
+    // Unconditional: an unset secret used to mean "skip verification", which
+    // let anyone on the internet POST a fake payment.captured event and mark
+    // any booking paid for free. Fail closed instead.
+    if (!webhookSecret) {
+      console.error('[Webhook] RAZORPAY_WEBHOOK_SECRET is not set — refusing all webhook deliveries');
+      return res.status(500).json({ message: 'Webhook not configured' });
+    }
+    if (!signature || typeof signature !== 'string') {
+      return res.status(400).json({ message: 'Missing webhook signature' });
     }
 
-    const event = req.body;
+    const rawBody: Buffer = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
+    const expectedSig = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+
+    if (!signaturesMatch(expectedSig, signature)) {
+      console.warn('[Webhook] Invalid signature');
+      return res.status(400).json({ message: 'Invalid webhook signature' });
+    }
+
+    const event: RazorpayWebhookPayload = JSON.parse(rawBody.toString('utf8'));
     console.log('[Webhook] Received event:', event.event);
 
     switch (event.event) {
       case 'payment.captured': {
         const paymentId = event.payload?.payment?.entity?.id;
-        const receipt = event.payload?.payment?.entity?.order_id;
-        console.log(`[Webhook] Payment captured: ${paymentId}, order: ${receipt}`);
+        const orderId = event.payload?.payment?.entity?.order_id;
+        console.log(`[Webhook] Payment captured: ${paymentId}, order: ${orderId}`);
 
-        if (receipt) {
-          // Try to find booking by receipt (which we set as bookingId)
-          await prisma.booking.updateMany({
-            where: { id: receipt, paymentStatus: 'unpaid' },
-            data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay' },
+        if (orderId) {
+          // Bound to the order id persisted at order-creation time (not the
+          // Prisma cuid — a Razorpay order id never equals one, so this
+          // updateMany matched zero rows before razorpayOrderId existed).
+          // The paymentStatus: 'unpaid' guard is what makes a duplicate
+          // delivery of the same event a no-op instead of a double-write —
+          // it also means this is a no-op on the (usual) path where
+          // POST /verify already marked the booking paid; this webhook is
+          // the recovery path for when /verify never ran at all (e.g. the
+          // network dropped after Razorpay captured the payment but before
+          // the client could call /verify).
+          const { count } = await prisma.booking.updateMany({
+            where: { razorpayOrderId: orderId, paymentStatus: 'unpaid' },
+            data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay', paidAt: new Date() },
           });
+          console.log(`[Webhook] payment.captured matched ${count} booking(s) for order ${orderId}`);
+
+          if (count > 0) {
+            const paidBooking = await prisma.booking.findUnique({ where: { razorpayOrderId: orderId }, include: { event: true } });
+            if (paidBooking) {
+              // This booking never got a confirmation email from POST /verify,
+              // because /verify never ran — that's what put it on this
+              // recovery path in the first place.
+              sendBookingConfirmation({
+                guestName: paidBooking.guestName,
+                guestEmail: paidBooking.guestEmail,
+                eventTitle: paidBooking.event?.title ?? 'your event',
+                eventDate: paidBooking.event?.date
+                  ? new Date(paidBooking.event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                  : '',
+                eventTime: paidBooking.event?.time ?? '',
+                eventVenue: paidBooking.event?.venue ?? '',
+                bookingId: paidBooking.id,
+                totalAmount: paidBooking.totalAmount,
+                qrCode: paidBooking.qrCode ?? paidBooking.id,
+                isFree: false,
+              }).catch(() => {});
+            }
+            if (paidBooking?.eventId) {
+              await prisma.event.update({
+                where: { id: paidBooking.eventId },
+                data: { attendees: { increment: 1 } },
+              });
+            }
+          }
         }
         break;
       }
       case 'payment.failed': {
-        console.log('[Webhook] Payment failed:', event.payload?.payment?.entity?.id);
+        const orderId = event.payload?.payment?.entity?.order_id;
+        console.log('[Webhook] Payment failed for order:', orderId);
+
+        if (orderId) {
+          await prisma.booking.updateMany({
+            where: { razorpayOrderId: orderId, paymentStatus: 'unpaid' },
+            data: { paymentStatus: 'failed' },
+          });
+        }
         break;
       }
       case 'refund.processed': {
-        console.log('[Webhook] Refund processed:', event.payload?.refund?.entity?.id);
+        const refundId = event.payload?.refund?.entity?.id;
+        const paymentId = event.payload?.refund?.entity?.payment_id;
+        console.log('[Webhook] Refund processed:', refundId, 'for payment', paymentId);
+
+        if (paymentId) {
+          await prisma.booking.updateMany({
+            where: { paymentId, paymentStatus: 'paid' },
+            data: { paymentStatus: 'refunded', refundId },
+          });
+        }
         break;
       }
       default:

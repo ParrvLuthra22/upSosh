@@ -1,10 +1,13 @@
 import { Router, Response, RequestHandler } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { Prisma, User } from '@prisma/client';
+import { z } from 'zod';
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { updateProfileSchema } from '../lib/schemas';
+import { sanitizeUser } from '../lib/sanitizeUser';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 
@@ -29,49 +32,10 @@ const upload = multer({
   },
 });
 
-function sanitizeUser(user: User) {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    photoUrl: user.photoUrl ?? null,
-    bio: user.bio ?? null,
-    role: user.role ?? 'user',
-    hostStatus: user.hostStatus ?? 'none',
-    city: user.city ?? null,
-    onboardingComplete: user.onboardingComplete ?? false,
-    interests: user.interests ?? '[]',
-    groupSize: user.groupSize ?? null,
-    vibe: user.vibe ?? null,
-    frequency: user.frequency ?? null,
-    wantsToHost: user.wantsToHost ?? false,
-    hostBio: user.hostBio ?? null,
-    hostExperience: user.hostExperience ?? null,
-    hostCategories: user.hostCategories ?? '[]',
-    hostInstagram: user.hostInstagram ?? null,
-    hostLinkedin: user.hostLinkedin ?? null,
-    hostWebsite: user.hostWebsite ?? null,
-    createdAt: user.createdAt,
-  };
-}
-
 // PATCH /api/users/me — update profile fields
-router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+router.patch('/me', requireAuth, validateBody(updateProfileSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
-    const allowed = ['name', 'bio', 'photoUrl', 'city', 'groupSize', 'vibe', 'frequency',
-      'wantsToHost', 'hostBio', 'hostExperience', 'hostCategories',
-      'hostInstagram', 'hostLinkedin', 'hostWebsite', 'onboardingComplete', 'interests'] as const;
-
-    const updateData: Prisma.UserUpdateInput = {};
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) {
-        (updateData as Record<string, unknown>)[key] = req.body[key];
-      }
-    }
-
-    if (updateData.name !== undefined) updateData.name = String(updateData.name).trim();
-    if (updateData.bio !== undefined) updateData.bio = String(updateData.bio).trim().slice(0, 500);
-    if (updateData.city !== undefined) updateData.city = String(updateData.city).trim();
+    const updateData = req.body as z.infer<typeof updateProfileSchema>;
 
     const user = Object.keys(updateData).length
       ? await prisma.user.update({ where: { id: req.user!.id }, data: updateData })

@@ -1,7 +1,10 @@
 import { Router, Response } from 'express';
 import { Prisma } from '@prisma/client';
+import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { hostApplySchema } from '../lib/schemas';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -10,22 +13,18 @@ function errorMessage(err: unknown): string {
 const router = Router();
 
 // POST /api/hosts/apply — submit host application (requireAuth)
-router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+router.post('/apply', requireAuth, validateBody(hostApplySchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const {
       govIdUrl, selfieUrl, bio, experience, categories,
       instagram, linkedin, website, sampleEvent,
-    } = req.body;
-
-    if (!bio || !experience) {
-      return res.status(400).json({ message: 'Bio and experience are required' });
-    }
+    } = req.body as z.infer<typeof hostApplySchema>;
 
     const categoriesJson = Array.isArray(categories) ? JSON.stringify(categories) : (categories ?? '[]');
 
     const applicationData: Omit<Prisma.HostApplicationUncheckedCreateInput, 'userId'> = {
-      bio: String(bio).trim(),
-      experience: String(experience),
+      bio,
+      experience,
       categories: categoriesJson,
       govIdUrl: govIdUrl ?? null,
       selfieUrl: selfieUrl ?? null,
@@ -42,9 +41,9 @@ router.post('/apply', requireAuth, async (req: AuthRequest, res: Response): Prom
       applicationData.sampleEventTime = sampleEvent.time ?? null;
       applicationData.sampleEventVenue = sampleEvent.venue ?? null;
       applicationData.sampleEventCity = sampleEvent.city ?? null;
-      applicationData.sampleEventCapacity = sampleEvent.capacity ? Number(sampleEvent.capacity) : null;
-      applicationData.sampleEventIsFree = Boolean(sampleEvent.isFree ?? true);
-      applicationData.sampleEventPrice = sampleEvent.price ? Number(sampleEvent.price) : null;
+      applicationData.sampleEventCapacity = sampleEvent.capacity ?? null;
+      applicationData.sampleEventIsFree = sampleEvent.isFree ?? true;
+      applicationData.sampleEventPrice = sampleEvent.price ?? null;
     }
 
     const application = await prisma.hostApplication.upsert({

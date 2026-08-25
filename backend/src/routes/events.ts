@@ -1,7 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { Prisma, Event } from '@prisma/client';
+import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { createEventSchema, updateEventSchema } from '../lib/schemas';
 
 const router = Router();
 
@@ -155,7 +158,7 @@ router.get('/:slug', async (req: Request, res: Response): Promise<Response> => {
 });
 
 // POST /api/events — create event (requireAuth, hostStatus=verified OR admin)
-router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+router.post('/', requireAuth, validateBody(createEventSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = req.user!;
 
@@ -169,58 +172,11 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<R
     // any Host row by guessing its id. Ownership is carried by userId below,
     // which is what every authorization check actually reads.
     // Unifying Host and User is tracked as P4-39.
-    const {
-      title, type, category, date, time, venue, city, price, isFree,
-      description, image, tags, capacity, status, isSuperhost,
-    } = req.body;
-
-    if (!title || title.trim().length < 5) {
-      return res.status(400).json({ message: 'Title must be at least 5 characters' });
-    }
-
-    if (!date) return res.status(400).json({ message: 'Date is required' });
-
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime()) || parsedDate <= new Date()) {
-      return res.status(400).json({ message: 'Date must be a valid future date' });
-    }
-
-    const parsedCapacity = capacity ? Number(capacity) : 30;
-    if (parsedCapacity < 2 || parsedCapacity > 500) {
-      return res.status(400).json({ message: 'Capacity must be between 2 and 500' });
-    }
-
-    const parsedPrice = price !== undefined ? Number(price) : 0;
-    if (parsedPrice < 0) {
-      return res.status(400).json({ message: 'Price cannot be negative' });
-    }
-
-    if (!type) return res.status(400).json({ message: 'Event type is required' });
-    if (!venue) return res.status(400).json({ message: 'Venue is required' });
-    if (!description) return res.status(400).json({ message: 'Description is required' });
-
-    const slug = buildSlug(title.trim());
+    const data = req.body as z.infer<typeof createEventSchema>;
+    const slug = buildSlug(data.title);
 
     const event = await prisma.event.create({
-      data: {
-        title: title.trim(),
-        slug,
-        type,
-        category: category || type,
-        date: parsedDate,
-        time: time || '00:00',
-        venue: venue.trim(),
-        city: city || 'Delhi',
-        price: parsedPrice,
-        isFree: Boolean(isFree) || parsedPrice === 0,
-        description: description.trim(),
-        image: image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80',
-        tags: Array.isArray(tags) ? JSON.stringify(tags) : (tags || '[]'),
-        capacity: parsedCapacity,
-        status: status || 'live',
-        isSuperhost: Boolean(isSuperhost),
-        userId: user.id,
-      },
+      data: { ...data, slug, userId: user.id },
       include: { host: true },
     });
 
@@ -232,7 +188,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<R
 });
 
 // PUT /api/events/:id — update event (requireAuth, must own or admin)
-router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const user = req.user!;
@@ -244,31 +200,11 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
       return res.status(403).json({ message: 'You do not have permission to update this event' });
     }
 
-    const {
-      title, type, category, date, time, venue, city, price, isFree,
-      description, image, tags, capacity, status, isSuperhost,
-    } = req.body;
-
-    const updateData: Prisma.EventUpdateInput = {};
-    if (title !== undefined) updateData.title = title.trim();
-    if (type !== undefined) updateData.type = type;
-    if (category !== undefined) updateData.category = category;
-    if (date !== undefined) {
-      const parsed = new Date(date);
-      if (isNaN(parsed.getTime())) return res.status(400).json({ message: 'Invalid date' });
-      updateData.date = parsed;
+    const { tags, ...rest } = req.body as z.infer<typeof updateEventSchema>;
+    const updateData: Prisma.EventUpdateInput = { ...rest };
+    if (tags !== undefined) {
+      updateData.tags = Array.isArray(tags) ? JSON.stringify(tags) : tags;
     }
-    if (time !== undefined) updateData.time = time;
-    if (venue !== undefined) updateData.venue = venue.trim();
-    if (city !== undefined) updateData.city = city;
-    if (price !== undefined) updateData.price = Number(price);
-    if (isFree !== undefined) updateData.isFree = Boolean(isFree);
-    if (description !== undefined) updateData.description = description.trim();
-    if (image !== undefined) updateData.image = image;
-    if (tags !== undefined) updateData.tags = Array.isArray(tags) ? JSON.stringify(tags) : tags;
-    if (capacity !== undefined) updateData.capacity = Number(capacity);
-    if (status !== undefined) updateData.status = status;
-    if (isSuperhost !== undefined) updateData.isSuperhost = Boolean(isSuperhost);
 
     const event = await prisma.event.update({
       where: { id },
@@ -316,14 +252,19 @@ router.post('/:id/attend', requireAuth, async (req: AuthRequest, res: Response):
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    if (event.attendees >= event.capacity) {
+    // Atomic check-and-increment: the WHERE clause re-checks capacity as part
+    // of the same statement, so two concurrent requests on the last seat
+    // can't both read "capacity available" before either writes.
+    const { count } = await prisma.event.updateMany({
+      where: { id, attendees: { lt: event.capacity } },
+      data: { attendees: { increment: 1 } },
+    });
+
+    if (count === 0) {
       return res.status(400).json({ message: 'Event is at full capacity' });
     }
 
-    const updated = await prisma.event.update({
-      where: { id },
-      data: { attendees: { increment: 1 } },
-    });
+    const updated = await prisma.event.findUniqueOrThrow({ where: { id } });
 
     return res.json({ attendees: updated.attendees, capacity: updated.capacity });
   } catch (err: unknown) {

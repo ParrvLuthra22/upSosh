@@ -94,6 +94,14 @@ app.use(
 
 console.log('[CORS] Allowed origins:', allowedOrigins);
 
+// Razorpay signs the RAW request bytes. Mounted here, before the global
+// express.json() below, so this one route gets an unparsed Buffer as
+// req.body instead of a re-serialized (and therefore un-verifiable) object —
+// body-parser sets req._body once a parser has run, which is what makes
+// express.json() below skip re-parsing this route instead of erroring on a
+// Buffer.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
@@ -162,9 +170,34 @@ const server = app.listen(PORT, () => {
   console.log(`[Server] upSosh API running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
 });
 
+// Sweep bookings that have sat unpaid for 15+ minutes and mark them expired.
+// These never held a seat (see POST /api/bookings — a paid event only
+// increments attendees on payment success), so there is nothing to release
+// here; this exists so an abandoned checkout doesn't sit in the DB looking
+// like a live pending payment forever.
+const BOOKING_EXPIRY_MS = 15 * 60 * 1000;
+async function expireStaleBookings(): Promise<void> {
+  try {
+    const { count } = await prisma.booking.updateMany({
+      where: {
+        paymentStatus: 'unpaid',
+        status: 'pending',
+        createdAt: { lt: new Date(Date.now() - BOOKING_EXPIRY_MS) },
+      },
+      data: { status: 'expired' },
+    });
+    if (count > 0) console.log(`[Sweep] Expired ${count} stale unpaid booking(s)`);
+  } catch (err: unknown) {
+    console.error('[Sweep] Failed to expire stale bookings:', err instanceof Error ? err.message : String(err));
+  }
+}
+const sweepInterval = setInterval(expireStaleBookings, 5 * 60 * 1000);
+expireStaleBookings();
+
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('[Server] SIGTERM received — shutting down gracefully...');
+  clearInterval(sweepInterval);
   server.close(async () => {
     await prisma.$disconnect();
     console.log('[Server] Closed. Exiting.');

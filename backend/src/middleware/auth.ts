@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { Role, HostStatus } from '@prisma/client';
 import prisma from '../lib/prisma';
 
 export interface AuthRequest extends Request {
-  user?: { id: string; email: string; role: string; hostStatus: string };
+  user?: { id: string; email: string; role: Role; hostStatus: HostStatus };
 }
 
 export async function requireAuth(req: AuthRequest, res: Response, next: NextFunction): Promise<Response | void> {
@@ -17,7 +18,7 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
     const decoded = jwt.verify(token, secret) as { userId: string };
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, role: true, deletedAt: true },
+      select: { id: true, email: true, role: true, hostStatus: true, deletedAt: true },
     });
 
     if (!user || user.deletedAt) return res.status(401).json({ message: 'User not found' });
@@ -25,7 +26,13 @@ export async function requireAuth(req: AuthRequest, res: Response, next: NextFun
       id: user.id,
       email: user.email,
       role: user.role,
-      hostStatus: user.role === 'host' ? 'verified' : 'none',
+      // Previously derived from role ('host' => 'verified', else 'none')
+      // instead of reading the real column hosts.ts writes on approve/reject.
+      // The two happen to be kept in sync today (hosts.ts sets both role and
+      // hostStatus together on approval), but an admin's hostStatus, or any
+      // future path that only touches one of the two, would have silently
+      // disagreed with what this middleware reported.
+      hostStatus: user.hostStatus,
     };
     next();
   } catch {

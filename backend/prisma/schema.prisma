@@ -7,29 +7,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  user
+  host
+  admin
+}
+
+enum HostStatus {
+  none
+  pending
+  verified
+}
+
+enum EventStatus {
+  draft
+  live
+  full
+  past
+  cancelled
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  refunded
+  expired // unpaid for >15 minutes — see the sweep in index.ts
+}
+
+// "failed" was missing from the old free-text column — there was no way to
+// represent a payment that Razorpay reported as failed; the row just stayed
+// "unpaid" forever, indistinguishable from a checkout that was never
+// attempted.
+enum PaymentStatus {
+  unpaid
+  paid
+  failed
+  refunded
+}
+
+enum PaymentMethod {
+  razorpay
+  upi
+  free
+}
+
 model User {
-  id                   String    @id @default(cuid())
-  email                String    @unique
+  id                   String     @id @default(cuid())
+  email                String     @unique
   password             String
   name                 String
   photoUrl             String?
   bio                  String?
-  role                 String    @default("user") // "user" | "host" | "admin"
-  hostStatus           String    @default("none") // "none" | "pending" | "verified"
-  onboardingComplete   Boolean   @default(false)
+  role                 Role       @default(user)
+  hostStatus           HostStatus @default(none)
+  onboardingComplete   Boolean    @default(false)
 
   // Onboarding data
-  interests            String    @default("[]") // JSON array
+  interests            String     @default("[]") // JSON array
   city                 String?
-  groupSize            String?   // "intimate" | "larger"
-  vibe                 String?   // "chill" | "structured"
-  frequency            String?   // "weekly" | "occasional"
-  wantsToHost          Boolean   @default(false)
+  groupSize            String?    // "intimate" | "larger"
+  vibe                 String?    // "chill" | "structured"
+  frequency            String?    // "weekly" | "occasional"
+  wantsToHost          Boolean    @default(false)
 
   // Host profile
   hostBio              String?
-  hostExperience       String?   // "first" | "few" | "experienced"
-  hostCategories       String    @default("[]") // JSON array
+  hostExperience       String?    // "first" | "few" | "experienced"
+  hostCategories       String     @default("[]") // JSON array
   hostInstagram        String?
   hostLinkedin         String?
   hostWebsite          String?
@@ -44,12 +89,14 @@ model User {
   deletedAt            DateTime?
 
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @default(now()) @updatedAt
+  updatedAt            DateTime  @updatedAt
 
   events               Event[]
   bookings             Booking[]
   hostApplication      HostApplication?
   uploads              Upload[]
+
+  @@index([resetToken])
 }
 
 model Host {
@@ -61,71 +108,77 @@ model Host {
 }
 
 model Event {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
-  slug        String    @unique @default(cuid())
+  slug        String      @unique @default(cuid())
   type        String
-  category    String    @default("General")
+  category    String      @default("General")
   date        DateTime
   time        String
   venue       String
-  city        String    @default("Delhi")
+  city        String      @default("Delhi")
   price       Float
-  isFree      Boolean   @default(false)
+  isFree      Boolean     @default(false)
   description String
   image       String
-  tags        String    @default("[]") // JSON array
-  capacity    Int       @default(30)
-  attendees   Int       @default(0)
-  status      String    @default("draft") // "draft" | "live" | "full" | "past" | "cancelled"
-  isSuperhost Boolean   @default(false)
+  tags        String      @default("[]") // JSON array
+  capacity    Int         @default(30)
+  attendees   Int         @default(0)
+  status      EventStatus @default(draft)
+  isSuperhost Boolean     @default(false)
 
   hostId      String?
-  host        Host?     @relation(fields: [hostId], references: [id])
+  host        Host?       @relation(fields: [hostId], references: [id])
   userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
+  user        User?       @relation(fields: [userId], references: [id])
 
   bookings    Booking[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([status, date])
+  @@index([city])
+  @@index([category])
+  @@index([userId])
 }
 
 model Booking {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
   eventId       String?
-  event         Event?    @relation(fields: [eventId], references: [id])
+  event         Event?        @relation(fields: [eventId], references: [id])
 
-  guestName     String    @default("")
-  guestEmail    String    @default("")
-  guestPhone    String    @default("")
+  guestName     String        @default("")
+  guestEmail    String        @default("")
+  guestPhone    String        @default("")
   notes         String?
 
-  ticketPrice   Float     @default(0)
-  platformFee   Float     @default(25)
+  ticketPrice   Float         @default(0)
+  platformFee   Float         @default(25)
   totalAmount   Float
+  currency      String        @default("INR")
 
-  status        String    @default("pending") // "pending" | "confirmed" | "cancelled" | "refunded"
-  paymentStatus String    @default("unpaid") // "unpaid" | "paid" | "refunded"
+  status        BookingStatus @default(pending)
+  paymentStatus PaymentStatus @default(unpaid)
   paymentId     String?
-  paymentMethod String?   // "razorpay" | "upi" | "free"
+  paymentMethod PaymentMethod?
 
   // Binds a Razorpay order to this specific booking. Without it, /verify cannot
   // tell whether a valid {order_id, payment_id, signature} triple belongs here,
   // so one cheap payment could be replayed to confirm any number of bookings.
-  razorpayOrderId String? @unique
+  // @unique already gives this an index — no separate @@index needed.
+  razorpayOrderId String?     @unique
   paidAt          DateTime?
+  refundId        String?
 
-  qrCode        String?   // ticket QR data
+  qrCode        String?       // ticket QR data
 
-  items         String    @default("[]") // JSON for legacy compat
-  paymentProof  String?
-  customer      String?   // JSON for legacy compat
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  @@index([userId, createdAt])
 }
 
 model HostApplication {
@@ -145,7 +198,7 @@ model HostApplication {
   sampleEventTitle    String?
   sampleEventCategory String?
   sampleEventDesc     String?
-  sampleEventDate     String?
+  sampleEventDate     DateTime?
   sampleEventTime     String?
   sampleEventVenue    String?
   sampleEventCity     String?
@@ -158,7 +211,7 @@ model HostApplication {
   reviewNotes     String?
 
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now()) @updatedAt
+  updatedAt       DateTime  @updatedAt
 }
 
 model Upload {

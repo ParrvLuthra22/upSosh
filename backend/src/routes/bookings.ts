@@ -1,94 +1,117 @@
 import { Router, Response } from 'express';
-import { Prisma } from '@prisma/client';
+import crypto from 'crypto';
+import { Prisma, BookingStatus } from '@prisma/client';
+import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { createBookingSchema } from '../lib/schemas';
 import { sendBookingConfirmation } from '../lib/email';
+import { getRazorpayClient } from './payments';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
+class CapacityFullError extends Error {}
+
 const router = Router();
 
 // POST /api/bookings — create booking (requireAuth)
-router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+//
+// Free events are reserved (attendees incremented) here, at creation, since
+// there is no later "payment succeeded" moment to do it at — the booking is
+// confirmed+paid immediately. Paid events are NOT reserved here; that only
+// happens on payment success (POST /verify, or the webhook's
+// payment.captured) — see the atomic updateMany there. Reserving at creation
+// used to mean an abandoned checkout permanently held a seat forever.
+router.post('/', requireAuth, validateBody(createBookingSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
-    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod, ticketPrice: reqTicketPrice } = req.body;
-
-    if (!guestName || !guestEmail || !guestPhone) {
-      return res.status(400).json({ message: 'guestName, guestEmail, and guestPhone are required' });
-    }
+    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod } = req.body as z.infer<typeof createBookingSchema>;
 
     let ticketPrice = 0;
     let isFreeEvent = true;
+    let eventCapacity = 0;
 
-    if (eventId && !String(eventId).startsWith('evt-')) {
+    if (eventId) {
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ message: 'Event not found' });
+      // Best-effort, non-binding check — gives an immediate "sold out" reply
+      // instead of making the user go through checkout first. The binding
+      // check is the atomic updateMany inside the transaction below (free
+      // events) or in /verify and the webhook (paid events); either can
+      // still reject even if this passed, if capacity filled in between.
       if (event.attendees >= event.capacity) {
         return res.status(400).json({ message: 'Event is at full capacity' });
       }
       ticketPrice = event.price;
       isFreeEvent = event.isFree || event.price === 0;
-    } else if (eventId && String(eventId).startsWith('evt-')) {
-      // Mock event handling
-      ticketPrice = reqTicketPrice ? Number(reqTicketPrice) : 0;
-      isFreeEvent = ticketPrice === 0;
+      eventCapacity = event.capacity;
     }
 
     const platformFee = 25;
     const totalAmount = ticketPrice + platformFee;
+    // Pre-generated so qrCode can be set in the same insert instead of an
+    // insert-then-update round trip to learn the id Prisma would have
+    // assigned.
+    const bookingId = crypto.randomUUID();
 
-    const booking = await prisma.booking.create({
-      data: {
-        userId: req.user!.id,
-        eventId: (eventId && !String(eventId).startsWith('evt-')) ? eventId : null,
-        guestName: String(guestName).trim(),
-        guestEmail: String(guestEmail).trim().toLowerCase(),
-        guestPhone: String(guestPhone).trim(),
-        notes: notes ? String(notes).trim() : null,
-        ticketPrice,
-        platformFee,
-        totalAmount,
-        paymentMethod: paymentMethod ?? (isFreeEvent ? 'free' : null),
-        status: isFreeEvent ? 'confirmed' : 'pending',
-        paymentStatus: isFreeEvent ? 'paid' : 'unpaid',
-        qrCode: `UPSOSH-${Date.now()}`, // placeholder, will be replaced with actual id below
-      },
-    });
+    const booking = await prisma.$transaction(async (tx) => {
+      if (eventId && isFreeEvent) {
+        const { count } = await tx.event.updateMany({
+          where: { id: eventId, attendees: { lt: eventCapacity } },
+          data: { attendees: { increment: 1 } },
+        });
+        if (count === 0) throw new CapacityFullError();
+      }
 
-    // Update qrCode with actual booking id
-    const updatedBooking = await prisma.booking.update({
-      where: { id: booking.id },
-      data: { qrCode: `UPSOSH-${booking.id}` },
-      include: { event: true },
-    });
-
-    // Increment attendees if event exists in DB
-    if (eventId && !String(eventId).startsWith('evt-')) {
-      await prisma.event.update({
-        where: { id: eventId },
-        data: { attendees: { increment: 1 } },
+      return tx.booking.create({
+        data: {
+          id: bookingId,
+          userId: req.user!.id,
+          eventId: eventId ?? null,
+          guestName,
+          guestEmail,
+          guestPhone,
+          notes: notes ?? null,
+          ticketPrice,
+          platformFee,
+          totalAmount,
+          paymentMethod: paymentMethod ?? (isFreeEvent ? 'free' : null),
+          status: isFreeEvent ? 'confirmed' : 'pending',
+          paymentStatus: isFreeEvent ? 'paid' : 'unpaid',
+          qrCode: `UPSOSH-${bookingId}`,
+        },
+        include: { event: true },
       });
+    });
+
+    // Send confirmation email (fire-and-forget — don't block the response).
+    // Only for free events, which are confirmed+paid immediately above —
+    // paid events get this from /verify and the webhook on actual payment
+    // success, not here, so an abandoned checkout no longer emails "Booking
+    // confirmed" for money that was never charged.
+    if (isFreeEvent) {
+      const event = booking.event;
+      sendBookingConfirmation({
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        eventTitle: event?.title ?? 'your event',
+        eventDate: event?.date ? new Date(event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
+        eventTime: event?.time ?? '',
+        eventVenue: event?.venue ?? '',
+        bookingId: booking.id,
+        totalAmount: booking.totalAmount,
+        qrCode: booking.qrCode ?? booking.id,
+        isFree: true,
+      }).catch(() => {});
     }
 
-    // Send confirmation email (fire-and-forget — don't block the response)
-    const event = updatedBooking.event;
-    sendBookingConfirmation({
-      guestName: updatedBooking.guestName,
-      guestEmail: updatedBooking.guestEmail,
-      eventTitle: event?.title ?? 'your event',
-      eventDate: event?.date ? new Date(event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '',
-      eventTime: event?.time ?? '',
-      eventVenue: event?.venue ?? '',
-      bookingId: updatedBooking.id,
-      totalAmount: updatedBooking.totalAmount,
-      qrCode: updatedBooking.qrCode ?? updatedBooking.id,
-      isFree: isFreeEvent,
-    }).catch(() => {});
-
-    return res.status(201).json({ booking: updatedBooking, message: 'Booking created successfully' });
+    return res.status(201).json({ booking, message: 'Booking created successfully' });
   } catch (err: unknown) {
+    if (err instanceof CapacityFullError) {
+      return res.status(400).json({ message: 'Event is at full capacity' });
+    }
     console.error('POST /bookings error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -122,7 +145,9 @@ router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): P
     const limitNum = Math.min(100, Math.max(1, parseInt(String(limit))));
 
     const where: Prisma.BookingWhereInput = {};
-    if (status) where.status = String(status);
+    if (status && Object.values(BookingStatus).includes(status as BookingStatus)) {
+      where.status = status as BookingStatus;
+    }
 
     const [bookings, total] = await prisma.$transaction([
       prisma.booking.findMany({
@@ -170,6 +195,12 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
 });
 
 // PATCH /api/bookings/:id/cancel — cancel booking (requireAuth, must own)
+//
+// A seat was only ever actually consumed if paymentStatus reached 'paid' —
+// free events reach it at creation, paid events only on payment success (see
+// POST / above) — so that's also the only case attendees needs decrementing.
+// A still-unpaid booking never held a seat, so cancelling it is a no-op on
+// capacity.
 router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
@@ -186,23 +217,38 @@ router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response)
       return res.status(400).json({ message: 'Booking is already cancelled' });
     }
 
-    const updatedBooking = await prisma.booking.update({
-      where: { id },
-      data: { status: 'cancelled' },
-    });
+    const heldSeat = booking.paymentStatus === 'paid';
+    const needsRefund = booking.paymentStatus === 'paid' && booking.paymentMethod === 'razorpay' && !!booking.paymentId;
 
-    // Decrement attendees
-    if (booking.eventId) {
-      await prisma.event.update({
-        where: { id: booking.eventId },
-        data: { attendees: { decrement: 1 } },
+    // Issue the refund BEFORE writing anything — if Razorpay rejects it (already
+    // refunded, invalid payment, network error), the booking stays exactly as
+    // it was rather than showing 'cancelled' with no money actually returned.
+    let refundId: string | null = null;
+    if (needsRefund) {
+      const razorpay = getRazorpayClient();
+      const refund = await razorpay.payments.refund(booking.paymentId!, {
+        amount: Math.round(booking.totalAmount * 100),
       });
+      refundId = refund.id;
     }
+
+    const [updatedBooking] = await prisma.$transaction([
+      prisma.booking.update({
+        where: { id },
+        data: {
+          status: 'cancelled',
+          ...(needsRefund ? { paymentStatus: 'refunded', refundId } : {}),
+        },
+      }),
+      ...(booking.eventId && heldSeat
+        ? [prisma.event.update({ where: { id: booking.eventId }, data: { attendees: { decrement: 1 } } })]
+        : []),
+    ]);
 
     return res.json({ booking: updatedBooking, message: 'Booking cancelled successfully' });
   } catch (err: unknown) {
     console.error('PATCH /bookings/:id/cancel error:', errorMessage(err));
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Cancellation failed — please try again or contact support' });
   }
 });
 

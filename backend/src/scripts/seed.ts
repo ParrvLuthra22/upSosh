@@ -63,7 +63,7 @@ const USERS = [
     bio: 'Here for the run clubs and the dinner parties.',
     label: 'Attendee — use this one to test the booking flow',
   },
-];
+] as const;
 
 // ─── Hosts ────────────────────────────────────────────────────────────────────
 // Nothing else in the codebase creates Host rows, so without this the table stays
