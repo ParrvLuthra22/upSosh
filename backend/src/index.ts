@@ -30,14 +30,19 @@ import aiRoutes from './routes/ai';
 import uploadRoutes from './routes/uploads';
 import prisma from './lib/prisma';
 
-process.on('uncaughtException', (error) => {
-  console.error('[Fatal] Uncaught Exception:', error);
-  process.exit(1);
-});
+// A process.exit(1) here during a Jest run would kill the whole test
+// process on any test's unhandled rejection, with no normal Jest failure
+// output — let Jest's own handling surface those instead.
+if (process.env.NODE_ENV !== 'test') {
+  process.on('uncaughtException', (error) => {
+    console.error('[Fatal] Uncaught Exception:', error);
+    process.exit(1);
+  });
 
-process.on('unhandledRejection', (reason) => {
-  console.error('[Fatal] Unhandled Rejection:', reason);
-});
+  process.on('unhandledRejection', (reason) => {
+    console.error('[Fatal] Unhandled Rejection:', reason);
+  });
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -165,44 +170,50 @@ app.use((rawErr: unknown, req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`[Server] upSosh API running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
-});
-
-// Sweep bookings that have sat unpaid for 15+ minutes and mark them expired.
-// These never held a seat (see POST /api/bookings — a paid event only
-// increments attendees on payment success), so there is nothing to release
-// here; this exists so an abandoned checkout doesn't sit in the DB looking
-// like a live pending payment forever.
-const BOOKING_EXPIRY_MS = 15 * 60 * 1000;
-async function expireStaleBookings(): Promise<void> {
-  try {
-    const { count } = await prisma.booking.updateMany({
-      where: {
-        paymentStatus: 'unpaid',
-        status: 'pending',
-        createdAt: { lt: new Date(Date.now() - BOOKING_EXPIRY_MS) },
-      },
-      data: { status: 'expired' },
-    });
-    if (count > 0) console.log(`[Sweep] Expired ${count} stale unpaid booking(s)`);
-  } catch (err: unknown) {
-    console.error('[Sweep] Failed to expire stale bookings:', err instanceof Error ? err.message : String(err));
-  }
-}
-const sweepInterval = setInterval(expireStaleBookings, 5 * 60 * 1000);
-expireStaleBookings();
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('[Server] SIGTERM received — shutting down gracefully...');
-  clearInterval(sweepInterval);
-  server.close(async () => {
-    await prisma.$disconnect();
-    console.log('[Server] Closed. Exiting.');
-    process.exit(0);
+// Everything below has a real side effect (opens a port, starts an
+// interval, registers a process-exit handler) — none of that should happen
+// just because a test file does `import app from './index'` to hand it to
+// supertest. Jest sets NODE_ENV=test itself; nothing else does.
+if (process.env.NODE_ENV !== 'test') {
+  // Start server
+  const server = app.listen(PORT, () => {
+    console.log(`[Server] upSosh API running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
-});
+
+  // Sweep bookings that have sat unpaid for 15+ minutes and mark them expired.
+  // These never held a seat (see POST /api/bookings — a paid event only
+  // increments attendees on payment success), so there is nothing to release
+  // here; this exists so an abandoned checkout doesn't sit in the DB looking
+  // like a live pending payment forever.
+  const BOOKING_EXPIRY_MS = 15 * 60 * 1000;
+  const expireStaleBookings = async (): Promise<void> => {
+    try {
+      const { count } = await prisma.booking.updateMany({
+        where: {
+          paymentStatus: 'unpaid',
+          status: 'pending',
+          createdAt: { lt: new Date(Date.now() - BOOKING_EXPIRY_MS) },
+        },
+        data: { status: 'expired' },
+      });
+      if (count > 0) console.log(`[Sweep] Expired ${count} stale unpaid booking(s)`);
+    } catch (err: unknown) {
+      console.error('[Sweep] Failed to expire stale bookings:', err instanceof Error ? err.message : String(err));
+    }
+  };
+  const sweepInterval = setInterval(expireStaleBookings, 5 * 60 * 1000);
+  expireStaleBookings();
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('[Server] SIGTERM received — shutting down gracefully...');
+    clearInterval(sweepInterval);
+    server.close(async () => {
+      await prisma.$disconnect();
+      console.log('[Server] Closed. Exiting.');
+      process.exit(0);
+    });
+  });
+}
 
 export default app;

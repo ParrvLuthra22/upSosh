@@ -41,9 +41,26 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    # Only the "Test" step below opens a real connection — jest's
+    # tests/env.setup.js needs an actual reachable Postgres to create and
+    # tear down rows against for each of the 16 integration tests
+    # (typecheck/build never connect, so their placeholder DATABASE_URL was
+    # fine on its own, but sharing one env: block keeps this simpler).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: upsosh_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d upsosh_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     env:
-      # Placeholders — typecheck/build only need Prisma to be able to parse
-      # the schema and generate a client; neither step opens a connection.
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upsosh_ci?schema=public
       JWT_SECRET: ci-placeholder-secret
     steps:
@@ -60,5 +77,105 @@ jobs:
       - name: Type-check
         run: npm run typecheck --workspace=upsosh-backend
 
+      - name: Apply migrations
+        working-directory: backend
+        run: npx prisma migrate deploy
+
+      - name: Test
+        run: npm run test --workspace=upsosh-backend
+
       - name: Build
         run: npm run build --workspace=upsosh-backend
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    # A real payment through Razorpay's actual test-mode API, not a mock —
+    # this is the one test that proves the whole stack (frontend, backend,
+    # Postgres, and Razorpay's real checkout) works together end to end.
+    # Needs two repo secrets set under Settings → Secrets → Actions:
+    #   RAZORPAY_TEST_KEY_ID / RAZORPAY_TEST_KEY_SECRET — a real
+    #   `rzp_test_...` key pair for an account with international cards
+    #   disabled (see booking-flow.spec.ts's card-choice comment) and test
+    #   mode enabled. Without them this job fails at the Razorpay checkout
+    #   step, same as running it locally with placeholder credentials would.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: upsosh_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d upsosh_e2e"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upsosh_e2e?schema=public
+      JWT_SECRET: ci-e2e-placeholder-secret
+      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_TEST_KEY_ID }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_TEST_KEY_SECRET }}
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
+      NEXT_PUBLIC_FRONTEND_URL: http://localhost:3000
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_TEST_KEY_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply migrations and seed
+        working-directory: backend
+        run: |
+          npx prisma migrate deploy
+          npm run seed
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Start backend
+        working-directory: backend
+        # A bare `&` backgrounds the process only within this step's own
+        # shell — GitHub Actions runs each step in a fresh shell, so the
+        # child would be killed the moment this step exits, before the next
+        # step could ever reach it. nohup + disown detaches it from this
+        # shell's job table so it survives into the "Wait for backend" and
+        # "Run E2E test" steps that need it running.
+        run: |
+          nohup node dist/src/index.js > /tmp/backend.log 2>&1 &
+          disown
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000/health && exit 0
+            sleep 1
+          done
+          echo "Backend never became healthy — log follows:" >&2
+          cat /tmp/backend.log >&2
+          exit 1
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E test
+        working-directory: frontend
+        run: npx playwright test --project=chromium
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

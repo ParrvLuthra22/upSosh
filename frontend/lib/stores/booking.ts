@@ -186,18 +186,26 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
     try {
       // ── 1. Create the booking record ───────────────────────────────────────
+      // Deliberately NOT sending `paymentMethod` here: it's this store's own
+      // local UI-selection state ('instant' — the only option since the
+      // manual-payment path was removed), a different vocabulary from the
+      // backend's createBookingSchema, which validates paymentMethod against
+      // the actual payment rail used ('razorpay' | 'upi' | 'free'). Sending
+      // 'instant' failed that enum check on every single paid booking,
+      // 400ing before a booking row was ever created — found live while
+      // testing this exact flow. The backend already defaults paymentMethod
+      // to 'free' for a free event and leaves it null for a paid one (set
+      // correctly to 'razorpay' by /verify once payment succeeds), so
+      // omitting the field here is correct, not just a workaround.
       const bookingRes = await fetch('/api/bookings', {
         method:  'POST',
         headers: authHeaders(),
         credentials: 'include',
         body: JSON.stringify({
           eventId,
-          guestCount,
           guestName: guestDetails.name,
           guestEmail: guestDetails.email,
           guestPhone: guestDetails.phone,
-          paymentMethod,
-          ticketPrice: unitPrice(event.price),
         }),
       });
 
