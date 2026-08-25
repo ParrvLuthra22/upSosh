@@ -3,7 +3,11 @@ import EventPageClient from './EventPageClient';
 
 async function fetchEventForMetadata(slug: string): Promise<any | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // A server-side fetch (this runs during SSR, not in the browser) can't
+    // resolve a relative URL the way the client-side rewrite proxy does —
+    // NEXT_PUBLIC_API_URL is deliberately empty for that proxy and would
+    // make this throw. NEXT_PUBLIC_BACKEND_URL is the absolute origin.
+    const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
     const res = await fetch(`${apiUrl}/api/events/${slug}`, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     return await res.json();
