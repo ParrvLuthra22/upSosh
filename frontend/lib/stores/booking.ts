@@ -50,7 +50,10 @@ export interface GuestDetails {
   email: string;
 }
 
-export type PaymentMethod = 'instant' | 'manual';
+// Razorpay is the only working payment path — the backend never had a
+// /api/payments/manual-proof endpoint, so a "manual verification, upload a
+// screenshot" option previously existed here with no way to ever confirm.
+export type PaymentMethod = 'instant';
 export type BookingStep = 1 | 2 | 3;
 export type SlideDirection = 1 | -1;   // 1 = forward, -1 = back
 
@@ -66,7 +69,6 @@ interface BookingStore {
   guestCount: number;
   guestDetails: GuestDetails;
   paymentMethod: PaymentMethod | null;
-  proofFile: File | null;
   bookingId: string | null;
   isProcessing: boolean;
   errorMessage: string | null;
@@ -87,15 +89,13 @@ interface BookingStore {
   setGuestCount: (n: number) => void;
   setGuestDetails: (details: Partial<GuestDetails>) => void;
   setPaymentMethod: (method: PaymentMethod) => void;
-  setProofFile: (file: File | null) => void;
   setBookingId: (id: string) => void;
   setProcessing: (v: boolean) => void;
   setError: (msg: string | null) => void;
 
   /**
-   * submit() drives the payment logic:
-   *  - instant → POST /api/bookings, POST /api/payments/razorpay/order, open SDK
-   *  - manual  → POST /api/bookings + POST /api/payments/manual-proof
+   * submit() drives the payment logic: POST /api/bookings, then
+   * POST /api/payments/razorpay/order and open the SDK for a paid event.
    */
   submit: () => Promise<void>;
 }
@@ -119,7 +119,6 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   guestCount:    1,
   guestDetails:  INITIAL_GUEST_DETAILS,
   paymentMethod: null,
-  proofFile:     null,
   bookingId:     null,
   isProcessing:  false,
   errorMessage:  null,
@@ -136,7 +135,6 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       guestCount,
       guestDetails:  INITIAL_GUEST_DETAILS,
       paymentMethod: null,
-      proofFile:     null,
       bookingId:     null,
       isProcessing:  false,
       errorMessage:  null,
@@ -174,7 +172,6 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   setGuestCount:    (n)       => set({ guestCount: n }),
   setGuestDetails:  (details) => set((s) => ({ guestDetails: { ...s.guestDetails, ...details } })),
   setPaymentMethod: (method)  => set({ paymentMethod: method }),
-  setProofFile:     (file)    => set({ proofFile: file }),
   setBookingId:     (id)      => set({ bookingId: id }),
   setProcessing:    (v)       => set({ isProcessing: v }),
   setError:         (msg)     => set({ errorMessage: msg }),
@@ -182,7 +179,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   // ── Submit ────────────────────────────────────────────────────────────────
 
   submit: async () => {
-    const { event, eventId, guestCount, guestDetails, paymentMethod, proofFile } = get();
+    const { event, eventId, guestCount, guestDetails, paymentMethod } = get();
     if (!event || !eventId || !paymentMethod) return;
 
     set({ isProcessing: true, errorMessage: null });
@@ -317,20 +314,6 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
             throw new Error((err as { message?: string }).message ?? 'Payment verification failed');
           }
         }
-      }
-
-      // ── 2b. Manual → upload proof ─────────────────────────────────────────
-      if (paymentMethod === 'manual' && proofFile) {
-        const fd = new FormData();
-        fd.append('bookingId', returnedBookingId);
-        fd.append('file', proofFile);
-        // Fire-and-forget; don't block confirmation step.
-        // (Note: this endpoint does not exist on the backend — tracked as P4-17.)
-        fetch('/api/payments/manual-proof', {
-          method: 'POST',
-          credentials: 'include',
-          body: fd,
-        }).catch(() => {});
       }
 
       // ── 3. Advance to confirmation ─────────────────────────────────────────

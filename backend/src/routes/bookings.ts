@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import crypto from 'crypto';
-import { Prisma, BookingStatus } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
@@ -129,43 +128,6 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response): Promise<Re
     return res.json({ bookings });
   } catch (err: unknown) {
     console.error('GET /bookings error:', errorMessage(err));
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// GET /api/bookings/admin/all — all bookings (admin only)
-router.get('/admin/all', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
-  try {
-    if (req.user!.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
-
-    const { status, page = '1', limit = '50' } = req.query;
-    const pageNum = Math.max(1, parseInt(String(page)));
-    const limitNum = Math.min(100, Math.max(1, parseInt(String(limit))));
-
-    const where: Prisma.BookingWhereInput = {};
-    if (status && Object.values(BookingStatus).includes(status as BookingStatus)) {
-      where.status = status as BookingStatus;
-    }
-
-    const [bookings, total] = await prisma.$transaction([
-      prisma.booking.findMany({
-        where,
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-          event: { select: { id: true, title: true, date: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (pageNum - 1) * limitNum,
-        take: limitNum,
-      }),
-      prisma.booking.count({ where }),
-    ]);
-
-    return res.json({ bookings, total, page: pageNum, pages: Math.ceil(total / limitNum) });
-  } catch (err: unknown) {
-    console.error('GET /bookings/admin/all error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

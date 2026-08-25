@@ -127,3 +127,21 @@ export const hostApplySchema = z.object({
   website: z.string().trim().optional(),
   sampleEvent: sampleEventSchema,
 });
+
+// POST /api/ai/plan pays for a real OpenRouter completion per call — cap
+// every field so one request can't blow up the prompt (and the bill).
+export const aiPlanSchema = z.object({
+  type: z.string().trim().max(200).optional(),
+  guestCount: z.coerce.number().int().positive().max(10000).optional(),
+  budget: z.coerce.number().nonnegative().max(10000000).optional(),
+  vibes: z.array(z.string().trim().max(50)).max(20).optional(),
+  query: z.string().trim().max(1000).optional(),
+});
+
+export const announceSchema = z.object({
+  message: z.string().trim().min(1, 'Message is required').max(2000, 'Message is too long'),
+});
+
+export const checkinSchema = z.object({
+  checkedIn: z.boolean(),
+});

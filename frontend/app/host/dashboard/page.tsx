@@ -475,22 +475,19 @@ function apiEventToHostEvent(ev: any): HostEvent {
   };
 }
 
-function eventsToStats(events: HostEvent[]) {
-  const now = new Date();
-  const upcomingEvents = events.filter((e) => e.status === 'live' || e.status === 'draft').length;
-  const totalAttendees = events.reduce((s, e) => s + e.attendees, 0);
-  const monthlyRevenue = events
-    .filter((e) => {
-      const d = new Date();
-      d.setDate(1);
-      return true; // approximate: include all for now
-    })
-    .reduce((s, e) => s + (e.revenue ?? 0), 0);
+interface HostStats {
+  upcomingEvents: number;
+  totalAttendees: number;
+  totalRevenue: number;
+  eventsHosted: number;
+}
+
+function statsToCards(stats: HostStats) {
   return [
-    { label: 'Upcoming events', value: upcomingEvents.toString(), rawValue: upcomingEvents, trend: 0 },
-    { label: 'Total revenue', value: `₹${monthlyRevenue.toLocaleString('en-IN')}`, rawValue: monthlyRevenue, trend: 0 },
-    { label: 'Total attendees', value: totalAttendees.toString(), rawValue: totalAttendees, trend: 0 },
-    { label: 'Events hosted', value: events.length.toString(), rawValue: events.length, trend: 0 },
+    { label: 'Upcoming events', value: stats.upcomingEvents.toString(), rawValue: stats.upcomingEvents, trend: 0 },
+    { label: 'Total revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, rawValue: stats.totalRevenue, trend: 0 },
+    { label: 'Total attendees', value: stats.totalAttendees.toString(), rawValue: stats.totalAttendees, trend: 0 },
+    { label: 'Events hosted', value: stats.eventsHosted.toString(), rawValue: stats.eventsHosted, trend: 0 },
   ];
 }
 
@@ -504,6 +501,7 @@ function HostDashboard() {
 
   const [hostEvents, setHostEvents] = useState<HostEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [hostStats, setHostStats] = useState<HostStats | null>(null);
 
   useEffect(() => {
     async function fetchHostEvents() {
@@ -519,10 +517,22 @@ function HostDashboard() {
         }
       } catch { /* fall through */ }
     }
+    async function fetchHostStats() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await fetch(`${apiUrl}/api/events/host/stats`, {
+          credentials: 'include',
+        });
+        if (res.ok) setHostStats(await res.json());
+      } catch { /* stat cards fall back to zeros below */ }
+    }
     fetchHostEvents().finally(() => setLoadingEvents(false));
+    fetchHostStats();
   }, []);
 
-  const stats = eventsToStats(hostEvents);
+  const stats = statsToCards(
+    hostStats ?? { upcomingEvents: 0, totalAttendees: 0, totalRevenue: 0, eventsHosted: 0 },
+  );
   const upcomingCount = hostEvents.filter((e) => e.status === 'live' || e.status === 'draft').length;
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 

@@ -36,6 +36,7 @@ const USERS = [
   {
     id: 'seed-user-admin',
     email: 'admin@upsosh.test',
+    username: 'ada-admin',
     name: 'Ada Admin',
     role: 'admin',
     hostStatus: 'verified',
@@ -46,6 +47,7 @@ const USERS = [
   {
     id: 'seed-user-host',
     email: 'host@upsosh.test',
+    username: 'hari-host',
     name: 'Hari Host',
     role: 'host',
     hostStatus: 'verified',
@@ -56,6 +58,7 @@ const USERS = [
   {
     id: 'seed-user-regular',
     email: 'user@upsosh.test',
+    username: 'riya-regular',
     name: 'Riya Regular',
     role: 'user',
     hostStatus: 'none',
@@ -331,7 +334,7 @@ async function main() {
     const { label, ...data } = u;
     await prisma.user.upsert({
       where: { email: data.email },
-      update: { name: data.name, role: data.role, hostStatus: data.hostStatus },
+      update: { name: data.name, role: data.role, hostStatus: data.hostStatus, username: data.username },
       create: {
         ...data,
         password: passwordHash,

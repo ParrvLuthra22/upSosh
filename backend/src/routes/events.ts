@@ -4,7 +4,8 @@ import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { createEventSchema, updateEventSchema } from '../lib/schemas';
+import { createEventSchema, updateEventSchema, announceSchema, checkinSchema } from '../lib/schemas';
+import { sendEventAnnouncement } from '../lib/email';
 
 const router = Router();
 
@@ -43,7 +44,7 @@ function buildSlug(title: string): string {
 router.get('/', async (req: Request, res: Response): Promise<Response> => {
   try {
     const {
-      category, city, search, minPrice, maxPrice,
+      category, city, search, minPrice, maxPrice, hostId,
       date: dateFilter, sort = 'date', page = '1', limit = '20',
     } = req.query;
 
@@ -57,6 +58,10 @@ router.get('/', async (req: Request, res: Response): Promise<Response> => {
 
     if (category) where.category = String(category);
     if (city) where.city = { contains: String(city), mode: 'insensitive' };
+    // `hostId` is the frontend's public-profile query param; ownership is
+    // actually carried by Event.userId (see POST / below — Host has no
+    // ownership column), so it filters on userId.
+    if (hostId) where.userId = String(hostId);
 
     if (search) {
       where.OR = [
@@ -132,6 +137,40 @@ router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): P
     return res.json({ events: events.map(formatEvent) });
   } catch (err: unknown) {
     console.error('GET /events/host/mine error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/events/host/stats — real aggregates for the dashboard's stat
+// cards: total revenue actually collected (paid bookings only, not a
+// price*attendees guess), total attendees, upcoming/live event count, and
+// events hosted overall.
+router.get('/host/stats', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+  try {
+    const userId = req.user!.id;
+
+    const events = await prisma.event.findMany({
+      where: { userId },
+      select: { id: true, status: true, date: true, attendees: true },
+    });
+
+    const now = new Date();
+    const upcomingEvents = events.filter((e) => (e.status === 'live' || e.status === 'draft') && e.date >= now).length;
+    const totalAttendees = events.reduce((sum, e) => sum + e.attendees, 0);
+
+    const revenueAgg = await prisma.booking.aggregate({
+      where: { eventId: { in: events.map((e) => e.id) }, paymentStatus: 'paid' },
+      _sum: { totalAmount: true },
+    });
+
+    return res.json({
+      upcomingEvents,
+      totalAttendees,
+      totalRevenue: revenueAgg._sum.totalAmount ?? 0,
+      eventsHosted: events.length,
+    });
+  } catch (err: unknown) {
+    console.error('GET /events/host/stats error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -244,31 +283,94 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// POST /api/events/:id/attend — increment attendees (requireAuth)
-router.post('/:id/attend', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+// GET /api/events/:id/attendees — list bookings for a host's own event
+router.get('/:id/attendees', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
+    const user = req.user!;
 
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) return res.status(404).json({ message: 'Event not found' });
-
-    // Atomic check-and-increment: the WHERE clause re-checks capacity as part
-    // of the same statement, so two concurrent requests on the last seat
-    // can't both read "capacity available" before either writes.
-    const { count } = await prisma.event.updateMany({
-      where: { id, attendees: { lt: event.capacity } },
-      data: { attendees: { increment: 1 } },
-    });
-
-    if (count === 0) {
-      return res.status(400).json({ message: 'Event is at full capacity' });
+    if (event.userId !== user.id && user.role !== 'admin') {
+      return res.status(403).json({ message: "You do not have permission to view this event's attendees" });
     }
 
-    const updated = await prisma.event.findUniqueOrThrow({ where: { id } });
+    const bookings = await prisma.booking.findMany({
+      where: { eventId: id, status: { in: ['pending', 'confirmed'] } },
+      include: { user: { select: { name: true, email: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    return res.json({ attendees: updated.attendees, capacity: updated.capacity });
+    const attendees = bookings.map((b) => ({
+      id: b.id,
+      name: b.guestName || b.user.name,
+      email: b.guestEmail || b.user.email,
+      bookedAt: b.createdAt,
+      status: b.status,
+      checkedIn: b.checkedIn,
+    }));
+
+    return res.json({ attendees });
   } catch (err: unknown) {
-    console.error('POST /events/:id/attend error:', errorMessage(err));
+    console.error('GET /events/:id/attendees error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// PATCH /api/events/:id/attendees/:attendeeId/checkin — toggle check-in
+router.patch('/:id/attendees/:attendeeId/checkin', requireAuth, validateBody(checkinSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
+  try {
+    const { id, attendeeId } = req.params;
+    const user = req.user!;
+    const { checkedIn } = req.body as z.infer<typeof checkinSchema>;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    if (event.userId !== user.id && user.role !== 'admin') {
+      return res.status(403).json({ message: 'You do not have permission to manage this event' });
+    }
+
+    const booking = await prisma.booking.findUnique({ where: { id: attendeeId } });
+    if (!booking || booking.eventId !== id) {
+      return res.status(404).json({ message: 'Attendee not found' });
+    }
+
+    const updated = await prisma.booking.update({ where: { id: attendeeId }, data: { checkedIn } });
+    return res.json({ checkedIn: updated.checkedIn });
+  } catch (err: unknown) {
+    console.error('PATCH /events/:id/attendees/:attendeeId/checkin error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/events/:id/announce — email every current attendee
+router.post('/:id/announce', requireAuth, validateBody(announceSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const user = req.user!;
+    const { message } = req.body as z.infer<typeof announceSchema>;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    if (event.userId !== user.id && user.role !== 'admin') {
+      return res.status(403).json({ message: "You do not have permission to message this event's attendees" });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: { eventId: id, status: { in: ['pending', 'confirmed'] } },
+      include: { user: { select: { name: true, email: true } } },
+    });
+
+    await Promise.all(bookings.map((b) => sendEventAnnouncement({
+      guestName: b.guestName || b.user.name,
+      guestEmail: b.guestEmail || b.user.email,
+      eventTitle: event.title,
+      message,
+    })));
+
+    return res.json({ sent: bookings.length });
+  } catch (err: unknown) {
+    console.error('POST /events/:id/announce error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -134,7 +134,9 @@ async function apiFetch<T>(
     } catch {
       // body wasn't JSON; keep the status string
     }
-    throw new Error(message);
+    // Callers that need to branch on the failure kind (rate-limited vs.
+    // misconfigured vs. generic) read this instead of pattern-matching text.
+    throw Object.assign(new Error(message), { status: res.status });
   }
 
   // ── 204 No Content ────────────────────────────────────────────────────────
@@ -218,8 +220,6 @@ export const authApi = {
   me: () => api.get<{ user: import('@/types').User }>('/api/auth/me'),
   login: (email: string, password: string) =>
     api.post<{ token: string; user: import('@/types').User }>('/api/auth/login', { email, password }),
-  register: (name: string, email: string, password: string, role?: string) =>
-    api.post<{ token: string; user: import('@/types').User }>('/api/auth/register', { name, email, password, role }),
   signout: () => api.post('/api/auth/signout'),
   forgotPassword: (email: string) =>
     api.post('/api/auth/forgot-password', { email }),

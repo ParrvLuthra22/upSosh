@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -427,6 +427,32 @@ function EmptyState() {
   );
 }
 
+// ─── Error state ──────────────────────────────────────────────────────────────
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <motion.div
+      className="flex flex-col items-center text-center py-32 px-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EASE }}
+    >
+      <h3 className="font-display text-[32px] text-cream leading-tight mb-3">
+        Couldn't load events.
+      </h3>
+      <p className="font-sans text-[15px] text-cream-dim max-w-md leading-relaxed mb-8">
+        Something went wrong reaching the server. Check your connection and try again.
+      </p>
+      <button
+        onClick={onRetry}
+        className="h-11 px-6 bg-lime text-void rounded-full font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors"
+      >
+        Try again
+      </button>
+    </motion.div>
+  );
+}
+
 // ─── Masonry grid of cards ────────────────────────────────────────────────────
 
 function EventGrid({ events }: { events: MockEvent[] }) {
@@ -493,21 +519,25 @@ export default function DiscoverPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [events, setEvents]         = useState<MockEvent[]>([]);
   const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(false);
 
-  // Load real events, fall back to mock
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/events?limit=50', { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          const raw: any[] = data.events ?? data.data ?? [];
-          if (raw.length > 0) setEvents(raw.map(normaliseApiEvent));
-        }
-      } catch { /* leave events empty — the empty state below handles this */ }
-      finally { setLoading(false); }
-    })();
+  const loadEvents = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch('/api/events?limit=50', { credentials: 'include' });
+      if (!res.ok) throw new Error(`Failed to load events (${res.status})`);
+      const data = await res.json();
+      const raw: any[] = data.events ?? data.data ?? [];
+      setEvents(raw.map(normaliseApiEvent));
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { loadEvents(); }, [loadEvents]);
 
   function updateFilter<K extends keyof FilterState>(k: K, v: FilterState[K]) {
     setFilters((prev) => ({ ...prev, [k]: v }));
@@ -613,7 +643,7 @@ export default function DiscoverPage() {
       {/* ── Results count ───────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-4">
         <p className="font-mono text-[12px] text-cream-faint uppercase tracking-wider">
-          {loading ? 'Loading…' : `${filtered.length} event${filtered.length !== 1 ? 's' : ''}`}
+          {loading ? 'Loading…' : error ? 'Couldn’t load events' : `${filtered.length} event${filtered.length !== 1 ? 's' : ''}`}
         </p>
       </div>
 
@@ -633,6 +663,8 @@ export default function DiscoverPage() {
               </div>
             ))}
           </div>
+        ) : error ? (
+          <ErrorState onRetry={loadEvents} />
         ) : (
           <EventGrid events={filtered} />
         )}

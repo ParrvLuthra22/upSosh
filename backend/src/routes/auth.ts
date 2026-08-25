@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
@@ -30,6 +29,26 @@ function generateToken(userId: string): string {
   return jwt.sign({ userId }, secret, { expiresIn: '7d' });
 }
 
+// Slugify the display name into a public /u/[username] handle, then resolve
+// collisions with a random suffix — the same pattern events.ts's buildSlug
+// uses for event slugs.
+async function generateUsername(name: string): Promise<string> {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-') || 'user';
+
+  let candidate = base;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const existing = await prisma.user.findUnique({ where: { username: candidate }, select: { id: true } });
+    if (!existing) return candidate;
+    candidate = `${base}-${crypto.randomBytes(3).toString('hex')}`;
+  }
+  return `user-${crypto.randomBytes(6).toString('hex')}`;
+}
+
 // POST /api/auth/signup
 router.post('/signup', validateBody(signupSchema), async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -41,10 +60,12 @@ router.post('/signup', validateBody(signupSchema), async (req: Request, res: Res
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    const username = await generateUsername(name);
     const user = await prisma.user.create({
       data: {
         name,
         email,
+        username,
         password: hashedPassword,
       },
     });
@@ -110,27 +131,6 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<
     return res.json({ user: sanitizeUser(user) });
   } catch (err: unknown) {
     console.error('Get me error:', errorMessage(err));
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// PATCH /api/auth/me
-router.patch('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
-  try {
-    const updateData: Prisma.UserUpdateInput = {};
-
-    const { name } = req.body;
-    if (name !== undefined) updateData.name = String(name).trim();
-
-    const user = Object.keys(updateData).length
-      ? await prisma.user.update({ where: { id: req.user!.id }, data: updateData })
-      : await prisma.user.findUnique({ where: { id: req.user!.id } });
-
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    return res.json({ user: sanitizeUser(user) });
-  } catch (err: unknown) {
-    console.error('Update me error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

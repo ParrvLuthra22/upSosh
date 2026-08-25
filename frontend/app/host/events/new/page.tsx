@@ -83,9 +83,13 @@ function NewEventPage() {
         price: form.isFree ? 0 : Number(form.price) || 0,
         status: draft ? 'draft' : 'live',
       };
-      const data = await api.post<{ event: { id: string } }>('/api/events', payload);
+      // POST /api/events returns the created event directly, not wrapped in
+      // { event }. Previously this always threw here (data.event was
+      // undefined) and showed "Failed to create event" even though the
+      // event had just been created successfully.
+      const event = await api.post<{ id: string }>('/api/events', payload);
       toast.success(draft ? 'Saved as draft.' : 'Event published!');
-      router.push(`/host/events/${data.event.id}`);
+      router.push(`/host/events/${event.id}`);
     } catch (err: any) {
       toast.error(err.message ?? 'Failed to create event');
     } finally {

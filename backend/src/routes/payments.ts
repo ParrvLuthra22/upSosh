@@ -363,16 +363,4 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
   }
 });
 
-// GET /api/payments/health — payment service health check
-router.get('/health', (req: Request, res: Response) => {
-  const keyIdSet = !!process.env.RAZORPAY_KEY_ID;
-  const keySecretSet = !!process.env.RAZORPAY_KEY_SECRET;
-
-  res.json({
-    status: keyIdSet && keySecretSet ? 'configured' : 'not_configured',
-    razorpayKeyId: keyIdSet,
-    razorpayKeySecret: keySecretSet,
-  });
-});
-
 export default router;

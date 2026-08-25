@@ -165,30 +165,22 @@ export const useAuthStore = create<AuthStore>()(
 
       // ── Register ───────────────────────────────────────────────────────────
 
-      register: async ({ name, email, password, role = 'attendee' }) => {
+      register: async ({ name, email, password }) => {
         set({ isLoading: true });
         try {
-          const res = await fetch('/api/auth/register', {
+          // There is no POST /api/auth/register — /signup is the only
+          // account-creation route the backend has ever had. `role` isn't
+          // sent: signup always creates a plain attendee account; hostStatus
+          // only changes through the host-application approval flow.
+          const res = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role }),
+            body: JSON.stringify({ name, email, password }),
             credentials: 'include',
           });
 
-          // Fall back to /api/auth/signup if /register isn't wired up yet
-          let body = await res.json();
-          if (!res.ok && res.status === 404) {
-            const res2 = await fetch('/api/auth/signup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, email, password }),
-              credentials: 'include',
-            });
-            body = await res2.json();
-            if (!res2.ok) throw new Error(body.message ?? body.error ?? 'Registration failed');
-          } else if (!res.ok) {
-            throw new Error(body.message ?? body.error ?? 'Registration failed');
-          }
+          const body = await res.json();
+          if (!res.ok) throw new Error(body.message ?? body.error ?? 'Registration failed');
 
           const { user } = body as { user: User };
           purgeLegacyCredentials();

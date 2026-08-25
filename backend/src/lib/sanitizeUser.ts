@@ -12,6 +12,7 @@ export function sanitizeUser(user: User) {
   return {
     id: user.id,
     email: user.email,
+    username: user.username,
     name: user.name,
     photoUrl: user.photoUrl ?? null,
     bio: user.bio ?? null,

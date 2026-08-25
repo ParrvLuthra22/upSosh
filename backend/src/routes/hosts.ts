@@ -65,24 +65,6 @@ router.post('/apply', requireAuth, validateBody(hostApplySchema), async (req: Au
   }
 });
 
-// GET /api/hosts/application — current user's application status (requireAuth)
-router.get('/application', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
-  try {
-    const application = await prisma.hostApplication.findUnique({
-      where: { userId: req.user!.id },
-    });
-
-    if (!application) {
-      return res.status(404).json({ message: 'No host application found' });
-    }
-
-    return res.json({ application });
-  } catch (err: unknown) {
-    console.error('GET /hosts/application error:', errorMessage(err));
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
 // GET /api/hosts/admin/applications — list all applications (admin only)
 router.get('/admin/applications', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
@@ -172,35 +154,8 @@ router.patch('/admin/applications/:id/reject', requireAuth, async (req: AuthRequ
   }
 });
 
-// GET /api/hosts — list verified hosts (public, optional ?city=)
-router.get('/', async (req: AuthRequest, res: Response): Promise<Response> => {
-  try {
-    const { city } = req.query;
-
-    const where: Prisma.HostWhereInput = { verified: true };
-    if (city) {
-      // Hosts are in the Host model; city filter not directly on Host, skip or join via events
-    }
-
-    const hosts = await prisma.host.findMany({
-      where,
-      include: {
-        events: {
-          where: { status: 'live' },
-          take: 3,
-          orderBy: { date: 'asc' },
-        },
-      },
-    });
-
-    return res.json({ hosts });
-  } catch (err: unknown) {
-    console.error('GET /hosts error:', errorMessage(err));
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// GET /api/hosts/:id — get host profile (public)
+// GET /api/hosts/:id — get host profile (public). Called by
+// frontend/lib/api.ts's getHostById, used from EventCard/EventDetailsModal.
 router.get('/:id', async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;

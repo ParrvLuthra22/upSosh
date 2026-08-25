@@ -7,6 +7,18 @@ function errorMessage(err: unknown): string {
 }
 const FROM = 'upSosh <bookings@upsosh.app>';
 
+// The announcement email interpolates host-supplied free text into HTML —
+// escape it so a malicious host can't inject markup/scripts into an email
+// sent to their attendees.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export interface BookingEmailData {
   guestName: string;
   guestEmail: string;
@@ -137,6 +149,70 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
     console.log(`[Email] Booking confirmation sent to ${data.guestEmail}`);
   } catch (err: unknown) {
     console.error('[Email] Failed to send booking confirmation:', errorMessage(err));
+  }
+}
+
+export interface EventAnnouncementData {
+  guestName: string;
+  guestEmail: string;
+  eventTitle: string;
+  message: string;
+}
+
+export async function sendEventAnnouncement(data: EventAnnouncementData): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Email] RESEND_API_KEY not set — skipping event announcement email');
+    return;
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Update: ${data.eventTitle}</title>
+</head>
+<body style="margin:0;padding:0;background:#0A0A0B;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0B;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#13131B;border-radius:16px;overflow:hidden;border:1px solid #2A2A38;">
+          <tr>
+            <td style="padding:32px 40px 24px;border-bottom:1px solid #2A2A38;">
+              <p style="margin:0;font-size:22px;font-weight:700;color:#F4F1EA;letter-spacing:-0.5px;">upSosh</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 40px;">
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#D4FF3F;letter-spacing:2px;text-transform:uppercase;">Update from your host</p>
+              <h1 style="margin:0 0 16px;font-size:24px;font-weight:400;color:#F4F1EA;line-height:1.2;">${escapeHtml(data.eventTitle)}</h1>
+              <p style="margin:0 0 20px;font-size:15px;color:#8B8B9E;">Hi ${escapeHtml(data.guestName)},</p>
+              <p style="margin:0;font-size:15px;color:#F4F1EA;line-height:1.6;white-space:pre-wrap;">${escapeHtml(data.message)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;border-top:1px solid #2A2A38;">
+              <p style="margin:0;font-size:12px;color:#555566;">
+                You're receiving this because you're booked into this event on upSosh.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: data.guestEmail,
+      subject: `Update: ${data.eventTitle}`,
+      html,
+    });
+  } catch (err: unknown) {
+    console.error('[Email] Failed to send event announcement:', errorMessage(err));
   }
 }
 

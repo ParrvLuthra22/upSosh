@@ -521,11 +521,23 @@ function PlannerPage() {
       });
       setResult(data);
       setPhase('result');
-    } catch {
+    } catch (err) {
       // Previously fell back to a fabricated plan on any failure — including a
       // missing OPENROUTER_API_KEY — with no indication it wasn't real. Show
-      // the actual failure and let the user retry instead.
-      toast.error('Could not generate a plan. Please try again in a moment.');
+      // the actual failure, distinguishing why it failed, and let the user
+      // retry instead.
+      const status = err instanceof Error ? (err as Error & { status?: number }).status : undefined;
+      if (status === 429) {
+        toast.error("You've hit the planner's hourly limit. Try again in a bit.");
+      } else if (status === 503) {
+        toast.error('The AI planner isn\'t configured yet — contact support.');
+      } else {
+        toast.error(
+          err instanceof Error && err.message
+            ? err.message
+            : 'Could not generate a plan. Please try again in a moment.',
+        );
+      }
       setPhase('form');
     }
   }

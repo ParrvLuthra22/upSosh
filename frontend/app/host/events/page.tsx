@@ -100,7 +100,7 @@ export default function HostEventsPage() {
     const load = async () => {
       setFetching(true);
       try {
-        const data = await api.get<{ events: HostEvent[] }>('/api/host/events');
+        const data = await api.get<{ events: HostEvent[] }>('/api/events/host/mine');
         setEvents(data.events ?? []);
       } catch {
         setEvents([]);

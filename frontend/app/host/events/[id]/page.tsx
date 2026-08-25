@@ -44,10 +44,12 @@ export default function HostEventDetailPage() {
     const load = async () => {
       try {
         const [evData, attData] = await Promise.all([
-          api.get<{ event: EventDetails }>(`/api/events/${id}`),
+          // GET /api/events/:slug returns the event object directly, not
+          // wrapped in { event }.
+          api.get<EventDetails>(`/api/events/${id}`),
           api.get<{ attendees: Attendee[] }>(`/api/events/${id}/attendees`),
         ]);
-        setEvent(evData.event);
+        setEvent(evData);
         setAttendees(attData.attendees ?? []);
       } catch {
         toast.error('Failed to load event');

@@ -1,18 +1,36 @@
-import { Router, Response } from 'express';
+import { Router, Response, RequestHandler } from 'express';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
 import OpenAI from 'openai';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
+import { aiPlanSchema } from '../lib/schemas';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-interface AIEventPlanRequestBody {
-  type?: string;
-  guestCount?: number;
-  budget?: number;
-  vibes?: string[];
-  query?: string;
-}
+type AIEventPlanRequestBody = z.infer<typeof aiPlanSchema>;
+
+// Each call pays for a real OpenRouter completion, so this is a per-user
+// cost limit, not a generic abuse guard — keyed on the authenticated user
+// (requireAuth runs first) rather than IP, so it can't be dodged by
+// switching networks and doesn't lump unrelated users on the same NAT/IP
+// together.
+const aiPlanLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // No explicit `Request` annotation: express-rate-limit resolves its
+  // callback's Request type against its own copy of
+  // @types/express-serve-static-core (the same workspace-level duplicate
+  // package conflict documented elsewhere in this codebase), so an
+  // explicitly-typed parameter here doesn't structurally match. Leaving it
+  // unannotated lets TS infer the right type from context instead.
+  keyGenerator: (req) => (req as unknown as AuthRequest).user?.id ?? req.ip ?? 'anonymous',
+  message: { message: "You've reached the AI planner's limit of 10 requests per hour. Please try again later." },
+});
 
 // Mirrors the JSON schema dictated to the model in SYSTEM_PROMPT below —
 // the model isn't guaranteed to honor it, so this is a best-effort shape,
@@ -158,50 +176,56 @@ function buildUserPrompt(body: AIEventPlanRequestBody): string {
   return parts.join('. ');
 }
 
-// POST /api/ai/plan — AI event planning (requireAuth)
-router.post('/plan', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
-  const userPrompt = buildUserPrompt(req.body);
+// POST /api/ai/plan — AI event planning (requireAuth, rate-limited)
+router.post(
+  '/plan',
+  requireAuth,
+  aiPlanLimiter as unknown as RequestHandler,
+  validateBody(aiPlanSchema),
+  async (req: AuthRequest, res: Response): Promise<Response> => {
+    const userPrompt = buildUserPrompt(req.body as AIEventPlanRequestBody);
 
-  if (!userPrompt.trim()) {
-    return res.status(400).json({ message: 'Provide an event type, budget, or description.' });
-  }
-
-  if (!process.env.OPENROUTER_API_KEY) {
-    console.warn('[AI] OPENROUTER_API_KEY not set — returning mock plan');
-    return res.status(503).json({ message: 'AI service not configured. Please set OPENROUTER_API_KEY.' });
-  }
-
-  try {
-    const client = getClient();
-
-    const completion = await client.chat.completions.create({
-      model: 'google/gemini-2.0-flash-001',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.8,
-      max_tokens: 2000,
-      response_format: { type: 'json_object' },
-    });
-
-    const raw = completion.choices[0]?.message?.content ?? '';
-
-    let plan: AIEventPlan;
-    try {
-      // Strip any accidental markdown fences before parsing
-      const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-      plan = JSON.parse(cleaned);
-    } catch {
-      console.error('[AI] JSON parse failed, raw output:', raw.slice(0, 300));
-      return res.status(500).json({ message: 'AI returned invalid JSON. Please try again.' });
+    if (!userPrompt.trim()) {
+      return res.status(400).json({ message: 'Provide an event type, budget, or description.' });
     }
 
-    return res.json(plan);
-  } catch (err: unknown) {
-    console.error('[AI] OpenRouter error:', errorMessage(err));
-    return res.status(500).json({ message: 'AI service error. Please try again in a moment.' });
-  }
-});
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.warn('[AI] OPENROUTER_API_KEY not set — returning mock plan');
+      return res.status(503).json({ message: 'AI service not configured. Please set OPENROUTER_API_KEY.' });
+    }
+
+    try {
+      const client = getClient();
+
+      const completion = await client.chat.completions.create({
+        model: 'google/gemini-2.0-flash-001',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.8,
+        max_tokens: 2000,
+        response_format: { type: 'json_object' },
+      });
+
+      const raw = completion.choices[0]?.message?.content ?? '';
+
+      let plan: AIEventPlan;
+      try {
+        // Strip any accidental markdown fences before parsing
+        const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        plan = JSON.parse(cleaned);
+      } catch {
+        console.error('[AI] JSON parse failed, raw output:', raw.slice(0, 300));
+        return res.status(500).json({ message: 'AI returned invalid JSON. Please try again.' });
+      }
+
+      return res.json(plan);
+    } catch (err: unknown) {
+      console.error('[AI] OpenRouter error:', errorMessage(err));
+      return res.status(500).json({ message: 'AI service error. Please try again in a moment.' });
+    }
+  },
+);
 
 export default router;

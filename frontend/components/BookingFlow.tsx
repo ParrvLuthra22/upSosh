@@ -11,7 +11,7 @@
  * Step 3 — Confirmation ("You're in.")
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   motion,
   AnimatePresence,
@@ -24,7 +24,6 @@ import {
   IconCalendar,
   IconClock,
   IconMapPin,
-  IconUpload,
   IconShieldCheck,
   IconCreditCard,
   IconShare,
@@ -37,7 +36,6 @@ import {
   useBookingStore,
   downloadICS,
   type BookingEventData,
-  type PaymentMethod,
 } from '@/lib/stores/booking';
 import { getLenis } from '@/components/ui/SmoothScroll';
 import { Input } from '@/components/ui/input';
@@ -281,58 +279,6 @@ function Step1Review() {
   );
 }
 
-// ─── File drop zone ───────────────────────────────────────────────────────────
-
-function DropZone({ file, onChange }: { file: File | null; onChange: (f: File | null) => void }) {
-  const [dragOver, setDragOver] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragOver(false);
-    const f = e.dataTransfer.files[0];
-    if (f) onChange(f);
-  }
-
-  return (
-    <div
-      onClick={() => inputRef.current?.click()}
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-      className={cn(
-        'rounded-xl p-6 border-2 border-dashed flex flex-col items-center gap-3 cursor-pointer transition-all mt-3',
-        dragOver
-          ? 'border-lime bg-lime/5'
-          : 'border-cream/25 hover:border-cream/40 hover:bg-cream/3',
-      )}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*,.pdf"
-        className="hidden"
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-      />
-      {file ? (
-        <>
-          <IconCheck size={28} className="text-lime" />
-          <p className="font-sans text-[13px] text-cream text-center">{file.name}</p>
-          <p className="font-sans text-[12px] text-cream-dim">Tap to change</p>
-        </>
-      ) : (
-        <>
-          <IconUpload size={28} className="text-cream-faint" />
-          <p className="font-sans text-[13px] text-cream-dim text-center">
-            Drop screenshot here<br />
-            <span className="text-cream-faint">or click to upload</span>
-          </p>
-        </>
-      )}
-    </div>
-  );
-}
-
 // ─── Step 2 — Payment ─────────────────────────────────────────────────────────
 
 function Step2Payment() {
@@ -340,11 +286,9 @@ function Step2Payment() {
     event,
     guestCount,
     paymentMethod,
-    proofFile,
     isProcessing,
     errorMessage,
     setPaymentMethod,
-    setProofFile,
     back,
     submit,
   } = useBookingStore();
@@ -355,10 +299,7 @@ function Step2Payment() {
   const isFree = price === 0;
   const total = price * guestCount + Math.round(price * guestCount * 0.1);
 
-  const canSubmit =
-    !isProcessing &&
-    terms &&
-    (paymentMethod === 'instant' || (paymentMethod === 'manual' && proofFile !== null));
+  const canSubmit = !isProcessing && terms && paymentMethod === 'instant';
 
   return (
     <div>
@@ -407,46 +348,6 @@ function Step2Payment() {
                 </div>
               </div>
             </button>
-
-            {/* Card B — manual */}
-            <button
-              onClick={() => setPaymentMethod('manual')}
-              className={cn(
-                'relative w-full rounded-2xl border p-4 text-left transition-all',
-                paymentMethod === 'manual'
-                  ? 'border-lime bg-lime/5'
-                  : 'border-border hover:border-border-strong',
-              )}
-            >
-              {paymentMethod === 'manual' && (
-                <span className="absolute top-4 right-4">
-                  <IconCheck size={16} className="text-lime" strokeWidth={2.5} />
-                </span>
-              )}
-              <div className="flex items-start gap-3 pr-6">
-                <IconUpload size={18} className={paymentMethod === 'manual' ? 'text-lime' : 'text-cream-dim'} />
-                <div>
-                  <p className="font-sans text-[14px] font-medium text-cream">Manual verification</p>
-                  <p className="font-sans text-[12px] text-cream-dim mt-0.5">
-                    Upload payment proof · confirmation in 24h
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            {/* Drop zone — only when manual selected */}
-            <AnimatePresence>
-              {paymentMethod === 'manual' && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                >
-                  <DropZone file={proofFile} onChange={setProofFile} />
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         )}
 
@@ -496,8 +397,6 @@ function Step2Payment() {
             <span className="w-4 h-4 border-2 border-void/30 border-t-void rounded-full animate-spin" />
           ) : isFree ? (
             <>Confirm booking <IconCheck size={16} strokeWidth={2.5} /></>
-          ) : paymentMethod === 'manual' ? (
-            <>Submit proof <IconArrowRight size={16} strokeWidth={2.5} /></>
           ) : (
             <>Pay {fmtRupee(total)} <IconArrowRight size={16} strokeWidth={2.5} /></>
           )}

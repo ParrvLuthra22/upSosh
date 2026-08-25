@@ -55,6 +55,7 @@ enum PaymentMethod {
 model User {
   id                   String     @id @default(cuid())
   email                String     @unique
+  username             String     @unique
   password             String
   name                 String
   photoUrl             String?
@@ -174,6 +175,7 @@ model Booking {
   refundId        String?
 
   qrCode        String?       // ticket QR data
+  checkedIn     Boolean       @default(false)
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt

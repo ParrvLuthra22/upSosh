@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useBookingStore } from '@/lib/stores/booking';
@@ -564,6 +564,24 @@ function PageSkeleton() {
   );
 }
 
+function ErrorScreen({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-void flex flex-col items-center justify-center px-6 text-center">
+      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-faint mb-4">[ CONNECTION ERROR ]</p>
+      <h1 className="font-display text-4xl text-cream mb-4">Couldn't load this event.</h1>
+      <p className="font-sans text-base text-cream-dim mb-8 max-w-md">
+        Something went wrong reaching the server. Check your connection and try again.
+      </p>
+      <button
+        onClick={onRetry}
+        className="h-11 px-6 bg-lime text-void rounded-full font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EventDetailPage() {
@@ -574,24 +592,32 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const [eventNotFound, setEventNotFound] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    async function fetchEvent() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const res = await fetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setEvent(apiEventToMock(data));
-          return;
-        }
-      } catch {
-        // fall through to not-found
+  const fetchEvent = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
+    setEventNotFound(false);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setEvent(apiEventToMock(data));
+        return;
       }
-      setEventNotFound(true);
+      // A genuinely missing slug is a real 404; anything else (500s, etc.)
+      // is a server/connection problem, not proof the event doesn't exist.
+      if (res.status === 404) setEventNotFound(true);
+      else setLoadError(true);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
-    fetchEvent().finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => { fetchEvent(); }, [fetchEvent]);
 
   const ext = getExtended(event?.id ?? slug);
   const openBooking = useBookingStore((s) => s.open);
@@ -617,6 +643,7 @@ export default function EventDetailPage() {
   // NEXT_NOT_FOUND signal and renders the nearest not-found.tsx.
   if (eventNotFound) notFound();
   if (loading) return <PageSkeleton />;
+  if (loadError) return <ErrorScreen onRetry={fetchEvent} />;
   if (!event) return <PageSkeleton />;
 
   return (

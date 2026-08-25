@@ -177,17 +177,24 @@ router.post(
   },
 );
 
-// GET /api/users/:id — public user profile
-router.get('/:id', async (req: AuthRequest, res: Response): Promise<Response> => {
+// GET /api/users/:username — public profile, looked up by handle (the
+// /u/[username] page's only caller). Not an id lookup — no frontend code
+// ever had a bare user id to look up with here.
+router.get('/:username', async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
-      select: { id: true, name: true, role: true, photoUrl: true, bio: true, createdAt: true },
+      where: { username: req.params.username },
+      select: {
+        id: true, username: true, name: true, role: true, hostStatus: true,
+        photoUrl: true, bio: true, city: true, createdAt: true,
+      },
     });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    return res.json({ user });
+    // The public-profile page's PublicUser type reads `location`, not `city`.
+    const { city, ...rest } = user;
+    return res.json({ user: { ...rest, location: city } });
   } catch (err: unknown) {
-    console.error('GET /users/:id error:', errorMessage(err));
+    console.error('GET /users/:username error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
