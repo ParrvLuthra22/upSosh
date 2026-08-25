@@ -265,6 +265,28 @@ Those are inlined at build time. Restart the dev server.
 
 ---
 
+## Scope
+
+What's deliberately not built, and why — so a missing feature reads as a decision, not an oversight.
+
+**Host payouts.** Money flows in (Razorpay → the platform's account) but nothing sends money back out to hosts. A real payout system needs KYC on every host (bank account or UPI ownership verification — the RBI won't let a platform disburse funds to an unverified account), a settlement ledger (each booking's `platformFee` needs to be tracked separately from the host's net so payouts and platform revenue don't have to be reverse-engineered from raw `Booking` rows later), and a payout schedule with its own failure/retry handling distinct from the checkout payment flow. None of that exists. Hosts are paid manually, outside the app, for now.
+
+**OAuth / social login.** Auth is email + password only (`backend/src/routes/auth.ts` — bcrypt, cost factor 12, httpOnly JWT cookie). No Google/Apple sign-in. Not because it's hard, but because it wasn't built, and bolting it on half-finished (a "Sign in with Google" button that doesn't handle account-linking to an existing email/password user) is worse than not having it.
+
+**Real-time features.** No WebSockets or SSE anywhere in the codebase. Attendee counts, host dashboards, and the admin queue are all poll/refetch-on-navigation, not push. A host watching their event's capacity fill up won't see it update live without refreshing.
+
+**Reviews and ratings.** There's no `Review` or `Rating` model in `prisma/schema.prisma`. Host ratings shown in the UI (e.g. the "★" next to a host's name) are seed/display data, not a real review system attendees can write to.
+
+**In-app notifications — a known gap, not a decision.** Unlike the others on this list, this one isn't deliberate: `GlobalHeader.tsx`'s notification bell polls `GET /api/notifications` every 30 seconds, but no `notifications.ts` route or `Notification` model exists on the backend. The request fails silently (caught, swallowed) and the panel always renders empty. Flagging it here rather than leaving it to be found — it needs either a real backend behind it or the UI removed, not the fetch quietly failing forever.
+
+**Single currency.** `currency: 'INR'` is hardcoded in `backend/src/routes/payments.ts`, and every price display uses `toLocaleString('en-IN')`. No multi-currency support.
+
+**Chargebacks and payment disputes.** Refunds exist (`PATCH /api/bookings/:id/cancel` triggers a real Razorpay refund on cancellation), but there's no dispute-resolution flow for a payment dispute Razorpay itself flags, or for an attendee who wants a refund without cancelling. Cancellation is the only refund path.
+
+**Phone verification.** No SMS/OTP step anywhere. Signup is email-only. `guestPhone` is collected and required on every booking (`backend/src/lib/schemas.ts`) but never verified — nothing confirms it's real or reachable before a booking is confirmed.
+
+---
+
 ## Project status
 
 Actively being cleaned up. `FIXPLAN.md` at the repo root tracks the work in six phases, with each task anchored to a specific file and line. `AUDIT.md` is the analysis it came from. If you're picking something up, start there.
