@@ -140,7 +140,7 @@ function AvatarDropdown({
   user,
   onSignOut,
 }: {
-  user: { name: string; email: string; photoUrl?: string; hostStatus?: string };
+  user: { name: string; email: string; photoUrl?: string; hostStatus?: string; role?: string };
   onSignOut: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -258,6 +258,19 @@ function AvatarDropdown({
                   </div>
                 </>
               ) : null}
+
+              {user.role === 'admin' && (
+                <>
+                  <div className="my-1 border-t border-border" />
+                  <Link
+                    href="/admin/hosts"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                  >
+                    Host applications
+                  </Link>
+                </>
+              )}
 
               <div className="my-1 border-t border-border" />
               <button

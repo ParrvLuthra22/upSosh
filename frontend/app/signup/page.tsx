@@ -176,7 +176,10 @@ export default function SignUpPage() {
     if (!validate()) return;
     setServerError('');
     try {
-      await register({ name, email, password, role });
+      // `role` (the "what brings you here" selector above) isn't sent —
+      // register() never forwards it; every signup creates a plain user
+      // account, and host status only changes via the application flow.
+      await register({ name, email, password });
       router.push('/discover');
     } catch (err) {
       setServerError(err instanceof Error ? err.message : 'Registration failed. Try again.');

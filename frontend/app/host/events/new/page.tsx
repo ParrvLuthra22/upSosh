@@ -78,8 +78,15 @@ function NewEventPage() {
     }
     setSaving(true);
     try {
+      // createEventSchema requires `type` and `venue` — this form only ever
+      // collected `category` and `location`, so every submission 400'd
+      // before reaching Prisma. `type` reuses the selected category (this
+      // form has no separate formal/informal axis to offer).
+      const { location, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
+        type: form.category,
+        venue: location,
         price: form.isFree ? 0 : Number(form.price) || 0,
         status: draft ? 'draft' : 'live',
       };

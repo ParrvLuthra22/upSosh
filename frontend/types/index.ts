@@ -30,7 +30,11 @@ export type PaymentMethod =
   | 'card'
   | 'free';
 
-export type UserRole = 'host' | 'attendee' | 'both';
+// Matches the backend's real Role enum (Prisma). Previously 'host' | 'attendee'
+// | 'both' — those are signup's own local UI-selector values (see
+// app/signup/page.tsx's separate Role type), not the account's actual role,
+// which meant `user.role === 'admin'` never type-checked anywhere.
+export type UserRole = 'user' | 'host' | 'admin';
 
 // ─── Core Entities ────────────────────────────────────────────────────────────
 

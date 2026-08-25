@@ -1,5 +1,5 @@
 import { Router, Response, RequestHandler } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { z } from 'zod';
 import OpenAI from 'openai';
 import { requireAuth, AuthRequest } from '../middleware/auth';
@@ -28,7 +28,13 @@ const aiPlanLimiter = rateLimit({
   // package conflict documented elsewhere in this codebase), so an
   // explicitly-typed parameter here doesn't structurally match. Leaving it
   // unannotated lets TS infer the right type from context instead.
-  keyGenerator: (req) => (req as unknown as AuthRequest).user?.id ?? req.ip ?? 'anonymous',
+  //
+  // requireAuth runs before this middleware, so req.user is always set in
+  // practice — the req.ip branch only exists as a defensive fallback, but
+  // still has to go through express-rate-limit's own ipKeyGenerator helper
+  // (not raw req.ip) so an IPv6 client can't get a fresh bucket per address
+  // in the same /64. The library validates for exactly this at startup.
+  keyGenerator: (req) => (req as unknown as AuthRequest).user?.id ?? ipKeyGenerator(req.ip ?? 'unknown'),
   message: { message: "You've reached the AI planner's limit of 10 requests per hour. Please try again later." },
 });
 

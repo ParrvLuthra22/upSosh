@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useOnboardingStore } from '@/store/onboardingStore';
-import { useAuthStore } from '@/store/authStore';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { toast } from 'sonner';
 
@@ -48,8 +46,6 @@ function SectionHeader({
 
 export default function ReviewPage() {
   const router = useRouter();
-  const store = useOnboardingStore();
-  const { token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<StoredData>({
     idPreview: '',
@@ -94,40 +90,48 @@ export default function ReviewPage() {
   async function handleSubmit() {
     setIsLoading(true);
     try {
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (token) (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-      await fetch('/api/hosts/apply', {
+      // POST /api/hosts/apply expects a flat body (hostApplySchema) — this
+      // used to send { identity: {...}, profile: {...}, sampleEvent: {...},
+      // onboardingData: {...} } with field names that don't exist on the
+      // schema at all (location instead of venue, ticketType instead of
+      // isFree, no top-level bio/experience). Every submission failed zod
+      // validation with a 400 that was never checked, so this page always
+      // navigated to /host/pending regardless — no HostApplication row was
+      // ever created, and the user had no way to know.
+      const res = await fetch('/api/hosts/apply', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          identity: { idUrl: data.idUrl, selfieUrl: data.selfieUrl },
-          profile: {
-            bio: data.bio,
-            experience: data.experience,
-            categories: data.categories,
-          },
+          govIdUrl: data.idUrl || undefined,
+          selfieUrl: data.selfieUrl || undefined,
+          bio: data.bio,
+          experience: data.experience,
+          categories: data.categories,
           sampleEvent: {
-            title: data.eventTitle,
-            category: data.eventCategory,
-            date: data.eventDate,
-            time: data.eventTime,
-            location: data.eventLocation,
-            capacity: parseInt(data.eventCapacity),
-            ticketType: data.eventTicketType,
-            price: data.eventPrice,
-          },
-          onboardingData: {
-            name: store.name,
-            city: store.city,
-            interests: store.interests,
+            title: data.eventTitle || undefined,
+            category: data.eventCategory || undefined,
+            date: data.eventDate || undefined,
+            time: data.eventTime || undefined,
+            venue: data.eventLocation || undefined,
+            capacity: data.eventCapacity ? parseInt(data.eventCapacity, 10) : undefined,
+            isFree: data.eventTicketType === 'free',
+            price: data.eventTicketType === 'paid' && data.eventPrice ? Number(data.eventPrice) : undefined,
           },
         }),
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const message = Array.isArray(err.errors) && err.errors.length
+          ? err.errors.map((e: { message: string }) => e.message).join(', ')
+          : (err.message ?? 'Could not submit your application. Please try again.');
+        throw new Error(message);
+      }
+
       router.push('/host/pending');
-    } catch {
-      // If API unavailable, still navigate
-      router.push('/host/pending');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not submit your application. Please try again.');
     } finally {
       setIsLoading(false);
     }
