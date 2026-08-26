@@ -68,10 +68,10 @@ export default function OnboardingStep3() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           Where do you call home?
         </h1>
-        <p className="font-sans text-sm text-ink-muted">
+        <p className="font-sans text-sm text-cream-dim">
           We'll surface events near you first.
         </p>
       </div>
@@ -81,11 +81,11 @@ export default function OnboardingStep3() {
         <div className="relative" ref={dropdownRef}>
           <div
             className={`relative border-2 rounded-2xl transition-all duration-200 ${
-              focused ? 'border-accent bg-bg-primary' : 'border-border bg-bg-secondary'
+              focused ? 'border-lime bg-void' : 'border-border bg-surface'
             }`}
           >
             <label
-              className={`absolute left-4 pointer-events-none transition-all duration-200 font-sans text-ink-muted ${
+              className={`absolute left-4 pointer-events-none transition-all duration-200 font-sans text-cream-dim ${
                 lifted ? 'top-2 text-[11px]' : 'top-1/2 -translate-y-1/2 text-sm'
               }`}
             >
@@ -104,7 +104,7 @@ export default function OnboardingStep3() {
                 setShowDropdown(true);
               }}
               onBlur={() => setFocused(false)}
-              className="w-full bg-transparent px-4 pt-6 pb-2 font-sans text-sm text-ink-primary outline-none rounded-2xl"
+              className="w-full bg-transparent px-4 pt-6 pb-2 font-sans text-sm text-cream outline-none rounded-2xl"
             />
           </div>
 
@@ -115,14 +115,14 @@ export default function OnboardingStep3() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: EASE_VERCEL }}
-                className="absolute z-50 top-full mt-2 left-0 right-0 bg-bg-primary border border-border rounded-2xl shadow-lg overflow-hidden"
+                className="absolute z-50 top-full mt-2 left-0 right-0 bg-void border border-border rounded-2xl shadow-lg overflow-hidden"
               >
                 {filtered.map((city) => (
                   <button
                     key={city}
                     type="button"
                     onMouseDown={() => selectCity(city)}
-                    className="w-full text-left px-4 py-3 font-sans text-sm text-ink-primary hover:bg-bg-secondary transition-colors duration-150"
+                    className="w-full text-left px-4 py-3 font-sans text-sm text-cream hover:bg-surface transition-colors duration-150"
                   >
                     {city}
                   </button>
@@ -136,7 +136,7 @@ export default function OnboardingStep3() {
         <button
           type="button"
           onClick={handleLocationClick}
-          className="flex items-center gap-1.5 font-mono text-xs text-accent hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 font-mono text-xs text-lime hover:opacity-80 transition-opacity"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
@@ -155,8 +155,8 @@ export default function OnboardingStep3() {
               transition={{ duration: 0.4, ease: EASE_VERCEL }}
               className="overflow-hidden"
             >
-              <div className="h-[160px] bg-bg-secondary border border-border rounded-2xl flex items-center justify-center">
-                <span className="font-mono text-xs text-ink-muted">
+              <div className="h-[160px] bg-surface border border-border rounded-2xl flex items-center justify-center">
+                <span className="font-mono text-xs text-cream-dim">
                   Map preview · {selectedCity}
                 </span>
               </div>
@@ -166,10 +166,10 @@ export default function OnboardingStep3() {
       </div>
 
       {/* Continue button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-2')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -177,7 +177,7 @@ export default function OnboardingStep3() {
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

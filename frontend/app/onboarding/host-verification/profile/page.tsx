@@ -60,19 +60,19 @@ export default function HostProfilePage() {
   return (
     <div className="space-y-8 pb-8">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           Tell us about your hosting.
         </h1>
       </div>
 
       {/* Bio */}
       <div className="space-y-2">
-        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
           Bio
         </label>
         <div
           className={`relative border-2 rounded-2xl transition-all duration-200 ${
-            bio.length > 0 ? 'border-accent bg-bg-primary' : 'border-border bg-bg-secondary'
+            bio.length > 0 ? 'border-lime bg-void' : 'border-border bg-surface'
           }`}
         >
           <textarea
@@ -81,15 +81,15 @@ export default function HostProfilePage() {
             maxLength={500}
             rows={5}
             placeholder="I host weekly run clubs at Lodhi Garden, focused on building a no-pressure running community for beginners..."
-            className="w-full bg-transparent p-5 font-sans text-sm text-ink-primary outline-none rounded-2xl resize-none placeholder:font-display placeholder:italic placeholder:text-ink-muted/60"
+            className="w-full bg-transparent p-5 font-sans text-sm text-cream outline-none rounded-2xl resize-none placeholder:font-display placeholder:italic placeholder:text-cream-dim/60"
             style={{ fontFamily: 'var(--font-sans)' }}
           />
-          <span className="absolute bottom-3 right-4 font-mono text-[10px] text-ink-muted">
+          <span className="absolute bottom-3 right-4 font-mono text-[10px] text-cream-dim">
             {bio.length}/500
           </span>
         </div>
         {bio.length > 0 && bio.length < 50 && (
-          <p className="font-mono text-[10px] text-ink-muted">
+          <p className="font-mono text-[10px] text-cream-dim">
             {50 - bio.length} more characters needed
           </p>
         )}
@@ -97,7 +97,7 @@ export default function HostProfilePage() {
 
       {/* Experience */}
       <div className="space-y-2">
-        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
           Hosting experience
         </label>
         <div className="relative">
@@ -105,8 +105,8 @@ export default function HostProfilePage() {
             type="button"
             onClick={() => setExpOpen((v) => !v)}
             className={`w-full flex items-center justify-between border-2 rounded-2xl px-4 py-3.5 font-sans text-sm transition-all duration-200 ${
-              expOpen ? 'border-accent bg-bg-primary' : 'border-border bg-bg-secondary'
-            } ${experience ? 'text-ink-primary' : 'text-ink-muted'}`}
+              expOpen ? 'border-lime bg-void' : 'border-border bg-surface'
+            } ${experience ? 'text-cream' : 'text-cream-dim'}`}
           >
             {experience || 'Select your experience level'}
             <svg
@@ -122,7 +122,7 @@ export default function HostProfilePage() {
             </svg>
           </button>
           {expOpen && (
-            <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-bg-primary border border-border rounded-2xl shadow-lg overflow-hidden">
+            <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-void border border-border rounded-2xl shadow-lg overflow-hidden">
               {EXPERIENCE_OPTIONS.map((opt) => (
                 <button
                   key={opt}
@@ -131,7 +131,7 @@ export default function HostProfilePage() {
                     setExperience(opt);
                     setExpOpen(false);
                   }}
-                  className="w-full text-left px-4 py-3 font-sans text-sm text-ink-primary hover:bg-bg-secondary transition-colors"
+                  className="w-full text-left px-4 py-3 font-sans text-sm text-cream hover:bg-surface transition-colors"
                 >
                   {opt}
                 </button>
@@ -143,7 +143,7 @@ export default function HostProfilePage() {
 
       {/* Categories */}
       <div className="space-y-3">
-        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+        <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
           What you'll host
         </label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -156,11 +156,11 @@ export default function HostProfilePage() {
                 onClick={() => toggleCategory(cat)}
                 className={`border rounded-2xl px-3 py-2.5 font-sans text-sm text-left flex items-center gap-2 transition-all duration-200 ${
                   sel
-                    ? 'border-accent bg-accent/[0.08] text-ink-primary'
-                    : 'border-border bg-bg-primary text-ink-muted hover:bg-bg-secondary'
+                    ? 'border-lime bg-lime/[0.08] text-cream'
+                    : 'border-border bg-void text-cream-dim hover:bg-surface'
                 }`}
               >
-                {sel && <span className="text-accent text-xs">✓</span>}
+                {sel && <span className="text-lime text-xs">✓</span>}
                 {cat}
               </button>
             );
@@ -171,17 +171,17 @@ export default function HostProfilePage() {
       {/* Social links */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+          <label className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
             Social links
           </label>
-          <span className="font-mono text-[9px] bg-bg-secondary border border-border rounded-full px-2 py-0.5 text-ink-muted">
+          <span className="font-mono text-[9px] bg-surface border border-border rounded-full px-2 py-0.5 text-cream-dim">
             Optional
           </span>
         </div>
 
         {/* Instagram */}
-        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-bg-secondary focus-within:border-accent focus-within:bg-bg-primary transition-all duration-200">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted flex-shrink-0">
+        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-surface focus-within:border-lime focus-within:bg-void transition-all duration-200">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim flex-shrink-0">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
             <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
@@ -191,13 +191,13 @@ export default function HostProfilePage() {
             value={instagram}
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="instagram.com/yourusername"
-            className="flex-1 bg-transparent font-sans text-sm text-ink-primary outline-none placeholder:text-ink-muted/60"
+            className="flex-1 bg-transparent font-sans text-sm text-cream outline-none placeholder:text-cream-dim/60"
           />
         </div>
 
         {/* LinkedIn */}
-        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-bg-secondary focus-within:border-accent focus-within:bg-bg-primary transition-all duration-200">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted flex-shrink-0">
+        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-surface focus-within:border-lime focus-within:bg-void transition-all duration-200">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim flex-shrink-0">
             <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z" />
             <rect x="2" y="9" width="4" height="12" />
             <circle cx="4" cy="4" r="2" />
@@ -207,13 +207,13 @@ export default function HostProfilePage() {
             value={linkedin}
             onChange={(e) => setLinkedin(e.target.value)}
             placeholder="linkedin.com/in/yourusername"
-            className="flex-1 bg-transparent font-sans text-sm text-ink-primary outline-none placeholder:text-ink-muted/60"
+            className="flex-1 bg-transparent font-sans text-sm text-cream outline-none placeholder:text-cream-dim/60"
           />
         </div>
 
         {/* Website */}
-        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-bg-secondary focus-within:border-accent focus-within:bg-bg-primary transition-all duration-200">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted flex-shrink-0">
+        <div className="flex items-center border border-border rounded-xl px-4 py-3 gap-3 bg-surface focus-within:border-lime focus-within:bg-void transition-all duration-200">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim flex-shrink-0">
             <circle cx="12" cy="12" r="10" />
             <line x1="2" y1="12" x2="22" y2="12" />
             <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
@@ -223,16 +223,16 @@ export default function HostProfilePage() {
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             placeholder="yourwebsite.com"
-            className="flex-1 bg-transparent font-sans text-sm text-ink-primary outline-none placeholder:text-ink-muted/60"
+            className="flex-1 bg-transparent font-sans text-sm text-cream outline-none placeholder:text-cream-dim/60"
           />
         </div>
       </div>
 
       {/* Continue */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/host-verification/identity')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -240,7 +240,7 @@ export default function HostProfilePage() {
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

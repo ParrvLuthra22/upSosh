@@ -2,9 +2,9 @@ import { Skeleton, SkeletonStatCard, SkeletonText } from '@/components/ui/Skelet
 
 export default function DashboardLoading() {
   return (
-    <div className="flex min-h-screen bg-bg-primary" aria-busy="true" aria-label="Loading dashboard">
+    <div className="flex min-h-screen bg-void" aria-busy="true" aria-label="Loading dashboard">
       {/* Sidebar skeleton */}
-      <aside className="hidden lg:flex flex-col w-[240px] flex-shrink-0 bg-bg-secondary border-r border-border h-screen sticky top-0">
+      <aside className="hidden lg:flex flex-col w-[240px] flex-shrink-0 bg-surface border-r border-border h-screen sticky top-0">
         <div className="px-6 py-6 border-b border-border">
           <Skeleton className="h-5 w-24" />
         </div>

@@ -39,7 +39,7 @@ function UploadZone({ label, sublabel, icon, preview, onFile }: UploadZoneProps)
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`relative w-full h-[180px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 transition-all duration-200 ${
-          hovered ? 'border-accent bg-accent/5' : 'border-border bg-bg-secondary'
+          hovered ? 'border-lime bg-lime/5' : 'border-border bg-surface'
         }`}
       >
         {preview ? (
@@ -59,10 +59,10 @@ function UploadZone({ label, sublabel, icon, preview, onFile }: UploadZoneProps)
           </div>
         ) : (
           <>
-            <div className="text-ink-muted">{icon}</div>
+            <div className="text-cream-dim">{icon}</div>
             <div className="text-center">
-              <p className="font-sans text-sm text-ink-primary font-medium">{label}</p>
-              <p className="font-mono text-[11px] text-ink-muted mt-0.5">{sublabel}</p>
+              <p className="font-sans text-sm text-cream font-medium">{label}</p>
+              <p className="font-mono text-[11px] text-cream-dim mt-0.5">{sublabel}</p>
             </div>
           </>
         )}
@@ -123,10 +123,10 @@ export default function IdentityPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           Verify your identity.
         </h1>
-        <p className="font-sans text-sm text-ink-muted">
+        <p className="font-sans text-sm text-cream-dim">
           Required by Indian regulations and helps attendees trust your events.
         </p>
       </div>
@@ -161,15 +161,15 @@ export default function IdentityPage() {
       </div>
 
       {/* Privacy note */}
-      <p className="font-mono text-[10px] text-ink-light">
+      <p className="font-mono text-[10px] text-cream-faint">
         Your documents are encrypted and never shared publicly.
       </p>
 
       {/* Continue */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-5')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -177,7 +177,7 @@ export default function IdentityPage() {
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

@@ -9,6 +9,7 @@ import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useEscapeKey } from '@/lib/a11y';
+import { Button } from '@/components/ui/Button';
 
 type EventStatus = 'live' | 'draft' | 'past' | 'cancelled';
 
@@ -26,8 +27,8 @@ interface HostEvent {
 
 const STATUS_STYLES: Record<EventStatus, { label: string; bg: string; text: string }> = {
   live: { label: 'Live', bg: 'bg-verified/10', text: 'text-verified' },
-  draft: { label: 'Draft', bg: 'bg-border', text: 'text-ink-muted' },
-  past: { label: 'Past', bg: 'bg-border', text: 'text-ink-light' },
+  draft: { label: 'Draft', bg: 'bg-border', text: 'text-cream-dim' },
+  past: { label: 'Past', bg: 'bg-border', text: 'text-cream-faint' },
   cancelled: { label: 'Cancelled', bg: 'bg-red-50', text: 'text-red-500' },
 };
 
@@ -44,7 +45,7 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="More actions"
-        className="w-8 h-8 flex items-center justify-center text-ink-muted hover:text-ink-primary transition-colors rounded-lg hover:bg-bg-secondary"
+        className="w-8 h-8 flex items-center justify-center text-cream-dim hover:text-cream transition-colors rounded-lg hover:bg-surface"
       >
         ···
       </button>
@@ -60,7 +61,7 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen(false); }}
             />
             <motion.div
-              className="absolute right-0 top-full mt-1 w-48 bg-bg-primary border border-border rounded-xl shadow-lg z-20 overflow-hidden"
+              className="absolute right-0 top-full mt-1 w-48 bg-void border border-border rounded-xl shadow-lg z-20 overflow-hidden"
               initial={{ opacity: 0, scale: 0.95, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -4 }}
@@ -73,7 +74,7 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
                 <button
                   key={item.label}
                   onClick={() => { setOpen(false); item.action(); }}
-                  className="w-full px-4 py-2.5 text-left font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                  className="w-full px-4 py-2.5 text-left font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
                 >
                   {item.label}
                 </button>
@@ -145,17 +146,17 @@ export default function HostEventsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       <div className="max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-24">
         {/* Heading */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">[ EVENTS ]</p>
-            <h1 className="font-display text-4xl text-ink-primary" style={{ letterSpacing: '-0.03em' }}>Your events.</h1>
+            <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">[ EVENTS ]</p>
+            <h1 className="font-display text-4xl text-cream" style={{ letterSpacing: '-0.03em' }}>Your events.</h1>
           </div>
           <Link href="/host/events/new">
             <motion.button
-              className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-full font-sans text-sm font-medium hover:bg-ink-primary transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-lime text-white rounded-full font-sans text-sm font-medium hover:bg-cream transition-colors"
               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             >
               + Create event
@@ -169,11 +170,11 @@ export default function HostEventsPage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`relative px-5 py-3 font-sans text-sm transition-colors ${tab === t.id ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'}`}
+              className={`relative px-5 py-3 font-sans text-sm transition-colors ${tab === t.id ? 'text-cream' : 'text-cream-dim hover:text-cream'}`}
             >
               {t.label}
               {tab === t.id && (
-                <motion.span layoutId="host-events-tab" className="absolute bottom-0 left-0 right-0 h-px bg-accent" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
+                <motion.span layoutId="host-events-tab" className="absolute bottom-0 left-0 right-0 h-px bg-lime" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
               )}
             </button>
           ))}
@@ -182,22 +183,22 @@ export default function HostEventsPage() {
         {/* Table */}
         {fetching ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-bg-secondary rounded-xl animate-pulse" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface rounded-xl animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-24 text-center">
-            <p className="font-display text-3xl text-ink-primary mb-3">No {tab} events.</p>
-            <p className="font-sans text-base text-ink-muted mb-8">Create your first event to get started.</p>
-            <Link href="/host/events/new" className="font-sans text-sm bg-accent text-white px-6 py-3 rounded-full hover:bg-ink-primary transition-colors">
+            <p className="font-display text-3xl text-cream mb-3">No {tab} events.</p>
+            <p className="font-sans text-base text-cream-dim mb-8">Create your first event to get started.</p>
+            <Button href="/host/events/new" variant="primary" shape="pill">
               Create event →
-            </Link>
+            </Button>
           </div>
         ) : (
           <div className="border border-border rounded-2xl overflow-hidden">
-            {/* Header row */}
-            <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-bg-secondary border-b border-border">
+            {/* Header row — desktop only; the mobile stack shows its own inline labels */}
+            <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-surface border-b border-border">
               {['Event', 'Date', 'Bookings', 'Revenue', ''].map((h) => (
-                <p key={h} className="font-mono text-[10px] uppercase tracking-widest text-ink-muted">{h}</p>
+                <p key={h} className="font-mono text-[10px] uppercase tracking-widest text-cream-dim">{h}</p>
               ))}
             </div>
 
@@ -207,25 +208,37 @@ export default function HostEventsPage() {
               return (
                 <motion.div
                   key={event.id}
-                  className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-4 items-center border-b border-border last:border-0 hover:bg-bg-secondary transition-colors"
+                  className="flex flex-col gap-2 md:grid md:grid-cols-[1fr_auto_auto_auto_auto] md:gap-4 px-5 py-4 md:items-center border-b border-border last:border-0 hover:bg-surface transition-colors"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.3, ease: EASE_VERCEL }}
                 >
-                  <div className="min-w-0">
-                    <p className="font-sans text-sm font-medium text-ink-primary truncate">{event.title}</p>
-                    <span className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${s.bg} ${s.text}`}>
-                      {s.label}
-                    </span>
+                  <div className="min-w-0 flex items-center justify-between gap-3 md:block">
+                    <div className="min-w-0">
+                      <p className="font-sans text-sm font-medium text-cream truncate">{event.title}</p>
+                      <span className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${s.bg} ${s.text}`}>
+                        {s.label}
+                      </span>
+                    </div>
+                    <div className="md:hidden flex-shrink-0">
+                      <ActionsMenu eventId={event.id} onDelete={() => handleDelete(event.id)} />
+                    </div>
                   </div>
-                  <p className="font-mono text-xs text-ink-muted whitespace-nowrap">{date}</p>
-                  <p className="font-mono text-sm text-ink-primary">
+                  <p className="font-mono text-xs text-cream-dim whitespace-nowrap">
+                    <span className="md:hidden text-cream-faint uppercase tracking-widest mr-2">Date</span>
+                    {date}
+                  </p>
+                  <p className="font-mono text-sm text-cream">
+                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Bookings</span>
                     {event.bookingsCount ?? 0}/{event.capacity ?? '∞'}
                   </p>
-                  <p className="font-mono text-sm text-ink-primary">
+                  <p className="font-mono text-sm text-cream">
+                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Revenue</span>
                     {event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—'}
                   </p>
-                  <ActionsMenu eventId={event.id} onDelete={() => handleDelete(event.id)} />
+                  <div className="hidden md:block">
+                    <ActionsMenu eventId={event.id} onDelete={() => handleDelete(event.id)} />
+                  </div>
                 </motion.div>
               );
             })}

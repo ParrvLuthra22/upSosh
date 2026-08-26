@@ -8,6 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
+import { cardVariants } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { cn } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,7 +49,7 @@ function EventCard({ event }: { event: Event }) {
   return (
     <Link href={`/events/${event.id}`}>
       <motion.div
-        className="border border-border rounded-xl overflow-hidden bg-bg-primary hover:bg-bg-secondary transition-colors group"
+        className={cn(cardVariants({ interactive: true, padding: 'none' }), 'overflow-hidden group')}
         whileHover={{ y: -2, transition: { duration: 0.2 } }}
       >
         {event.image && (
@@ -61,19 +64,19 @@ function EventCard({ event }: { event: Event }) {
           </div>
         )}
         <div className="p-4">
-          <p className="font-mono text-[10px] text-accent uppercase tracking-widest mb-1">{event.category}</p>
-          <p className="font-display text-sm text-ink-primary leading-snug line-clamp-2 mb-2">{event.title}</p>
+          <p className="font-mono text-[10px] text-lime uppercase tracking-widest mb-1">{event.category}</p>
+          <p className="font-display text-sm text-cream leading-snug line-clamp-2 mb-2">{event.title}</p>
           {event.date && (
-            <p className="font-mono text-[10px] text-ink-muted">{event.date}</p>
+            <p className="font-mono text-[10px] text-cream-dim">{event.date}</p>
           )}
           <div className="mt-2 flex items-center justify-between">
             {event.price !== undefined && (
-              <span className="font-mono text-xs text-ink-primary">
+              <span className="font-mono text-xs text-cream">
                 {event.price === 'Free' ? 'Free' : `₹${event.price}`}
               </span>
             )}
             {event.spotsLeft !== undefined && (
-              <span className="font-mono text-[10px] text-ink-muted">{event.spotsLeft} spots left</span>
+              <span className="font-mono text-[10px] text-cream-dim">{event.spotsLeft} spots left</span>
             )}
           </div>
         </div>
@@ -82,20 +85,11 @@ function EventCard({ event }: { event: Event }) {
   );
 }
 
-function EmptyState({ tab }: { tab: Tab }) {
-  const messages: Record<Tab, { title: string; sub: string }> = {
-    Hosted: { title: 'No events hosted yet.', sub: 'Events this host creates will appear here.' },
-    Attending: { title: 'No public events.', sub: 'Events they RSVP to will appear here.' },
-    Reviews: { title: 'No reviews yet.', sub: 'Reviews from co-attendees will appear here.' },
-  };
-  const m = messages[tab];
-  return (
-    <div className="py-16 text-center">
-      <p className="font-display text-2xl text-ink-primary mb-2">{m.title}</p>
-      <p className="font-sans text-base text-ink-muted">{m.sub}</p>
-    </div>
-  );
-}
+const PROFILE_TAB_EMPTY_COPY: Record<Tab, { heading: string; description: string }> = {
+  Hosted: { heading: 'No events hosted yet.', description: 'Events this host creates will appear here.' },
+  Attending: { heading: 'No public events.', description: 'Events they RSVP to will appear here.' },
+  Reviews: { heading: 'No reviews yet.', description: 'Reviews from co-attendees will appear here.' },
+};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -148,16 +142,16 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+      <div className="min-h-screen bg-void flex items-center justify-center">
         <div className="space-y-4 w-full max-w-3xl px-6">
           {/* skeleton */}
           <div className="flex gap-8">
-            <div className="w-48 h-64 bg-bg-secondary rounded-2xl animate-pulse flex-shrink-0" />
+            <div className="w-48 h-64 bg-surface rounded-2xl animate-pulse flex-shrink-0" />
             <div className="flex-1 space-y-4 pt-4">
-              <div className="h-3 bg-bg-secondary rounded animate-pulse w-32" />
-              <div className="h-12 bg-bg-secondary rounded animate-pulse w-64" />
-              <div className="h-4 bg-bg-secondary rounded animate-pulse w-20" />
-              <div className="h-16 bg-bg-secondary rounded animate-pulse" />
+              <div className="h-3 bg-surface rounded animate-pulse w-32" />
+              <div className="h-12 bg-surface rounded animate-pulse w-64" />
+              <div className="h-4 bg-surface rounded animate-pulse w-20" />
+              <div className="h-16 bg-surface rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -167,11 +161,11 @@ export default function PublicProfilePage() {
 
   if (notFound || !profile) {
     return (
-      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-4">[ 404 ]</p>
-        <h1 className="font-display text-5xl text-ink-primary mb-4">User not found.</h1>
-        <p className="font-sans text-base text-ink-muted mb-8">The profile you're looking for doesn't exist.</p>
-        <Link href="/discover" className="font-sans text-sm text-accent hover:text-ink-primary transition-colors">
+      <div className="min-h-screen bg-void flex flex-col items-center justify-center px-6 text-center">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-4">[ 404 ]</p>
+        <h1 className="font-display text-5xl text-cream mb-4">User not found.</h1>
+        <p className="font-sans text-base text-cream-dim mb-8">The profile you're looking for doesn't exist.</p>
+        <Link href="/discover" className="font-sans text-sm text-lime hover:text-cream transition-colors">
           ← Back to Discover
         </Link>
       </div>
@@ -202,7 +196,7 @@ export default function PublicProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       {/* ── Hero Block ──────────────────────────────────────────────── */}
       <section className="pt-28 md:pt-36 pb-16 px-6 md:px-16 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-start">
@@ -214,12 +208,12 @@ export default function PublicProfilePage() {
             animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' }}
             transition={{ duration: 0.8, ease: EASE_VERCEL }}
           >
-            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-bg-secondary border border-border">
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-border">
               {profile.photoUrl ? (
                 <Image src={profile.photoUrl} alt={profile.name} fill sizes="(min-width: 768px) 256px, 192px" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="font-display text-5xl text-ink-muted">{initials}</span>
+                  <span className="font-display text-5xl text-cream-dim">{initials}</span>
                 </div>
               )}
             </div>
@@ -233,13 +227,13 @@ export default function PublicProfilePage() {
             transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.15 }}
           >
             {/* Eyebrow */}
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-4">
               [ MEMBER SINCE {memberYear} ]
             </p>
 
             {/* Name */}
             <h1
-              className="font-display text-ink-primary leading-none mb-2"
+              className="font-display text-cream leading-none mb-2"
               style={{ fontSize: 'clamp(2.5rem, 5vw, 5rem)', letterSpacing: '-0.03em' }}
             >
               {profile.name}
@@ -247,7 +241,7 @@ export default function PublicProfilePage() {
 
             {/* Username */}
             {profile.username && (
-              <p className="font-mono text-sm text-ink-muted mb-4">@{profile.username}</p>
+              <p className="font-mono text-sm text-cream-dim mb-4">@{profile.username}</p>
             )}
 
             {/* Verified/Superhost badge */}
@@ -269,14 +263,14 @@ export default function PublicProfilePage() {
 
             {/* Bio */}
             {profile.bio && (
-              <p className="font-sans text-lg text-ink-muted leading-relaxed mb-4 max-w-[480px]">
+              <p className="font-sans text-lg text-cream-dim leading-relaxed mb-4 max-w-[480px]">
                 {profile.bio}
               </p>
             )}
 
             {/* Location */}
             {profile.location && (
-              <p className="font-mono text-sm text-ink-muted mb-5 flex items-center gap-1.5">
+              <p className="font-mono text-sm text-cream-dim mb-5 flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -290,7 +284,7 @@ export default function PublicProfilePage() {
               <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   href="/settings"
-                  className="font-sans text-sm border border-border text-ink-primary px-5 py-2.5 rounded-full hover:border-ink-primary transition-colors duration-200"
+                  className="font-sans text-sm border border-border text-cream px-5 py-2.5 rounded-full hover:border-cream transition-colors duration-200"
                 >
                   Edit profile
                 </Link>
@@ -298,7 +292,7 @@ export default function PublicProfilePage() {
             )}
 
             {/* Stats */}
-            <p className="font-mono text-[12px] text-ink-muted">
+            <p className="font-mono text-[12px] text-cream-dim">
               {profile.eventsAttended ?? 0} events attended
               {' · '}
               {profile.eventsHosted ?? 0} hosted
@@ -319,14 +313,14 @@ export default function PublicProfilePage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`relative px-5 py-3 font-sans text-sm transition-colors ${
-                  activeTab === tab ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'
+                  activeTab === tab ? 'text-cream' : 'text-cream-dim hover:text-cream'
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
                   <motion.span
                     layoutId="profile-tab-underline"
-                    className="absolute bottom-0 left-0 right-0 h-px bg-accent"
+                    className="absolute bottom-0 left-0 right-0 h-px bg-lime"
                     transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                   />
                 )}
@@ -344,9 +338,9 @@ export default function PublicProfilePage() {
               transition={{ duration: 0.3, ease: EASE_VERCEL }}
             >
               {activeTab === 'Reviews' ? (
-                <EmptyState tab="Reviews" />
+                <EmptyState {...PROFILE_TAB_EMPTY_COPY.Reviews} />
               ) : tabContent[activeTab].length === 0 ? (
-                <EmptyState tab={activeTab} />
+                <EmptyState {...PROFILE_TAB_EMPTY_COPY[activeTab]} />
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {tabContent[activeTab].map((ev) => (

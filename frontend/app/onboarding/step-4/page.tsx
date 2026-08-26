@@ -31,23 +31,23 @@ function PreferenceCard<T extends string>({
       onClick={() => onSelect(option.value)}
       className={`relative flex-1 border rounded-2xl p-5 cursor-pointer transition-all duration-200 ${
         selected
-          ? 'border-accent bg-accent/[0.06]'
-          : 'border-border bg-bg-primary hover:bg-bg-secondary'
+          ? 'border-lime bg-lime/[0.06]'
+          : 'border-border bg-void hover:bg-surface'
       }`}
     >
       {selected && (
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-3 right-3 w-5 h-5 rounded-full bg-accent flex items-center justify-center"
+          className="absolute top-3 right-3 w-5 h-5 rounded-full bg-lime flex items-center justify-center"
         >
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
             <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </motion.div>
       )}
-      <p className="font-display text-base text-ink-primary">{option.title}</p>
-      <p className="font-sans text-xs text-ink-muted mt-1">{option.subtitle}</p>
+      <p className="font-display text-base text-cream">{option.title}</p>
+      <p className="font-sans text-xs text-cream-dim mt-1">{option.subtitle}</p>
     </motion.div>
   );
 }
@@ -69,14 +69,14 @@ export default function OnboardingStep4() {
   return (
     <div className="space-y-10">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           How do you like to gather?
         </h1>
       </div>
 
       {/* Group size */}
       <div className="space-y-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
           Group size
         </p>
         <div className="flex gap-3">
@@ -95,7 +95,7 @@ export default function OnboardingStep4() {
 
       {/* Vibe */}
       <div className="space-y-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">Vibe</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">Vibe</p>
         <div className="flex gap-3">
           <PreferenceCard
             option={{
@@ -120,7 +120,7 @@ export default function OnboardingStep4() {
 
       {/* Frequency */}
       <div className="space-y-3">
-        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-muted">
+        <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim">
           Frequency
         </p>
         <div className="flex gap-3">
@@ -146,10 +146,10 @@ export default function OnboardingStep4() {
       </div>
 
       {/* Continue button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-3')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -157,7 +157,7 @@ export default function OnboardingStep4() {
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

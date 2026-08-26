@@ -16,7 +16,7 @@ export default function HostVerificationIndex() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+    <div className="min-h-screen bg-void flex items-center justify-center">
       <span className="w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
     </div>
   );

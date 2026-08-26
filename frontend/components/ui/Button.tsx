@@ -13,6 +13,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'bg-lime text-void font-semibold hover:bg-lime/90',
         secondary: 'bg-surface-2 text-cream border border-border hover:bg-cream/5',
+        outline: 'border-2 border-lime text-lime bg-transparent hover:bg-lime hover:text-void',
         ghost: 'text-cream-dim hover:text-cream hover:bg-cream/5',
         danger: 'border border-coral text-coral hover:bg-coral/10',
       },
@@ -20,11 +21,17 @@ const buttonVariants = cva(
         sm: 'h-9 px-4 text-[13px] rounded-lg',
         md: 'h-11 px-6 text-[14px] rounded-xl',
         lg: 'h-13 px-8 text-[15px] rounded-xl',
+        xl: 'h-14 px-8 text-[15px] rounded-xl',
+      },
+      shape: {
+        default: '',
+        pill: 'rounded-full',
       },
     },
     defaultVariants: {
       variant: 'primary',
       size: 'md',
+      shape: 'default',
     },
   },
 );
@@ -60,6 +67,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
+      shape,
       isLoading,
       isSuccess,
       leftIcon,
@@ -72,7 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const classes = cn(buttonVariants({ variant, size }), className);
+    const classes = cn(buttonVariants({ variant, size, shape }), className);
 
     const content = (
       <>
@@ -96,6 +104,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           className={classes}
           whileTap={{ scale: 0.97 }}
           transition={{ duration: 0.1 }}
+          onClick={onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
+          {...(props as React.ComponentPropsWithoutRef<typeof motion.a>)}
         >
           {content}
         </motion.a>

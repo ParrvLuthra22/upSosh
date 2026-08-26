@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 export default function PlannerLoading() {
   return (
     <div
-      className="min-h-screen bg-bg-primary flex flex-col items-center justify-center px-6"
+      className="min-h-screen bg-void flex flex-col items-center justify-center px-6"
       aria-busy="true"
       aria-label="Loading AI Planner"
     >

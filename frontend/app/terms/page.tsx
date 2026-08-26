@@ -16,7 +16,7 @@ export default function TermsPage() {
           >
             
             <div className="mb-12">
-              <div className="inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-full text-sm font-semibold mb-4">
+              <div className="inline-block px-4 py-2 bg-lime/10 text-lime rounded-full text-sm font-semibold mb-4">
                 Terms & Conditions
               </div>
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -39,8 +39,8 @@ export default function TermsPage() {
               <p className="mb-4">
                 By accessing, installing, or using upSosh, you ("User", "Attendee", "Host", "Organizer") agree to be legally bound by these Terms.
               </p>
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                <strong className="text-red-700">Important:</strong>
+              <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
+                <strong className="text-coral">Important:</strong>
                 <span className="ml-2">If you do not agree, you must not use the Platform.</span>
               </div>
             </div>
@@ -54,27 +54,27 @@ export default function TermsPage() {
                 <p className="mb-6">For the purpose of these Terms:</p>
                 
                 <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <div className="bg-lime/10 p-4 rounded-lg border-l-4 border-lime/30">
                     <p className="font-bold mb-2">"Platform"</p>
                     <p className="text-sm">means the upSosh app, website, and services.</p>
                   </div>
                   
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold mb-2">"User" / "Attendee"</p>
                     <p className="text-sm">means any person who browses, registers, purchases a ticket, or attends an event via upSosh.</p>
                   </div>
                   
-                  <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                  <div className="bg-lime/10 p-4 rounded-lg border-l-4 border-lime/30">
                     <p className="font-bold mb-2">"Host" / "Organizer"</p>
                     <p className="text-sm">means any individual or entity that lists, manages, or conducts events on the Platform.</p>
                   </div>
                   
-                  <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold mb-2">"Event"</p>
                     <p className="text-sm">means any gathering, party, performance, activity, house event, terrace event, private event, or formal event listed on the Platform.</p>
                   </div>
                   
-                  <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold mb-2">"FMC (Fixed Minimal Cost)"</p>
                     <p className="text-sm">means the minimum cost declared by the Host required to cover event expenses.</p>
                   </div>
@@ -107,7 +107,7 @@ export default function TermsPage() {
                   </div>
                 </div>
                 
-                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <div className="mt-6 bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
                   <p className="font-semibold">All Policies are integral and binding parts of these Terms.</p>
                 </div>
               </section>
@@ -117,8 +117,8 @@ export default function TermsPage() {
                 <h2 className="text-3xl font-bold text-cream mb-6">2. Nature of the Platform</h2>
                 <p className="mb-6">upSosh is a technology intermediary that allows Hosts to publish events and Users to discover and purchase tickets.</p>
                 
-                <div className="bg-blue-50 p-6 rounded-xl mb-6">
-                  <h3 className="font-bold text-blue-700 mb-4">upSosh:</h3>
+                <div className="bg-lime/10 p-6 rounded-xl mb-6">
+                  <h3 className="font-bold text-lime mb-4">upSosh:</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Is NOT an event organizer</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Is NOT responsible for event delivery</li>
@@ -148,8 +148,8 @@ export default function TermsPage() {
                   </ul>
                 </div>
 
-                <div className="bg-purple-50 p-6 rounded-xl">
-                  <h3 className="font-bold text-purple-700 mb-4">upSosh may:</h3>
+                <div className="bg-lime/10 p-6 rounded-xl">
+                  <h3 className="font-bold text-lime mb-4">upSosh may:</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Perform identity verification</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Suspend accounts for suspicious activity</li>
@@ -175,8 +175,8 @@ export default function TermsPage() {
                   </ul>
                 </div>
 
-                <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
-                  <h3 className="font-bold text-red-700 mb-4">Violation may result in:</h3>
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-6 rounded">
+                  <h3 className="font-bold text-coral mb-4">Violation may result in:</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Payout withholding</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Event removal</li>
@@ -202,8 +202,8 @@ export default function TermsPage() {
                   </ul>
                 </div>
 
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded">
-                  <h3 className="font-bold text-yellow-700 mb-4">Violation may lead to:</h3>
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-6 rounded">
+                  <h3 className="font-bold text-coral mb-4">Violation may lead to:</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Ticket cancellation</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Platform ban</li>
@@ -230,7 +230,7 @@ export default function TermsPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-green-500 pl-6">
+                  <div className="border-l-4 border-emerald/30 pl-6">
                     <h3 className="text-xl font-bold text-green-600 mb-4">6.2 Refunds & FMC</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Host-cancelled events → Users get 100% full refund (FMC does not apply).</li>
@@ -239,7 +239,7 @@ export default function TermsPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-orange-500 pl-6">
+                  <div className="border-l-4 border-coral/30 pl-6">
                     <h3 className="text-xl font-bold text-orange-600 mb-4">6.3 Payouts & FMC</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> upSosh is not responsible for Host FMC recovery.</li>
@@ -254,7 +254,7 @@ export default function TermsPage() {
                 <h2 className="text-3xl font-bold text-cream mb-6">7. Tickets, Payments & Fees</h2>
                 
                 <div className="space-y-6">
-                  <div className="bg-blue-50 p-6 rounded-xl">
+                  <div className="bg-lime/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">7.1 Ticket Purchase</h3>
                     <p className="mb-3">When a User purchases a ticket:</p>
                     <ul className="space-y-2">
@@ -263,7 +263,7 @@ export default function TermsPage() {
                     </ul>
                   </div>
 
-                  <div className="bg-green-50 p-6 rounded-xl">
+                  <div className="bg-emerald/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">7.2 Pricing & Fees</h3>
                     <p className="mb-3">Ticket prices may include:</p>
                     <ul className="space-y-2">
@@ -275,7 +275,7 @@ export default function TermsPage() {
                     <p className="mt-4 text-sm italic">All fees are disclosed at checkout.</p>
                   </div>
 
-                  <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded">
+                  <div className="bg-coral/10 border-l-4 border-coral/30 p-6 rounded">
                     <h3 className="text-xl font-bold mb-4">7.3 At-Venue Charges</h3>
                     <p className="mb-3 font-bold">Hosts are strictly prohibited from:</p>
                     <ul className="space-y-2">
@@ -300,20 +300,20 @@ export default function TermsPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Authorities intervene</li>
                 </ul>
 
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded mb-6">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded mb-6">
                   <p className="font-semibold">upSosh may override the Host refund policy in such cases.</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-2 border-emerald/30">
                     <h4 className="font-bold mb-2">Host Cancels</h4>
                     <p className="text-sm">Full refund to User</p>
                   </div>
-                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-2 border-coral/30">
                     <h4 className="font-bold mb-2">User Cancels</h4>
                     <p className="text-sm">Follow Host's stated policy</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-500">
+                  <div className="bg-lime/10 p-4 rounded-lg border-2 border-lime/30">
                     <h4 className="font-bold mb-2">Reschedule</h4>
                     <p className="text-sm">User may accept or request refund</p>
                   </div>
@@ -325,7 +325,7 @@ export default function TermsPage() {
                 <h2 className="text-3xl font-bold text-cream mb-6">9. Safety, Risk, & Liability</h2>
                 
                 <div className="space-y-6">
-                  <div className="bg-yellow-50 p-6 rounded-xl">
+                  <div className="bg-coral/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">9.1 User Assumption of Risk</h3>
                     <p className="mb-3">Users acknowledge that:</p>
                     <ul className="space-y-2">
@@ -336,7 +336,7 @@ export default function TermsPage() {
                     </ul>
                   </div>
 
-                  <div className="bg-blue-50 p-6 rounded-xl">
+                  <div className="bg-lime/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">9.2 Host Responsibility</h3>
                     <p className="mb-3">Hosts must ensure:</p>
                     <ul className="space-y-2">
@@ -373,36 +373,36 @@ export default function TermsPage() {
                 <p className="mb-6">Users and Hosts must NOT:</p>
                 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Sell or duplicate tickets</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Host illegal or unsafe events</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Serve alcohol to minors</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Harass or assault anyone</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Violate privacy</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Misuse user data</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Create fraudulent listings</span>
                   </div>
-                  <div className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                    <span className="text-2xl text-red-500 font-bold">X</span>
+                  <div className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                    <span className="text-2xl text-coral font-bold">X</span>
                     <span className="text-sm font-semibold">Disturb neighbors or societies</span>
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function TermsPage() {
               <section className="glass-card" id="privacy">
                 <h2 className="text-3xl font-bold text-cream mb-6">11. Privacy & Data Protection</h2>
                 
-                <div className="bg-blue-50 p-6 rounded-xl mb-6">
+                <div className="bg-lime/10 p-6 rounded-xl mb-6">
                   <p className="mb-4 font-bold">upSosh complies with the Digital Personal Data Protection Act (DPDP) 2023.</p>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> upSosh acts as the Data Fiduciary</li>
@@ -432,24 +432,24 @@ export default function TermsPage() {
                 
                 <p className="mb-4">All of the following are the intellectual property of upSosh Technologies:</p>
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">App designs</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Logos</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">UI/UX</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Content</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Branding</p>
                   </div>
                 </div>
 
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
                   <p className="font-semibold">Users and Hosts may not copy, modify, distribute, or reverse-engineer the Platform.</p>
                 </div>
               </section>
@@ -460,22 +460,22 @@ export default function TermsPage() {
                 
                 <p className="mb-4">upSosh may suspend or terminate:</p>
                 <div className="grid md:grid-cols-2 gap-4 mb-6">
-                  <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold">Accounts</p>
                   </div>
-                  <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold">Hosts</p>
                   </div>
-                  <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold">Events</p>
                   </div>
-                  <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <p className="font-bold">Payouts</p>
                   </div>
                 </div>
 
                 <p className="mb-4">...for violations of any policy, fraudulent behavior, or safety concerns.</p>
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
                   <p className="font-semibold">Payouts may be withheld during investigation.</p>
                 </div>
               </section>
@@ -486,25 +486,25 @@ export default function TermsPage() {
                 
                 <p className="mb-4">Users and Hosts agree to indemnify and hold upSosh harmless from:</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Claims</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Losses</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Damages</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Legal fees</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Injuries</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Third-party disputes</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="bg-coral/10 p-4 rounded-lg">
                     <p className="font-semibold">• Regulatory penalties</p>
                   </div>
                 </div>
@@ -516,12 +516,12 @@ export default function TermsPage() {
                 <h2 className="text-3xl font-bold text-cream mb-6">15. Dispute Resolution & Governing Law</h2>
                 
                 <div className="space-y-6">
-                  <div className="bg-blue-50 p-6 rounded-xl">
+                  <div className="bg-lime/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">15.1 Governing Law</h3>
                     <p className="font-semibold">These Terms are governed by the laws of India.</p>
                   </div>
 
-                  <div className="bg-purple-50 p-6 rounded-xl">
+                  <div className="bg-lime/10 p-6 rounded-xl">
                     <h3 className="text-xl font-bold mb-4">15.2 Arbitration</h3>
                     <p className="mb-4">All disputes shall be resolved through binding arbitration under the Arbitration and Conciliation Act, 1996.</p>
                     <ul className="space-y-2">
@@ -537,7 +537,7 @@ export default function TermsPage() {
               <section className="glass-card" id="amendments">
                 <h2 className="text-3xl font-bold text-cream mb-6">16. Amendments</h2>
                 
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-6 rounded">
                   <p className="mb-3">upSosh may modify these Terms at any time.</p>
                   <p className="mb-3">Changes will be posted on the Platform.</p>
                   <p className="font-bold">Continued use constitutes acceptance.</p>

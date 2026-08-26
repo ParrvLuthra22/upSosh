@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           >
             
             <div className="mb-12">
-              <div className="inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold mb-4">
+              <div className="inline-block px-4 py-2 bg-lime/10 text-lime rounded-full text-sm font-semibold mb-4">
                 India-Compliant Privacy Policy
               </div>
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
               <p className="mb-4">
                 By creating an account, submitting information, purchasing tickets, hosting events, or using any part of the Platform, you ("User", "Attendee", "Host", "Organizer") agree to this Privacy Policy.
               </p>
-              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                <strong className="text-yellow-700">Important:</strong>
+              <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded-lg">
+                <strong className="text-coral">Important:</strong>
                 <span className="ml-2">If you do not agree, please stop using the Platform immediately.</span>
               </div>
             </div>
@@ -53,8 +53,8 @@ export default function PrivacyPage() {
                 <h2 className="text-3xl font-bold text-cream mb-4">1. Scope & Legal Compliance</h2>
                 <p className="mb-4">This Privacy Policy is drafted to comply fully with:</p>
                 
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-4">
-                  <h3 className="font-bold text-green-700 mb-3">Indian Laws</h3>
+                <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg mb-4">
+                  <h3 className="font-bold text-emerald mb-3">Indian Laws</h3>
                   <ul className="space-y-2">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Digital Personal Data Protection Act (DPDP Act), 2023</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Information Technology Act, 2000</li>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="glass-card border-2 border-red-500">
+                  <div className="glass-card border-2 border-coral/30">
                     <h3 className="text-xl font-bold text-cream mb-4">2.2 Sensitive Personal Data (SPDI)</h3>
                     <p className="text-sm mb-4 text-red-600 font-semibold">Collected only when necessary:</p>
                     <ul className="space-y-2">
@@ -95,14 +95,14 @@ export default function PrivacyPage() {
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Transaction IDs</li>
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Financial metadata from payment gateways</li>
                     </ul>
-                    <div className="mt-4 bg-blue-50 p-3 rounded">
+                    <div className="mt-4 bg-lime/10 p-3 rounded-lg">
                       <p className="text-sm"><strong>Important:</strong> We do NOT store your card numbers or bank credentials — payment processors handle them.</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div className="glass-card border-2 border-light-border">
+                  <div className="glass-card border-2 border-border">
                     <h3 className="text-xl font-bold text-cream mb-4">2.3 Automatically Collected Data</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Device information</li>
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="glass-card border-2 border-light-border">
+                  <div className="glass-card border-2 border-border">
                     <h3 className="text-xl font-bold text-cream mb-4">2.4 Data from Third Parties</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Payment confirmation from gateways</li>
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-green-500 pl-6">
+                  <div className="border-l-4 border-emerald/30 pl-6">
                     <h3 className="text-xl font-bold text-green-600 mb-3">3.2 Legal Compliance</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> DPDP Act obligations</li>
@@ -156,7 +156,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-red-500 pl-6">
+                  <div className="border-l-4 border-coral/30 pl-6">
                     <h3 className="text-xl font-bold text-red-600 mb-3">3.3 Platform Safety & Fraud Prevention</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Detecting suspicious activity</li>
@@ -166,7 +166,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-blue-500 pl-6">
+                  <div className="border-l-4 border-lime/30 pl-6">
                     <h3 className="text-xl font-bold text-blue-600 mb-3">3.4 Communication</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Booking emails/SMS</li>
@@ -176,7 +176,7 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
 
-                  <div className="border-l-4 border-purple-500 pl-6">
+                  <div className="border-l-4 border-lime/30 pl-6">
                     <h3 className="text-xl font-bold text-purple-600 mb-3">3.5 Consent-based Processing</h3>
                     <p className="mb-3 text-sm">Used only if you give consent:</p>
                     <ul className="space-y-2 mb-4">
@@ -184,7 +184,7 @@ export default function PrivacyPage() {
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Personalized recommendations</li>
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Optional surveys</li>
                     </ul>
-                    <div className="bg-purple-50 p-3 rounded">
+                    <div className="bg-lime/10 p-3 rounded-lg">
                       <p className="text-sm font-semibold">You can withdraw consent anytime.</p>
                     </div>
                   </div>
@@ -196,19 +196,19 @@ export default function PrivacyPage() {
                 <h2 className="text-3xl font-bold text-cream mb-4">4. Legal Basis for Processing Personal Data</h2>
                 <p className="mb-4">As required under the DPDP Act, upSosh processes data under:</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <div className="bg-lime/10 p-4 rounded-lg border-l-4 border-lime/30">
                     <h3 className="font-bold mb-2">Consent</h3>
                     <p className="text-sm">Explicit opt-in for marketing</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <h3 className="font-bold mb-2">Contractual Necessity</h3>
                     <p className="text-sm">Ticketing services</p>
                   </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                  <div className="bg-coral/10 p-4 rounded-lg border-l-4 border-coral/30">
                     <h3 className="font-bold mb-2">Legal Obligation</h3>
                     <p className="text-sm">Compliance with authorities</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                  <div className="bg-lime/10 p-4 rounded-lg border-l-4 border-lime/30">
                     <h3 className="font-bold mb-2">Legitimate Interest</h3>
                     <p className="text-sm">Fraud detection & safety</p>
                   </div>
@@ -250,7 +250,7 @@ export default function PrivacyPage() {
                     <p className="mt-4 text-sm italic">Hosts cannot market to you unless you consent.</p>
                   </div>
 
-                  <div className="glass-card border-2 border-red-500">
+                  <div className="glass-card border-2 border-coral/30">
                     <h3 className="text-xl font-bold text-cream mb-4">5.3 Government & Law Enforcement</h3>
                     <p className="mb-3">We disclose data:</p>
                     <ul className="space-y-2">
@@ -268,19 +268,19 @@ export default function PrivacyPage() {
                 <h2 className="text-3xl font-bold text-cream mb-6">6. Storage & Retention</h2>
                 <p className="mb-4">We store data on secure servers that use:</p>
                 <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Encryption</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Firewall Protection</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Access Controls</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Backup Redundancy</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="bg-lime/10 p-4 rounded-lg text-center">
                     <p className="font-bold">Secure Coding Practices</p>
                   </div>
                 </div>
@@ -301,27 +301,27 @@ export default function PrivacyPage() {
                 <h2 className="text-3xl font-bold text-cream mb-4">7. Data Security Measures</h2>
                 <p className="mb-4">As required by the IT Act, SPDI Rules, and CERT-In:</p>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Encryption</p>
                     <p className="text-sm">Data at rest & in transit</p>
                   </div>
-                  <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Secure Infrastructure</p>
                     <p className="text-sm">Protected server environment</p>
                   </div>
-                  <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Security Audits</p>
                     <p className="text-sm">Regular vulnerability assessments</p>
                   </div>
-                  <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Access Restrictions</p>
                     <p className="text-sm">Limited employee access</p>
                   </div>
-                  <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                  <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Breach Response</p>
                     <p className="text-sm">Incident response procedures</p>
                   </div>
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                  <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded-lg">
                     <p className="font-bold mb-2">Mandatory Reporting</p>
                     <p className="text-sm">Security incidents within 6 hours</p>
                   </div>
@@ -331,7 +331,7 @@ export default function PrivacyPage() {
               
               <section className="glass-card" id="children">
                 <h2 className="text-3xl font-bold text-cream mb-4">8. Children's Data (DPDP Act Compliance)</h2>
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded mb-4">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-6 rounded-lg mb-4">
                   <ul className="space-y-3">
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Users under 16 should not use the Platform.</li>
                     <li className="flex items-start"><span className="mr-3 font-bold">•</span> Users under 18 cannot access age-restricted events.</li>
@@ -348,30 +348,30 @@ export default function PrivacyPage() {
                 <p className="mb-6">You have the legal right to:</p>
                 
                 <div className="grid md:grid-cols-2 gap-4 mb-6">
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Access your personal data</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Correct inaccurate or outdated data</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Delete your personal data</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Withdraw consent at any time</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">File a grievance with our Grievance Officer</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Receive communication in clear language</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div className="bg-emerald/10 p-4 rounded-lg border-l-4 border-emerald/30">
                     <p className="font-bold">Get information on data sharing</p>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <div className="bg-lime/10 border-l-4 border-lime/30 p-4 rounded-lg">
                   <p className="font-semibold">Requests will be responded to within 15 days.</p>
                 </div>
               </section>
@@ -421,7 +421,7 @@ export default function PrivacyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Email</li>
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Website notice</li>
                 </ul>
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded-lg">
                   <p className="font-semibold">Continued use = acceptance.</p>
                 </div>
               </section>
@@ -429,7 +429,7 @@ export default function PrivacyPage() {
               
               <section className="glass-card" id="grievance">
                 <h2 className="text-3xl font-bold text-cream mb-4">14. Grievance Officer (Mandatory Under DPDP Act)</h2>
-                <div className="bg-blue-50 border-2 border-blue-500 p-6 rounded-xl">
+                <div className="bg-lime/10 border-2 border-lime/30 p-6 rounded-xl">
                   <p className="mb-4 font-semibold">As required by law:</p>
                   <div className="space-y-2 mb-4">
                     <p><strong>Grievance Officer:</strong> [Full Name]</p>
@@ -437,8 +437,8 @@ export default function PrivacyPage() {
                     <p><strong>Phone:</strong> +91 8076524225</p>
                     <p><strong>Address:</strong> [Insert Business Address]</p>
                   </div>
-                  <div className="bg-white p-4 rounded">
-                    <p className="font-bold">We aim to resolve all complaints within 15 days.</p>
+                  <div className="bg-lime/15 p-4 rounded-lg">
+                    <p className="font-bold text-cream">We aim to resolve all complaints within 15 days.</p>
                   </div>
                 </div>
               </section>

@@ -153,13 +153,13 @@ export default function AdminHostsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       <div className="max-w-6xl mx-auto px-6 md:px-12 pt-10 pb-24">
 
         {/* Heading */}
         <div className="mb-8">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">[ ADMIN ]</p>
-          <h1 className="font-display text-4xl text-ink-primary" style={{ letterSpacing: '-0.03em' }}>
+          <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">[ ADMIN ]</p>
+          <h1 className="font-display text-4xl text-cream" style={{ letterSpacing: '-0.03em' }}>
             Host applications.
           </h1>
         </div>
@@ -171,14 +171,14 @@ export default function AdminHostsClient() {
               key={t.id}
               onClick={() => setStatusFilter(t.id)}
               className={`relative px-5 py-3 font-sans text-sm transition-colors ${
-                statusFilter === t.id ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'
+                statusFilter === t.id ? 'text-cream' : 'text-cream-dim hover:text-cream'
               }`}
             >
               {t.label}
               {statusFilter === t.id && (
                 <motion.span
                   layoutId="admin-hosts-tab"
-                  className="absolute bottom-0 left-0 right-0 h-px bg-accent"
+                  className="absolute bottom-0 left-0 right-0 h-px bg-lime"
                   transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 />
               )}
@@ -190,24 +190,24 @@ export default function AdminHostsClient() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-bg-secondary rounded-2xl animate-pulse" />
+              <div key={i} className="h-20 bg-surface rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : error ? (
           <div className="py-24 text-center">
-            <p className="font-display text-3xl text-ink-primary mb-3">Couldn't load applications.</p>
-            <p className="font-sans text-base text-ink-muted mb-8">Something went wrong reaching the server.</p>
+            <p className="font-display text-3xl text-cream mb-3">Couldn't load applications.</p>
+            <p className="font-sans text-base text-cream-dim mb-8">Something went wrong reaching the server.</p>
             <button
               onClick={() => loadApplications(statusFilter)}
-              className="font-sans text-sm bg-accent text-void px-6 py-3 rounded-full hover:bg-ink-primary transition-colors"
+              className="font-sans text-sm bg-lime text-void px-6 py-3 rounded-full hover:bg-cream transition-colors"
             >
               Try again
             </button>
           </div>
         ) : applications.length === 0 ? (
           <div className="py-24 text-center">
-            <p className="font-display text-3xl text-ink-primary mb-3">No {statusFilter} applications.</p>
-            <p className="font-sans text-base text-ink-muted">
+            <p className="font-display text-3xl text-cream mb-3">No {statusFilter} applications.</p>
+            <p className="font-sans text-base text-cream-dim">
               {statusFilter === 'pending'
                 ? 'New host applications will show up here.'
                 : `Applications you've ${statusFilter === 'approved' ? 'approved' : 'rejected'} will show up here.`}
@@ -217,9 +217,9 @@ export default function AdminHostsClient() {
           <div className="border border-border rounded-2xl overflow-hidden overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse">
               <thead>
-                <tr className="bg-bg-secondary border-b border-border">
+                <tr className="bg-surface border-b border-border">
                   {['Applicant', 'Submitted', 'Bio', 'Categories', 'Docs', ''].map((h) => (
-                    <th key={h} className="text-left font-mono text-[10px] uppercase tracking-widest text-ink-muted px-5 py-3">
+                    <th key={h} className="text-left font-mono text-[10px] uppercase tracking-widest text-cream-dim px-5 py-3">
                       {h}
                     </th>
                   ))}
@@ -232,24 +232,24 @@ export default function AdminHostsClient() {
                   return (
                     <motion.tr
                       key={app.id}
-                      className="border-b border-border last:border-0 hover:bg-bg-secondary transition-colors cursor-pointer"
+                      className="border-b border-border last:border-0 hover:bg-surface transition-colors cursor-pointer"
                       onClick={() => setDetailApp(app)}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.03, duration: 0.3, ease: EASE_VERCEL }}
                     >
                       <td className="px-5 py-4 align-top">
-                        <p className="font-sans text-sm font-medium text-ink-primary">{app.user.name}</p>
-                        <p className="font-mono text-[11px] text-ink-muted">{app.user.email}</p>
+                        <p className="font-sans text-sm font-medium text-cream">{app.user.name}</p>
+                        <p className="font-mono text-[11px] text-cream-dim">{app.user.email}</p>
                       </td>
                       <td className="px-5 py-4 align-top">
-                        <p className="font-mono text-xs text-ink-muted whitespace-nowrap">{formatDate(app.createdAt)}</p>
+                        <p className="font-mono text-xs text-cream-dim whitespace-nowrap">{formatDate(app.createdAt)}</p>
                       </td>
                       <td className="px-5 py-4 align-top max-w-[220px]">
-                        <p className="font-sans text-xs text-ink-muted leading-relaxed">{excerpt(app.bio)}</p>
+                        <p className="font-sans text-xs text-cream-dim leading-relaxed">{excerpt(app.bio)}</p>
                       </td>
                       <td className="px-5 py-4 align-top max-w-[160px]">
-                        <p className="font-mono text-[11px] text-ink-muted">
+                        <p className="font-mono text-[11px] text-cream-dim">
                           {categories.length ? categories.join(', ') : '—'}
                         </p>
                       </td>
@@ -260,7 +260,7 @@ export default function AdminHostsClient() {
                               href={app.govIdUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-[11px] text-accent hover:underline"
+                              className="inline-flex items-center gap-1 font-mono text-[11px] text-lime hover:underline"
                             >
                               ID <IconExternalLink size={11} />
                             </a>
@@ -270,13 +270,13 @@ export default function AdminHostsClient() {
                               href={app.selfieUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-[11px] text-accent hover:underline"
+                              className="inline-flex items-center gap-1 font-mono text-[11px] text-lime hover:underline"
                             >
                               Selfie <IconExternalLink size={11} />
                             </a>
                           )}
                           {!app.govIdUrl && !app.selfieUrl && (
-                            <span className="font-mono text-[11px] text-ink-light">—</span>
+                            <span className="font-mono text-[11px] text-cream-faint">—</span>
                           )}
                         </div>
                       </td>
@@ -383,20 +383,20 @@ function DetailModal({
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
         <motion.div
-          className="bg-bg-primary border border-border rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
+          className="bg-void border border-border rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.2, ease: EASE_VERCEL }}
         >
           {/* Header */}
-          <div className="flex items-start justify-between px-6 py-5 border-b border-border sticky top-0 bg-bg-primary">
+          <div className="flex items-start justify-between px-6 py-5 border-b border-border sticky top-0 bg-void">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1">Host application</p>
-              <h3 className="font-display text-xl text-ink-primary">{app.user.name}</h3>
-              <p className="font-mono text-xs text-ink-muted mt-0.5">{app.user.email}</p>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-1">Host application</p>
+              <h3 className="font-display text-xl text-cream">{app.user.name}</h3>
+              <p className="font-mono text-xs text-cream-dim mt-0.5">{app.user.email}</p>
             </div>
-            <button onClick={onClose} aria-label="Close" className="text-ink-muted hover:text-ink-primary transition-colors p-1">
+            <button onClick={onClose} aria-label="Close" className="text-cream-dim hover:text-cream transition-colors p-1">
               <IconX size={18} />
             </button>
           </div>
@@ -408,7 +408,7 @@ function DetailModal({
                 <span
                   className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${
                     app.status === 'pending'
-                      ? 'bg-border text-ink-muted'
+                      ? 'bg-border text-cream-dim'
                       : app.status === 'approved'
                         ? 'bg-verified/10 text-verified'
                         : 'bg-red-500/10 text-red-500'
@@ -421,34 +421,34 @@ function DetailModal({
             </div>
 
             <Field label="Bio">
-              <p className="font-sans text-sm text-ink-primary leading-relaxed">{app.bio}</p>
+              <p className="font-sans text-sm text-cream leading-relaxed">{app.bio}</p>
             </Field>
 
             <Field label="Experience">
-              <p className="font-sans text-sm text-ink-primary leading-relaxed">{app.experience}</p>
+              <p className="font-sans text-sm text-cream leading-relaxed">{app.experience}</p>
             </Field>
 
             <Field label="Categories">
-              <p className="font-sans text-sm text-ink-primary">{categories.length ? categories.join(', ') : '—'}</p>
+              <p className="font-sans text-sm text-cream">{categories.length ? categories.join(', ') : '—'}</p>
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
               <Field label="Government ID">
                 {app.govIdUrl ? (
-                  <a href={app.govIdUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-accent hover:underline">
+                  <a href={app.govIdUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
                     View document <IconExternalLink size={13} />
                   </a>
                 ) : (
-                  <span className="font-sans text-sm text-ink-light">Not provided</span>
+                  <span className="font-sans text-sm text-cream-faint">Not provided</span>
                 )}
               </Field>
               <Field label="Selfie">
                 {app.selfieUrl ? (
-                  <a href={app.selfieUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-accent hover:underline">
+                  <a href={app.selfieUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
                     View photo <IconExternalLink size={13} />
                   </a>
                 ) : (
-                  <span className="font-sans text-sm text-ink-light">Not provided</span>
+                  <span className="font-sans text-sm text-cream-faint">Not provided</span>
                 )}
               </Field>
             </div>
@@ -465,18 +465,18 @@ function DetailModal({
 
             {hasSampleEvent && (
               <div className="border-t border-border pt-5">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-3">Sample event</p>
-                <div className="border border-border rounded-xl p-4 space-y-3 bg-bg-secondary">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-3">Sample event</p>
+                <div className="border border-border rounded-xl p-4 space-y-3 bg-surface">
                   <div>
-                    <p className="font-sans text-sm font-medium text-ink-primary">{app.sampleEventTitle || 'Untitled'}</p>
+                    <p className="font-sans text-sm font-medium text-cream">{app.sampleEventTitle || 'Untitled'}</p>
                     {app.sampleEventCategory && (
-                      <p className="font-mono text-[11px] text-accent uppercase tracking-widest mt-0.5">{app.sampleEventCategory}</p>
+                      <p className="font-mono text-[11px] text-lime uppercase tracking-widest mt-0.5">{app.sampleEventCategory}</p>
                     )}
                   </div>
                   {app.sampleEventDesc && (
-                    <p className="font-sans text-sm text-ink-muted leading-relaxed">{app.sampleEventDesc}</p>
+                    <p className="font-sans text-sm text-cream-dim leading-relaxed">{app.sampleEventDesc}</p>
                   )}
-                  <div className="grid grid-cols-2 gap-3 font-mono text-[11px] text-ink-muted">
+                  <div className="grid grid-cols-2 gap-3 font-mono text-[11px] text-cream-dim">
                     {app.sampleEventDate && <p>Date: {formatDate(app.sampleEventDate)}</p>}
                     {app.sampleEventTime && <p>Time: {app.sampleEventTime}</p>}
                     {app.sampleEventVenue && <p>Venue: {app.sampleEventVenue}</p>}
@@ -490,14 +490,14 @@ function DetailModal({
 
             {app.reviewNotes && (
               <Field label="Review notes">
-                <p className="font-sans text-sm text-ink-primary leading-relaxed">{app.reviewNotes}</p>
+                <p className="font-sans text-sm text-cream leading-relaxed">{app.reviewNotes}</p>
               </Field>
             )}
           </div>
 
           {/* Actions */}
           {app.status === 'pending' && (
-            <div className="px-6 py-4 border-t border-border flex gap-3 sticky bottom-0 bg-bg-primary">
+            <div className="px-6 py-4 border-t border-border flex gap-3 sticky bottom-0 bg-void">
               <button
                 disabled={busy}
                 onClick={onReject}
@@ -508,7 +508,7 @@ function DetailModal({
               <button
                 disabled={busy}
                 onClick={onApprove}
-                className="flex-1 py-2.5 bg-accent text-void rounded-full font-sans text-sm font-medium hover:bg-ink-primary transition-colors disabled:opacity-40"
+                className="flex-1 py-2.5 bg-lime text-void rounded-full font-sans text-sm font-medium hover:bg-cream transition-colors disabled:opacity-40"
               >
                 Approve
               </button>
@@ -523,9 +523,9 @@ function DetailModal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1.5">{label}</p>
+      <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-1.5">{label}</p>
       {typeof children === 'string' ? (
-        <p className="font-sans text-sm text-ink-primary">{children}</p>
+        <p className="font-sans text-sm text-cream">{children}</p>
       ) : (
         children
       )}
@@ -539,7 +539,7 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 font-sans text-sm text-accent hover:underline"
+      className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline"
     >
       {label} <IconExternalLink size={13} />
     </a>
@@ -578,15 +578,15 @@ function RejectModal({
       />
       <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
         <motion.div
-          className="bg-bg-primary border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl"
+          className="bg-void border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl"
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.2, ease: EASE_VERCEL }}
         >
-          <h3 className="font-display text-xl text-ink-primary mb-2">Reject application</h3>
-          <p className="font-sans text-sm text-ink-muted mb-4">
-            Rejecting <span className="text-ink-primary">{appName}</span>'s host application. Add a note explaining
+          <h3 className="font-display text-xl text-cream mb-2">Reject application</h3>
+          <p className="font-sans text-sm text-cream-dim mb-4">
+            Rejecting <span className="text-cream">{appName}</span>'s host application. Add a note explaining
             why — this is saved for your own records.
           </p>
           <textarea
@@ -594,12 +594,12 @@ function RejectModal({
             onChange={(e) => onChangeNotes(e.target.value)}
             rows={4}
             placeholder="e.g. ID document didn't match, incomplete profile…"
-            className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none mb-5"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none mb-5"
           />
           <div className="flex gap-3">
             <button
               onClick={onCancel}
-              className="flex-1 py-2.5 border border-border rounded-full font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors"
+              className="flex-1 py-2.5 border border-border rounded-full font-sans text-sm text-cream-dim hover:text-cream transition-colors"
             >
               Cancel
             </button>

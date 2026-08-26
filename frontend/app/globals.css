@@ -277,42 +277,6 @@ body {
   .nav-link.active { color: var(--lime); }
   .nav-link.active::after { width: 100%; }
 
-  /* Buttons */
-  .btn-primary {
-    @apply px-8 py-4 rounded-full font-semibold;
-    background-color: var(--lime);
-    color: var(--void);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-  }
-  .btn-primary:hover {
-    background-color: #e0ff6b;
-    box-shadow: 0 4px 20px rgba(212, 255, 63, 0.25);
-    transform: translateY(-2px);
-  }
-  .btn-primary:active { transform: translateY(0); }
-
-  .btn-secondary {
-    @apply px-8 py-4 rounded-full font-semibold;
-    background-color: transparent;
-    color: var(--lime);
-    border: 2px solid var(--lime);
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-  }
-  .btn-secondary:hover {
-    background-color: var(--lime);
-    color: var(--void);
-    transform: translateY(-2px);
-  }
-  .btn-secondary:active { transform: translateY(0); }
-
-  .btn-ghost {
-    @apply px-6 py-3 rounded-full font-semibold;
-    background-color: transparent;
-    color: var(--cream-dim);
-    transition: color 0.3s ease;
-  }
-  .btn-ghost:hover { color: var(--lime); }
-
   /* Section layout */
   .section-padding {
     @apply py-20 md:py-32 px-6 md:px-12 lg:px-20;

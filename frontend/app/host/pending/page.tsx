@@ -10,7 +10,7 @@ function PulsingDots() {
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="w-2.5 h-2.5 rounded-full bg-accent"
+          className="w-2.5 h-2.5 rounded-full bg-lime"
           animate={{ opacity: [0.3, 1, 0.3] }}
           transition={{
             duration: 1.2,
@@ -32,7 +32,7 @@ const STATUS_STEPS = [
 
 export default function HostPendingPage() {
   return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center px-6">
+    <div className="min-h-screen bg-void flex items-center justify-center px-6">
       <div className="max-w-[480px] w-full text-center space-y-10">
         {/* Pulsing dots */}
         <div className="flex justify-center">
@@ -45,7 +45,7 @@ export default function HostPendingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE_VERCEL }}
-            className="font-display text-5xl text-ink-primary"
+            className="font-display text-5xl text-cream"
           >
             You're in the queue.
           </motion.h1>
@@ -53,7 +53,7 @@ export default function HostPendingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.6, ease: EASE_VERCEL }}
-            className="font-sans text-base text-ink-muted"
+            className="font-sans text-base text-cream-dim"
           >
             We're reviewing your submission. Average wait: 36 hours.
           </motion.p>
@@ -76,8 +76,8 @@ export default function HostPendingPage() {
                       step.done
                         ? 'bg-verified'
                         : step.current
-                        ? 'border-2 border-accent'
-                        : 'border-2 border-border bg-bg-secondary'
+                        ? 'border-2 border-lime'
+                        : 'border-2 border-border bg-surface'
                     }`}
                   >
                     {step.done && (
@@ -87,7 +87,7 @@ export default function HostPendingPage() {
                     )}
                     {step.current && (
                       <motion.div
-                        className="w-2 h-2 rounded-full bg-accent"
+                        className="w-2 h-2 rounded-full bg-lime"
                         animate={{ opacity: [0.4, 1, 0.4] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                       />
@@ -105,8 +105,8 @@ export default function HostPendingPage() {
                       step.done
                         ? 'text-verified font-medium'
                         : step.current
-                        ? 'text-ink-primary font-medium'
-                        : 'text-ink-muted'
+                        ? 'text-cream font-medium'
+                        : 'text-cream-dim'
                     }`}
                   >
                     {step.label}
@@ -125,7 +125,7 @@ export default function HostPendingPage() {
         >
           <Link
             href="/discover"
-            className="inline-block font-sans text-sm bg-ink-primary text-bg-primary px-8 py-3.5 rounded-full hover:bg-accent transition-colors duration-300"
+            className="inline-block font-sans text-sm bg-cream text-void px-8 py-3.5 rounded-full hover:bg-lime transition-colors duration-300"
           >
             Browse events while you wait
           </Link>

@@ -23,6 +23,7 @@ const LEGAL = [
   { label: 'Terms of Service', href: '/terms' },
   { label: 'Refund Policy',    href: '/refund' },
   { label: 'Safety',           href: '/safety' },
+  { label: 'Cookie Policy',    href: '/privacy#cookies' },
 ];
 
 // X/Twitter dropped — no live account to link (was href="#").

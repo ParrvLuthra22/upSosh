@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import MagneticButton from '@/components/ui/MagneticButton';
+import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/store/authStore';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
@@ -77,7 +78,7 @@ function NotificationPanel({
           />
           {/* Panel */}
           <motion.div
-            className="absolute right-0 top-full mt-3 w-[380px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto bg-bg-primary border border-border rounded-2xl shadow-2xl z-50"
+            className="absolute right-0 top-full mt-3 w-[380px] max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto bg-void border border-border rounded-2xl shadow-2xl z-50"
             initial={{ opacity: 0, scale: 0.95, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -8 }}
@@ -86,11 +87,11 @@ function NotificationPanel({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <p className="font-display text-lg text-ink-primary">Notifications</p>
+              <p className="font-display text-lg text-cream">Notifications</p>
               {unread.length > 0 && (
                 <button
                   onClick={onMarkAllRead}
-                  className="font-mono text-[11px] text-accent hover:text-ink-primary transition-colors"
+                  className="font-mono text-[11px] text-lime hover:text-cream transition-colors"
                 >
                   Mark all read
                 </button>
@@ -99,8 +100,8 @@ function NotificationPanel({
 
             {notifications.length === 0 ? (
               <div className="px-5 py-12 text-center">
-                <p className="font-display text-xl text-ink-primary mb-2">All caught up.</p>
-                <p className="font-sans text-sm text-ink-muted">No notifications yet.</p>
+                <p className="font-display text-xl text-cream mb-2">All caught up.</p>
+                <p className="font-sans text-sm text-cream-dim">No notifications yet.</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
@@ -108,16 +109,16 @@ function NotificationPanel({
                   <div
                     key={n.id}
                     className={`px-5 py-4 flex gap-3 transition-colors ${
-                      !n.read ? 'bg-accent-soft border-l-2 border-l-accent' : ''
+                      !n.read ? 'bg-lime/15 border-l-2 border-l-accent' : ''
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-bg-secondary flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center flex-shrink-0">
                       <NotificationIcon type={n.type} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-display text-sm text-ink-primary leading-snug">{n.title}</p>
-                      <p className="font-sans text-[13px] text-ink-muted leading-relaxed mt-0.5">{n.body}</p>
-                      <p className="font-mono text-[10px] text-ink-light mt-1">
+                      <p className="font-display text-sm text-cream leading-snug">{n.title}</p>
+                      <p className="font-sans text-[13px] text-cream-dim leading-relaxed mt-0.5">{n.body}</p>
+                      <p className="font-mono text-[10px] text-cream-faint mt-1">
                         {new Date(n.createdAt).toLocaleString('en-IN', {
                           day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                         })}
@@ -141,7 +142,7 @@ function UserAvatar({ src, name }: { src?: string; name?: string }) {
   if (src) {
     return <Image src={src} alt={name ?? 'User'} width={32} height={32} className="w-full h-full object-cover" />;
   }
-  return <span className="font-sans text-sm font-medium text-ink-primary">{initial}</span>;
+  return <span className="font-sans text-sm font-medium text-cream">{initial}</span>;
 }
 
 function AvatarDropdown({
@@ -174,7 +175,7 @@ function AvatarDropdown({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-8 h-8 rounded-full overflow-hidden border border-border bg-bg-secondary flex items-center justify-center hover:border-accent transition-colors duration-200"
+        className="w-8 h-8 rounded-full overflow-hidden border border-border bg-surface flex items-center justify-center hover:border-lime transition-colors duration-200"
         aria-label="Account menu"
       >
         <UserAvatar src={user.photoUrl} name={user.name} />
@@ -183,7 +184,7 @@ function AvatarDropdown({
       <AnimatePresence>
         {open && (
           <motion.div
-            className="absolute top-full right-0 mt-2 w-56 bg-bg-primary border border-border rounded-2xl shadow-xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-2 w-56 bg-void border border-border rounded-2xl shadow-xl overflow-hidden z-50"
             initial={{ opacity: 0, scale: 0.95, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -8 }}
@@ -192,8 +193,8 @@ function AvatarDropdown({
           >
             {/* User info */}
             <div className="px-4 py-3 border-b border-border">
-              <p className="font-sans text-sm font-medium text-ink-primary truncate">{user.name}</p>
-              <p className="font-mono text-[10px] text-ink-muted truncate">{user.email}</p>
+              <p className="font-sans text-sm font-medium text-cream truncate">{user.name}</p>
+              <p className="font-mono text-[10px] text-cream-dim truncate">{user.email}</p>
             </div>
 
             {/* Menu items */}
@@ -201,21 +202,21 @@ function AvatarDropdown({
               <Link
                 href={username ? `/u/${username}` : '/profile'}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
               >
                 My profile
               </Link>
               <Link
                 href="/my-bookings"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
               >
                 My bookings
               </Link>
               <Link
                 href="/settings"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
               >
                 Settings
               </Link>
@@ -226,21 +227,21 @@ function AvatarDropdown({
                   <Link
                     href="/host/dashboard"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
                   >
                     Host dashboard
                   </Link>
                   <Link
                     href="/host/events"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
                   >
                     My events
                   </Link>
                   <Link
                     href="/host/events/new"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
                   >
                     Create event
                   </Link>
@@ -253,7 +254,7 @@ function AvatarDropdown({
                   <Link
                     href="/become-a-host"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-accent hover:bg-accent-soft transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-lime hover:bg-lime/15 transition-colors"
                   >
                     Become a host
                   </Link>
@@ -261,7 +262,7 @@ function AvatarDropdown({
               ) : resolvedHostStatus === 'pending' ? (
                 <>
                   <div className="my-1 border-t border-border" />
-                  <div className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-light cursor-not-allowed">
+                  <div className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-faint cursor-not-allowed">
                     Verification pending…
                   </div>
                 </>
@@ -273,7 +274,7 @@ function AvatarDropdown({
                   <Link
                     href="/admin/hosts"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-ink-muted hover:text-ink-primary hover:bg-bg-secondary transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
                   >
                     Host applications
                   </Link>
@@ -402,13 +403,9 @@ function MobileMenu({
                 </button>
               </div>
             ) : (
-              <Link
-                href="/signup"
-                onClick={onClose}
-                className="w-full h-12 bg-lime text-void rounded-full font-sans text-[15px] font-semibold flex items-center justify-center hover:bg-lime/90 transition-colors"
-              >
+              <Button href="/signup" onClick={onClose} variant="primary" size="lg" shape="pill" className="w-full">
                 Sign up
-              </Link>
+              </Button>
             )}
           </motion.div>
         </motion.div>
@@ -475,16 +472,16 @@ export default function GlobalHeader() {
         <motion.div
           className="flex items-center justify-between rounded-full px-5 py-3 transition-all duration-500"
           animate={{
-            backgroundColor: scrolled ? 'rgba(250,250,247,0.92)' : 'rgba(250,250,247,0)',
+            backgroundColor: scrolled ? 'rgba(19,19,27,0.85)' : 'rgba(19,19,27,0)',
             backdropFilter: scrolled ? 'blur(20px)' : 'blur(0px)',
-            borderColor: scrolled ? 'rgba(232,228,220,1)' : 'rgba(232,228,220,0)',
+            borderColor: scrolled ? 'rgba(244,241,234,0.1)' : 'rgba(244,241,234,0)',
           }}
           style={{ border: '1px solid transparent' }}
         >
           {/* Logo */}
           <Link
             href={logoHref}
-            className="font-mono text-sm font-medium tracking-widest text-ink-primary uppercase"
+            className="font-mono text-sm font-medium tracking-widest text-cream uppercase"
           >
             UpSosh
           </Link>
@@ -498,14 +495,14 @@ export default function GlobalHeader() {
                   key={link.name}
                   href={link.href}
                   className={`relative font-sans text-sm transition-colors duration-300 pb-0.5 ${
-                    isActive ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'
+                    isActive ? 'text-cream' : 'text-cream-dim hover:text-cream'
                   }`}
                 >
                   {link.name}
                   {isActive && (
                     <motion.span
                       layoutId="nav-underline"
-                      className="absolute -bottom-0.5 left-0 right-0 h-px bg-accent rounded-full"
+                      className="absolute -bottom-0.5 left-0 right-0 h-px bg-lime rounded-full"
                       transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                     />
                   )}
@@ -516,14 +513,14 @@ export default function GlobalHeader() {
               <Link
                 href="/host/dashboard"
                 className={`relative font-sans text-sm transition-colors duration-300 pb-0.5 ${
-                  pathname.startsWith('/host/dashboard') ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'
+                  pathname.startsWith('/host/dashboard') ? 'text-cream' : 'text-cream-dim hover:text-cream'
                 }`}
               >
                 Dashboard
                 {pathname.startsWith('/host/dashboard') && (
                   <motion.span
                     layoutId="nav-underline"
-                    className="absolute -bottom-0.5 left-0 right-0 h-px bg-accent rounded-full"
+                    className="absolute -bottom-0.5 left-0 right-0 h-px bg-lime rounded-full"
                     transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                   />
                 )}
@@ -539,14 +536,14 @@ export default function GlobalHeader() {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setNotifOpen((v) => !v)}
-                    className="relative w-8 h-8 flex items-center justify-center text-ink-muted hover:text-ink-primary transition-colors"
+                    className="relative w-8 h-8 flex items-center justify-center text-cream-dim hover:text-cream transition-colors"
                     aria-label="Notifications"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
                     {unreadCount > 0 && (
-                      <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-accent rounded-full" />
+                      <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-lime rounded-full" />
                     )}
                   </button>
                   <div className="relative">
@@ -566,18 +563,14 @@ export default function GlobalHeader() {
               <>
                 <Link
                   href="/signin"
-                  className="font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors duration-300"
+                  className="font-sans text-sm text-cream-dim hover:text-cream transition-colors duration-300"
                 >
                   Sign in
                 </Link>
                 <MagneticButton>
-                  <Link
-                    href="/signup"
-                    data-cursor="JOIN"
-                    className="font-sans text-sm font-medium bg-ink-primary text-bg-primary px-5 py-2.5 rounded-full hover:bg-accent transition-colors duration-300"
-                  >
+                  <Button href="/signup" data-cursor="JOIN" variant="primary" shape="pill">
                     Sign up
-                  </Link>
+                  </Button>
                 </MagneticButton>
               </>
             )}
@@ -589,9 +582,9 @@ export default function GlobalHeader() {
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
           >
-            <span className="block h-px bg-ink-primary transition-all duration-300" />
-            <span className="block h-px bg-ink-primary transition-all duration-300" />
-            <span className="block h-px bg-ink-primary transition-all duration-300 w-1/2 group-hover:w-full" />
+            <span className="block h-px bg-cream transition-all duration-300" />
+            <span className="block h-px bg-cream transition-all duration-300" />
+            <span className="block h-px bg-cream transition-all duration-300 w-1/2 group-hover:w-full" />
           </button>
         </motion.div>
       </div>

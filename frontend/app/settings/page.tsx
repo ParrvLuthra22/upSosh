@@ -23,7 +23,7 @@ function SaveButton({ saving, saved }: { saving: boolean; saved: boolean }) {
     <button
       type="submit"
       disabled={saving}
-      className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors duration-300 disabled:opacity-60"
+      className="inline-flex items-center gap-2 px-5 py-2.5 bg-cream text-void rounded-full font-sans text-sm font-medium hover:bg-lime transition-colors duration-300 disabled:opacity-60"
     >
       {saving ? (
         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -38,7 +38,7 @@ function SaveButton({ saving, saved }: { saving: boolean; saved: boolean }) {
 
 function SectionHeading({ children, color }: { children: React.ReactNode; color?: string }) {
   return (
-    <h2 className={`font-display text-3xl mb-8 ${color ?? 'text-ink-primary'}`} style={{ letterSpacing: '-0.03em' }}>
+    <h2 className={`font-display text-3xl mb-8 ${color ?? 'text-cream'}`} style={{ letterSpacing: '-0.03em' }}>
       {children}
     </h2>
   );
@@ -74,14 +74,14 @@ function AccountSection({ user }: { user: any }) {
 
       {/* Email */}
       <div className="border border-border rounded-2xl p-6 mb-6">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-4">Email address</p>
-        <p className="font-sans text-base text-ink-primary mb-1">{user.email}</p>
-        <p className="font-mono text-xs text-ink-light">Email cannot be changed</p>
+        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-4">Email address</p>
+        <p className="font-sans text-base text-cream mb-1">{user.email}</p>
+        <p className="font-mono text-xs text-cream-faint">Email cannot be changed</p>
       </div>
 
       {/* Password */}
       <div className="border border-border rounded-2xl p-6">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-4">Change password</p>
+        <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-4">Change password</p>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           {[
             { label: 'Current password', key: 'current', value: pwd.current },
@@ -89,13 +89,13 @@ function AccountSection({ user }: { user: any }) {
             { label: 'Confirm new password', key: 'confirm', value: pwd.confirm },
           ].map((f) => (
             <div key={f.key}>
-              <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">{f.label}</label>
+              <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">{f.label}</label>
               <input
                 type="password"
                 value={f.value}
                 onChange={(e) => setPwd((p) => ({ ...p, [f.key]: e.target.value }))}
                 required
-                className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+                className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
               />
             </div>
           ))}
@@ -141,26 +141,26 @@ function ProfileSection({ user, onUpdate }: { user: any; onUpdate: (u: any) => v
             { label: 'Location', key: 'location', type: 'text', value: form.location },
           ].map((f) => (
             <div key={f.key}>
-              <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">{f.label}</label>
+              <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">{f.label}</label>
               <input
                 type={f.type}
                 value={f.value}
                 onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
-                className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+                className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
               />
             </div>
           ))}
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Bio</label>
+            <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">Bio</label>
             <textarea
               value={form.bio}
               onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
               rows={4}
               maxLength={500}
-              className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none"
+              className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none"
               placeholder="Tell people about yourself…"
             />
-            <p className="font-mono text-[10px] text-ink-muted text-right mt-1">{form.bio.length}/500</p>
+            <p className="font-mono text-[10px] text-cream-dim text-right mt-1">{form.bio.length}/500</p>
           </div>
         </div>
         <div className="flex justify-end">
@@ -200,12 +200,12 @@ function HostSection({ user }: { user: any }) {
           </span>
         </div>
         <form onSubmit={handleSave}>
-          <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Public host bio</label>
+          <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">Public host bio</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
-            className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none mb-4"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none mb-4"
             placeholder="Describe your hosting style…"
           />
           <div className="flex justify-end">
@@ -244,7 +244,7 @@ function DangerZone() {
       <SectionHeading color="text-red-500">Danger zone.</SectionHeading>
       <div className="border border-red-200 rounded-2xl p-6 bg-red-50/50">
         <h3 className="font-sans text-base font-medium text-red-600 mb-2">Delete account</h3>
-        <p className="font-sans text-sm text-ink-muted mb-4">
+        <p className="font-sans text-sm text-cream-dim mb-4">
           Once deleted, your account and all data are permanently removed. This cannot be undone.
         </p>
         <button
@@ -273,20 +273,20 @@ function DangerZone() {
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2, ease: EASE_VERCEL }}
             >
-              <div className="bg-bg-primary border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <h2 className="font-display text-2xl text-ink-primary mb-3">Are you sure?</h2>
-                <p className="font-sans text-sm text-ink-muted mb-6">
-                  This action <strong>cannot</strong> be undone. Type <code className="font-mono text-accent">DELETE</code> below to confirm.
+              <div className="bg-void border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <h2 className="font-display text-2xl text-cream mb-3">Are you sure?</h2>
+                <p className="font-sans text-sm text-cream-dim mb-6">
+                  This action <strong>cannot</strong> be undone. Type <code className="font-mono text-lime">DELETE</code> below to confirm.
                 </p>
                 <input
                   type="text"
                   value={deleteInput}
                   onChange={(e) => setDeleteInput(e.target.value)}
                   placeholder="Type DELETE"
-                  className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-mono text-sm text-ink-primary focus:outline-none focus:border-red-400 transition-colors mb-4"
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-mono text-sm text-cream focus:outline-none focus:border-red-400 transition-colors mb-4"
                 />
                 <div className="flex gap-3">
-                  <button onClick={() => setShowDeleteModal(false)} className="flex-1 px-4 py-2.5 border border-border rounded-full font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors">Cancel</button>
+                  <button onClick={() => setShowDeleteModal(false)} className="flex-1 px-4 py-2.5 border border-border rounded-full font-sans text-sm text-cream-dim hover:text-cream transition-colors">Cancel</button>
                   <button
                     onClick={handleDelete}
                     disabled={deleteInput !== 'DELETE'}
@@ -341,10 +341,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       <div className="max-w-6xl mx-auto px-6 md:px-12 pt-28 pb-24">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-3">[ ACCOUNT ]</p>
-        <h1 className="font-display text-4xl text-ink-primary mb-10" style={{ letterSpacing: '-0.03em' }}>Settings.</h1>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-3">[ ACCOUNT ]</p>
+        <h1 className="font-display text-4xl text-cream mb-10" style={{ letterSpacing: '-0.03em' }}>Settings.</h1>
 
         <div className="flex gap-10">
           {/* Sidebar */}
@@ -357,13 +357,13 @@ export default function SettingsPage() {
                     key={item.id}
                     onClick={() => setActive(item.id)}
                     className={`relative w-full text-left px-4 py-2.5 rounded-xl font-sans text-sm transition-colors ${
-                      isActive ? 'text-accent' : 'text-ink-muted hover:text-ink-primary'
+                      isActive ? 'text-lime' : 'text-cream-dim hover:text-cream'
                     } ${item.id === 'danger' ? 'text-red-400 hover:text-red-500 mt-4' : ''}`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="settings-sidebar-bg"
-                        className="absolute inset-0 bg-accent-soft rounded-xl border-l-2 border-l-accent"
+                        className="absolute inset-0 bg-lime/15 rounded-xl border-l-2 border-l-accent"
                         transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                       />
                     )}
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                   key={item.id}
                   onClick={() => setActive(item.id)}
                   className={`whitespace-nowrap px-4 py-2 rounded-full font-mono text-xs transition-colors ${
-                    active === item.id ? 'bg-accent text-white' : 'bg-bg-secondary text-ink-muted'
+                    active === item.id ? 'bg-lime text-white' : 'bg-surface text-cream-dim'
                   }`}
                 >
                   {item.label}

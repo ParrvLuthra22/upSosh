@@ -23,7 +23,7 @@ export default function SafetyPage() {
           >
             
             <div className="mb-12">
-              <div className="inline-block px-4 py-2 bg-red-100 text-red-600 rounded-full text-sm font-semibold mb-4">
+              <div className="inline-block px-4 py-2 bg-coral/10 text-coral rounded-full text-sm font-semibold mb-4">
                 Critical Safety Guidelines
               </div>
               <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -108,8 +108,8 @@ export default function SafetyPage() {
                   </li>
                 </ul>
                 
-                <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                  <strong className="text-blue-700">Important:</strong>
+                <div className="mt-6 bg-lime/10 border-l-4 border-lime/30 p-4 rounded">
+                  <strong className="text-lime">Important:</strong>
                   <span className="ml-2">upSosh is a technology platform — NOT an event organizer — but safety rules must still be followed.</span>
                 </div>
               </section>
@@ -128,8 +128,8 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Have responsible alcohol service (if applicable)</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700">Violation may result in:</strong>
+                <div className="mt-6 bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
+                  <strong className="text-coral">Violation may result in:</strong>
                   <span className="ml-2">Event removal or account suspension.</span>
                 </div>
               </section>
@@ -212,7 +212,7 @@ export default function SafetyPage() {
                       ]
                     }
                   ].map((section, index) => (
-                    <div key={index} className="glass-card border-2 border-light-border hover:border-lime transition-colors">
+                    <div key={index} className="glass-card border-2 border-border hover:border-lime transition-colors">
                       <h4 className="text-lg font-bold text-cream mb-3">{section.title}</h4>
                       <ul className="space-y-2">
                         {section.items.map((item, idx) => (
@@ -239,8 +239,8 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="text-green-500 mr-3 font-bold">•</span> Not share ticket QR codes with others</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700">Important:</strong>
+                <div className="mt-6 bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
+                  <strong className="text-coral">Important:</strong>
                   <span className="ml-2">If a User violates rules, the Host may deny entry without refund.</span>
                 </div>
               </section>
@@ -266,9 +266,9 @@ export default function SafetyPage() {
                     'Filming people without permission',
                     'Sharing host\'s address publicly'
                   ].map((item, index) => (
-                    <div key={index} className="bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center gap-3">
-                      <span className="text-2xl text-red-500 font-bold">X</span>
-                      <span className="text-sm font-semibold text-red-700">{item}</span>
+                    <div key={index} className="bg-coral/10 border-2 border-coral/30 rounded-lg p-4 flex items-center gap-3">
+                      <span className="text-2xl text-coral font-bold">X</span>
+                      <span className="text-sm font-semibold text-coral">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -290,8 +290,8 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Screenshots of chat/address are strictly prohibited</li>
                 </ul>
                 
-                <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                  <strong className="text-yellow-700">Immediate Suspension:</strong>
+                <div className="mt-6 bg-coral/10 border-l-4 border-coral/30 p-4 rounded">
+                  <strong className="text-coral">Immediate Suspension:</strong>
                   <span className="ml-2">Sharing venue details without permission leads to immediate suspension.</span>
                 </div>
               </section>
@@ -300,8 +300,8 @@ export default function SafetyPage() {
               <section className="glass-card" id="emergency">
                 <h2 className="text-3xl font-bold text-cream mb-4">6. Emergency Protocols</h2>
                 
-                <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                  <strong className="text-green-700">Hosts must have:</strong>
+                <div className="mb-6 bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded">
+                  <strong className="text-emerald">Hosts must have:</strong>
                   <span className="ml-2">A basic emergency plan ready before the event begins.</span>
                 </div>
                 
@@ -425,7 +425,7 @@ export default function SafetyPage() {
                         {group.items.map((item, itemIndex) => {
                           const checkId = `check-${groupIndex}-${itemIndex}`;
                           return (
-                            <div key={itemIndex} className="flex items-start gap-3 p-2 rounded hover:bg-light-blue/30 transition-colors">
+                            <div key={itemIndex} className="flex items-start gap-3 p-2 rounded-lg hover:bg-lime/5 transition-colors">
                               <input
                                 type="checkbox"
                                 id={checkId}
@@ -459,8 +459,8 @@ export default function SafetyPage() {
                   <li className="flex items-start"><span className="mr-3 font-bold">•</span> Misconduct by other attendees</li>
                 </ul>
                 
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded mb-6">
-                  <strong className="text-yellow-700">Acknowledgment:</strong>
+                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded mb-6">
+                  <strong className="text-coral">Acknowledgment:</strong>
                   <span className="ml-2">Users attend at their own discretion and risk.</span>
                 </div>
                 
@@ -529,14 +529,14 @@ export default function SafetyPage() {
                         <p className="text-sm">{item.desc}</p>
                       </div>
                       {index < 3 && (
-                        <div className="hidden md:block absolute top-1/2 -right-3 text-2xl text-light-border">→</div>
+                        <div className="hidden md:block absolute top-1/2 -right-3 text-2xl text-cream-faint">→</div>
                       )}
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
-                  <strong className="text-blue-700">Response Time:</strong>
+                <div className="bg-lime/10 border-l-4 border-lime/30 p-4 rounded mb-4">
+                  <strong className="text-lime">Response Time:</strong>
                   <span className="ml-2">Reports are reviewed within 24–48 hours.</span>
                 </div>
 
@@ -554,8 +554,8 @@ export default function SafetyPage() {
               <section className="glass-card" id="role">
                 <h2 className="text-3xl font-bold text-cream mb-4">10. upSosh's Role & Disclaimer</h2>
                 
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-                  <strong className="text-green-700">upSosh is:</strong>
+                <div className="bg-emerald/10 border-l-4 border-emerald/30 p-4 rounded mb-6">
+                  <strong className="text-emerald">upSosh is:</strong>
                   <span className="ml-2">A technology platform — NOT an event organizer.</span>
                 </div>
                 

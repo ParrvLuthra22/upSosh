@@ -71,11 +71,11 @@ function AvatarUpload({
 
   return (
     <div className="relative group w-28 h-28 flex-shrink-0">
-      <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-border bg-bg-secondary flex items-center justify-center">
+      <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-border bg-surface flex items-center justify-center">
         {preview ? (
           <Image src={preview} alt={name ?? 'Avatar'} fill unoptimized sizes="112px" className="object-cover" />
         ) : (
-          <span className="font-display text-4xl text-ink-muted">{initial}</span>
+          <span className="font-display text-4xl text-cream-dim">{initial}</span>
         )}
         {uploading && (
           <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
@@ -135,41 +135,41 @@ function ProfileForm({ user, onSaved }: { user: any; onSaved: (u: any) => void }
   return (
     <form onSubmit={handleSave} className="space-y-5">
       <div>
-        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Display name</label>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">Display name</label>
         <input
           type="text"
           value={form.name}
           onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
         />
       </div>
       <div>
-        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Location</label>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">Location</label>
         <input
           type="text"
           value={form.location}
           onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
           placeholder="New Delhi, India"
-          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
         />
       </div>
       <div>
-        <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">Bio</label>
+        <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">Bio</label>
         <textarea
           value={form.bio}
           onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
           rows={4}
           maxLength={500}
           placeholder="Tell people a little about yourself…"
-          className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none"
+          className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none"
         />
-        <p className="font-mono text-[10px] text-ink-muted text-right mt-1">{form.bio.length}/500</p>
+        <p className="font-mono text-[10px] text-cream-dim text-right mt-1">{form.bio.length}/500</p>
       </div>
       <div className="flex justify-end pt-2">
         <button
           type="submit"
           disabled={saving}
-          className="px-6 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
+          className="px-6 py-2.5 bg-cream text-void rounded-full font-sans text-sm font-medium hover:bg-lime transition-colors disabled:opacity-60"
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>
@@ -207,13 +207,13 @@ function SecurityForm() {
         { label: 'Confirm new password', key: 'confirm', value: pwd.confirm },
       ].map((f) => (
         <div key={f.key}>
-          <label className="block font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">{f.label}</label>
+          <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">{f.label}</label>
           <input
             type="password"
             value={f.value}
             onChange={(e) => setPwd((p) => ({ ...p, [f.key]: e.target.value }))}
             required
-            className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
           />
         </div>
       ))}
@@ -221,7 +221,7 @@ function SecurityForm() {
         <button
           type="submit"
           disabled={saving}
-          className="px-6 py-2.5 bg-ink-primary text-bg-primary rounded-full font-sans text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
+          className="px-6 py-2.5 bg-cream text-void rounded-full font-sans text-sm font-medium hover:bg-lime transition-colors disabled:opacity-60"
         >
           {saving ? 'Updating…' : 'Update password'}
         </button>
@@ -273,11 +273,11 @@ function ProfilePage() {
   const resolvedHostStatus = user.hostStatus || (rawUser.hostVerified || rawUser.isHost ? 'verified' : 'none');
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       <div className="max-w-3xl mx-auto px-6 md:px-12 pt-28 pb-24">
 
         {/* Header */}
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-3">[ PROFILE ]</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-3">[ PROFILE ]</p>
 
         {/* Avatar + info */}
         <div className="flex items-center gap-6 mb-10">
@@ -287,10 +287,10 @@ function ProfilePage() {
             onUpload={handleAvatarUpload}
           />
           <div>
-            <h1 className="font-display text-3xl text-ink-primary mb-1" style={{ letterSpacing: '-0.03em' }}>
+            <h1 className="font-display text-3xl text-cream mb-1" style={{ letterSpacing: '-0.03em' }}>
               {user.name ?? 'Your profile'}
             </h1>
-            <p className="font-mono text-xs text-ink-muted mb-2">{user.email}</p>
+            <p className="font-mono text-xs text-cream-dim mb-2">{user.email}</p>
             <div className="flex items-center gap-2 flex-wrap">
               {resolvedHostStatus === 'verified' && (
                 <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-verified/10 text-verified border border-verified/20">
@@ -298,19 +298,19 @@ function ProfilePage() {
                 </span>
               )}
               {resolvedHostStatus === 'pending' && (
-                <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">
+                <span className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full bg-lime/10 text-lime border border-lime/20">
                   Verification pending
                 </span>
               )}
               {resolvedHostStatus === 'none' && (
                 <Link
                   href="/become-a-host"
-                  className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full border border-border text-ink-muted hover:border-accent hover:text-accent transition-colors"
+                  className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full border border-border text-cream-dim hover:border-lime hover:text-lime transition-colors"
                 >
                   Become a host →
                 </Link>
               )}
-              <p className="font-mono text-[10px] text-ink-light">Hover your photo to change it</p>
+              <p className="font-mono text-[10px] text-cream-faint">Hover your photo to change it</p>
             </div>
           </div>
         </div>
@@ -321,13 +321,13 @@ function ProfilePage() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`relative px-5 py-3 font-sans text-sm transition-colors ${tab === t.id ? 'text-ink-primary' : 'text-ink-muted hover:text-ink-primary'}`}
+              className={`relative px-5 py-3 font-sans text-sm transition-colors ${tab === t.id ? 'text-cream' : 'text-cream-dim hover:text-cream'}`}
             >
               {t.label}
               {tab === t.id && (
                 <motion.span
                   layoutId="profile-tab-underline"
-                  className="absolute bottom-0 left-0 right-0 h-px bg-accent"
+                  className="absolute bottom-0 left-0 right-0 h-px bg-lime"
                   transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 />
               )}
@@ -342,7 +342,7 @@ function ProfilePage() {
             initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.22, ease: EASE_VERCEL }}
           >
-            <div className="border border-border rounded-2xl p-6 bg-bg-primary">
+            <div className="border border-border rounded-2xl p-6 bg-void">
               {tab === 'profile' && <ProfileForm user={user} onSaved={handleSaved} />}
               {tab === 'security' && <SecurityForm />}
             </div>
@@ -351,13 +351,13 @@ function ProfilePage() {
 
         {/* Quick links */}
         <div className="mt-8 grid grid-cols-2 gap-4">
-          <Link href="/my-bookings" className="border border-border rounded-xl p-4 hover:bg-bg-secondary transition-colors group">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1">Bookings</p>
-            <p className="font-display text-lg text-ink-primary group-hover:text-accent transition-colors">View tickets →</p>
+          <Link href="/my-bookings" className="border border-border rounded-xl p-4 hover:bg-surface transition-colors group">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-1">Bookings</p>
+            <p className="font-display text-lg text-cream group-hover:text-lime transition-colors">View tickets →</p>
           </Link>
-          <Link href="/settings" className="border border-border rounded-xl p-4 hover:bg-bg-secondary transition-colors group">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-1">Settings</p>
-            <p className="font-display text-lg text-ink-primary group-hover:text-accent transition-colors">Privacy & notifications →</p>
+          <Link href="/settings" className="border border-border rounded-xl p-4 hover:bg-surface transition-colors group">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-1">Settings</p>
+            <p className="font-display text-lg text-cream group-hover:text-lime transition-colors">Privacy & notifications →</p>
           </Link>
         </div>
 

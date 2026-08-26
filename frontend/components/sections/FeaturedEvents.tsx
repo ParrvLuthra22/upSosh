@@ -60,7 +60,7 @@ const EVENTS = [
 function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?: number }) {
   return (
     <motion.article
-      className={`group relative rounded-2xl overflow-hidden border border-border bg-bg-secondary ${event.span}`}
+      className={`group relative rounded-2xl overflow-hidden border border-border bg-surface ${event.span}`}
       data-cursor="VIEW"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -80,19 +80,19 @@ function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?:
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
         {/* Category tag */}
-        <span className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-[0.15em] bg-bg-primary/90 text-ink-primary px-2.5 py-1.5 rounded-full">
+        <span className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-[0.15em] bg-void/90 text-cream px-2.5 py-1.5 rounded-full">
           {event.category}
         </span>
       </div>
 
       {/* Card info */}
       <div className="p-5 border-t border-border">
-        <h3 className="font-display text-xl text-ink-primary leading-snug tracking-tight mb-3">
+        <h3 className="font-display text-xl text-cream leading-snug tracking-tight mb-3">
           {event.title}
         </h3>
         <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-ink-muted">{event.host}</span>
-          <span className="font-mono text-xs text-ink-light">{event.date}</span>
+          <span className="font-mono text-xs text-cream-dim">{event.host}</span>
+          <span className="font-mono text-xs text-cream-faint">{event.date}</span>
         </div>
       </div>
     </motion.article>
@@ -103,12 +103,12 @@ export default function FeaturedEvents() {
   const headingRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className="bg-bg-primary border-t border-border py-24 md:py-32 px-6 md:px-16">
+    <section className="bg-void border-t border-border py-24 md:py-32 px-6 md:px-16">
       {/* Heading */}
       <div ref={headingRef} className="flex items-end justify-between mb-12 md:mb-16">
         <div>
           <motion.p
-            className="font-mono text-xs uppercase tracking-[0.2em] text-ink-muted mb-5"
+            className="font-mono text-xs uppercase tracking-[0.2em] text-cream-dim mb-5"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -117,7 +117,7 @@ export default function FeaturedEvents() {
             [ 02 — FEATURED ]
           </motion.p>
           <motion.h2
-            className="display-lg text-ink-primary leading-[1.0] tracking-tight"
+            className="display-lg text-cream leading-[1.0] tracking-tight"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -128,7 +128,7 @@ export default function FeaturedEvents() {
         </div>
         <motion.a
           href="/booking"
-          className="hidden md:block font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="hidden md:block font-sans text-sm text-cream-dim hover:text-cream transition-colors"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

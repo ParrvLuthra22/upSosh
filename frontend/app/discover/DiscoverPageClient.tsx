@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import Link from 'next/link';
 import {
   IconSearch,
   IconAdjustments,
@@ -12,6 +11,7 @@ import {
 import { type MockEvent } from '@/lib/eventTypes';
 import { cn } from '@/lib/utils';
 import type { EventCardProps } from '@/components/EventCard';
+import { EmptyState as SharedEmptyState } from '@/components/ui/EmptyState';
 
 // ─── Lazy-import EventCard client component ───────────────────────────────────
 // (avoids a circular dep from the server component tree)
@@ -361,56 +361,46 @@ function FilterDrawer({
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
+function SpotlightIllustration() {
+  return (
+    <svg viewBox="0 0 200 160" className="w-40 h-32" fill="none" aria-hidden="true">
+      {/* Cone */}
+      <path d="M100 18 L55 148 L145 148 Z" fill="rgba(212,255,63,0.05)" />
+      {/* Cone edges */}
+      <line x1="100" y1="26" x2="56" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
+      <line x1="100" y1="26" x2="144" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
+      {/* Stage floor */}
+      <rect x="30" y="148" width="140" height="3" rx="1.5" fill="rgba(244,241,234,0.06)" />
+      {/* Lamp */}
+      <circle cx="100" cy="14" r="10" fill="var(--surface)" stroke="var(--border-strong)" strokeWidth="1.2" />
+      <motion.circle
+        cx="100" cy="14" r="5"
+        fill="var(--lime)"
+        animate={{ opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      {/* Inner cone glow */}
+      <ellipse cx="100" cy="148" rx="35" ry="4" fill="var(--lime)" opacity="0.06" />
+    </svg>
+  );
+}
+
 function EmptyState() {
   return (
     <motion.div
-      className="flex flex-col items-center text-center py-32 px-6"
+      className="flex flex-col items-center py-32 px-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EASE }}
     >
-      {/* Spotlight SVG */}
-      <svg
-        viewBox="0 0 200 160"
-        className="w-40 h-32 mb-8"
-        fill="none"
-        aria-hidden="true"
-      >
-        {/* Cone */}
-        <path d="M100 18 L55 148 L145 148 Z" fill="rgba(212,255,63,0.05)" />
-        {/* Cone edges */}
-        <line x1="100" y1="26" x2="56" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
-        <line x1="100" y1="26" x2="144" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
-        {/* Stage floor */}
-        <rect x="30" y="148" width="140" height="3" rx="1.5" fill="rgba(244,241,234,0.06)" />
-        {/* Lamp */}
-        <circle cx="100" cy="14" r="10" fill="var(--surface)" stroke="var(--border-strong)" strokeWidth="1.2" />
-        <motion.circle
-          cx="100" cy="14" r="5"
-          fill="var(--lime)"
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        {/* Inner cone glow */}
-        <ellipse cx="100" cy="148" rx="35" ry="4" fill="var(--lime)" opacity="0.06" />
-      </svg>
-
-      <h3 className="font-display text-[32px] text-cream leading-tight mb-3">
-        The lights are still warming up.
-      </h3>
-      <p className="font-sans text-[15px] text-cream-dim max-w-md leading-relaxed mb-8">
-        We're curating the first batch of events in your city.
-        Want to be the first to know?
-      </p>
-
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/become-a-host"
-          className="h-11 px-6 bg-lime text-void rounded-full font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors inline-flex items-center"
-        >
-          Become a host
-        </Link>
-      </div>
+      <SharedEmptyState
+        icon={<SpotlightIllustration />}
+        heading="The lights are still warming up."
+        description="We're curating the first batch of events in your city. Want to be the first to know?"
+        action={{ label: 'Become a host', href: '/become-a-host' }}
+        className="py-0"
+        headingClassName="max-w-lg"
+      />
 
       {/* Ghost placeholder cards */}
       <div className="mt-14 w-full max-w-2xl grid grid-cols-1 sm:grid-cols-3 gap-4 opacity-50">
@@ -422,8 +412,8 @@ function EmptyState() {
           >
             <div className="aspect-[4/5] bg-surface" />
             <div className="p-4 space-y-2">
-              <div className="h-3 bg-surface rounded w-4/5" />
-              <div className="h-3 bg-surface rounded w-3/5" />
+              <div className="h-3 bg-surface rounded-lg w-4/5" />
+              <div className="h-3 bg-surface rounded-lg w-3/5" />
             </div>
           </div>
         ))}
@@ -661,9 +651,9 @@ export default function DiscoverPageClient() {
               <div key={i} className="break-inside-avoid mb-5 bg-surface border border-border rounded-3xl overflow-hidden animate-pulse">
                 <div className="aspect-[4/5]" />
                 <div className="p-5 space-y-3">
-                  <div className="h-3 bg-surface-2 rounded w-1/3" />
-                  <div className="h-5 bg-surface-2 rounded w-4/5" />
-                  <div className="h-3 bg-surface-2 rounded w-3/5" />
+                  <div className="h-3 bg-surface-2 rounded-lg w-1/3" />
+                  <div className="h-5 bg-surface-2 rounded-lg w-4/5" />
+                  <div className="h-3 bg-surface-2 rounded-lg w-3/5" />
                 </div>
               </div>
             ))}

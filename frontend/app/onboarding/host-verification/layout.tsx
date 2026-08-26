@@ -34,11 +34,11 @@ export default function HostVerificationLayout({ children }: { children: React.R
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
+    <div className="min-h-screen bg-void flex flex-col">
       {/* Accent progress bar */}
       <div className="h-0.5 bg-border relative">
         <motion.div
-          className="absolute inset-y-0 left-0 bg-accent"
+          className="absolute inset-y-0 left-0 bg-lime"
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.4, ease: EASE_VERCEL }}
         />
@@ -46,14 +46,14 @@ export default function HostVerificationLayout({ children }: { children: React.R
 
       {/* Top bar */}
       <div className="px-6 md:px-10 py-5 flex items-center justify-between">
-        <Link href="/" className="font-display text-xl text-ink-primary">
+        <Link href="/" className="font-display text-xl text-cream">
           UpSosh
         </Link>
         <div className="flex flex-col items-end gap-0.5">
-          <span className="font-mono text-[10px] uppercase text-ink-muted tracking-[0.15em]">
+          <span className="font-mono text-[10px] uppercase text-cream-dim tracking-[0.15em]">
             Host Verification
           </span>
-          <span className="font-mono text-[11px] text-ink-muted">
+          <span className="font-mono text-[11px] text-cream-dim">
             Step {currentStep} of {TOTAL}
           </span>
         </div>
@@ -75,10 +75,10 @@ export default function HostVerificationLayout({ children }: { children: React.R
       </div>
 
       {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={handleBack}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>

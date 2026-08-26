@@ -7,6 +7,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import MagneticButton from '@/components/ui/MagneticButton';
+import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
 // ─── Earnings Calculator ─────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ function EarningsCalculator() {
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-0.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full"
+        className="w-full h-0.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-lime [&::-webkit-slider-thumb]:rounded-full"
       />
       <div className="flex justify-between mt-1">
         <span className="font-mono text-[10px] text-white/25">{format(min)}</span>
@@ -42,9 +43,9 @@ function EarningsCalculator() {
   );
 
   return (
-    <section className="bg-bg-dark py-20 px-6 md:px-12">
+    <section className="bg-void py-20 px-6 md:px-12">
       <div className="max-w-4xl mx-auto">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent mb-6">[ ESTIMATE YOUR EARNINGS ]</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-lime mb-6">[ ESTIMATE YOUR EARNINGS ]</p>
         <div className="grid md:grid-cols-2 gap-12">
           <div>
             <Slider label="Events per month" min={1} max={10} value={events} onChange={setEvents} format={(v: number) => v} />
@@ -73,7 +74,7 @@ function EarningsCalculator() {
                 <span>Platform fee (8%)</span>
                 <span>- ₹{fee.toLocaleString('en-IN')}</span>
               </div>
-              <div className="border-t border-white/10 pt-2 flex justify-between font-mono text-xs text-accent">
+              <div className="border-t border-white/10 pt-2 flex justify-between font-mono text-xs text-lime">
                 <span>Net payout</span>
                 <span>₹{net.toLocaleString('en-IN')}</span>
               </div>
@@ -120,8 +121,8 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <section className="py-20 px-6 md:px-12 max-w-3xl mx-auto">
-      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-4">[ FAQ ]</p>
-      <h2 className="font-display text-4xl text-ink-primary mb-10" style={{ letterSpacing: '-0.03em' }}>Common questions.</h2>
+      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-4">[ FAQ ]</p>
+      <h2 className="font-display text-4xl text-cream mb-10" style={{ letterSpacing: '-0.03em' }}>Common questions.</h2>
       <div className="divide-y divide-border">
         {FAQS.map((faq, i) => (
           <div key={i}>
@@ -129,11 +130,11 @@ function FAQ() {
               onClick={() => setOpen(open === i ? null : i)}
               className="w-full flex items-center justify-between py-5 text-left group"
             >
-              <span className="font-display text-lg text-ink-primary group-hover:text-accent transition-colors">{faq.q}</span>
+              <span className="font-display text-lg text-cream group-hover:text-lime transition-colors">{faq.q}</span>
               <motion.span
                 animate={{ rotate: open === i ? 45 : 0 }}
                 transition={{ duration: 0.2, ease: EASE_VERCEL }}
-                className="font-sans text-xl text-ink-muted flex-shrink-0 ml-4"
+                className="font-sans text-xl text-cream-dim flex-shrink-0 ml-4"
               >+</motion.span>
             </button>
             <AnimatePresence>
@@ -145,7 +146,7 @@ function FAQ() {
                   transition={{ duration: 0.3, ease: EASE_VERCEL }}
                   className="overflow-hidden"
                 >
-                  <p className="font-sans text-base text-ink-muted leading-relaxed pb-5">{faq.a}</p>
+                  <p className="font-sans text-base text-cream-dim leading-relaxed pb-5">{faq.a}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -179,17 +180,17 @@ export default function BecomeAHostPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
 
       {/* ── Hero ────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[90vh] bg-bg-dark flex items-center overflow-hidden pt-20">
+      <section className="relative min-h-[90vh] bg-void flex items-center overflow-hidden pt-20">
         {/* BG grain */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }} />
 
         <div className="relative max-w-7xl mx-auto px-6 md:px-16 py-20 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <motion.p
-              className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent mb-6"
+              className="font-mono text-[11px] uppercase tracking-[0.2em] text-lime mb-6"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE_VERCEL }}
             >
               [ HOST ON UPSOSH ]
@@ -213,12 +214,9 @@ export default function BecomeAHostPage() {
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.35 }}
             >
               <MagneticButton>
-                <button
-                  onClick={handleApply}
-                  className="font-sans text-base font-medium bg-accent text-white px-8 py-4 rounded-full hover:bg-white hover:text-ink-primary transition-colors duration-300"
-                >
+                <Button onClick={handleApply} variant="primary" size="lg" shape="pill">
                   Apply to host →
-                </button>
+                </Button>
               </MagneticButton>
             </motion.div>
           </div>
@@ -232,7 +230,7 @@ export default function BecomeAHostPage() {
             <div className="w-80 h-64 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-5">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">Host Dashboard</p>
-                <span className="w-2 h-2 rounded-full bg-accent" />
+                <span className="w-2 h-2 rounded-full bg-lime" />
               </div>
               {['Revenue this month', 'Total attendees', 'Upcoming events'].map((l, i) => (
                 <div key={l} className="flex items-center justify-between py-3 border-b border-white/5">
@@ -248,14 +246,14 @@ export default function BecomeAHostPage() {
       </section>
 
       {/* ── Stats band ────────────────────────────────────────────── */}
-      <section className="bg-bg-primary border-b border-border py-16 px-6 md:px-12">
+      <section className="bg-void border-b border-border py-16 px-6 md:px-12">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {STATS.map((s, i) => (
             <div key={i} className="flex flex-col items-center gap-2">
-              <p className="font-display text-ink-primary" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)' }}>
+              <p className="font-display text-cream" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)' }}>
                 <StatNum target={s.value} prefix={s.prefix ?? ''} suffix={s.suffix ?? ''} />
               </p>
-              <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted">{s.label}</p>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">{s.label}</p>
             </div>
           ))}
         </div>
@@ -263,8 +261,8 @@ export default function BecomeAHostPage() {
 
       {/* ── Why host with us ──────────────────────────────────────── */}
       <section className="py-20 px-6 md:px-16 max-w-6xl mx-auto">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted mb-4">[ WHY US ]</p>
-        <h2 className="font-display text-4xl text-ink-primary mb-14" style={{ letterSpacing: '-0.03em' }}>Built for modern hosts.</h2>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-4">[ WHY US ]</p>
+        <h2 className="font-display text-4xl text-cream mb-14" style={{ letterSpacing: '-0.03em' }}>Built for modern hosts.</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
             { n: '01', title: 'Built-in audience', body: 'Your event is shown to thousands of curious people already looking for experiences like yours.' },
@@ -273,12 +271,12 @@ export default function BecomeAHostPage() {
           ].map((p) => (
             <motion.div
               key={p.n}
-              className="border border-border rounded-2xl p-8 bg-bg-primary hover:bg-bg-secondary transition-colors"
+              className="border border-border rounded-2xl p-8 bg-void hover:bg-surface transition-colors"
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
             >
               <p className="font-mono text-3xl text-border mb-6">{p.n}</p>
-              <h3 className="font-display text-2xl text-ink-primary mb-3">{p.title}</h3>
-              <p className="font-sans text-base text-ink-muted leading-relaxed">{p.body}</p>
+              <h3 className="font-display text-2xl text-cream mb-3">{p.title}</h3>
+              <p className="font-sans text-base text-cream-dim leading-relaxed">{p.body}</p>
             </motion.div>
           ))}
         </div>
@@ -291,8 +289,8 @@ export default function BecomeAHostPage() {
       <FAQ />
 
       {/* ── Final CTA ─────────────────────────────────────────────── */}
-      <section className="bg-bg-dark py-24 px-6 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent mb-6">[ GET STARTED ]</p>
+      <section className="bg-void py-24 px-6 text-center">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-lime mb-6">[ GET STARTED ]</p>
         <h2 className="font-display text-white mb-4" style={{ fontSize: 'clamp(2.5rem,5vw,4.5rem)', letterSpacing: '-0.04em' }}>
           Ready to host your first event?
         </h2>
@@ -303,7 +301,7 @@ export default function BecomeAHostPage() {
           <MagneticButton>
             <button
               onClick={handleApply}
-              className="font-sans text-base font-medium bg-accent text-white px-8 py-4 rounded-full hover:bg-white hover:text-ink-primary transition-colors duration-300"
+              className="font-sans text-base font-medium bg-lime text-white px-8 py-4 rounded-full hover:bg-white hover:text-cream transition-colors duration-300"
             >
               Apply to host →
             </button>

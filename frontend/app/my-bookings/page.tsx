@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
@@ -11,6 +10,8 @@ import { api } from '@/lib/api';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
 import { useEscapeKey } from '@/lib/a11y';
+import { IconTicketOff } from '@tabler/icons-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 type TabType = 'upcoming' | 'past' | 'cancelled';
 
@@ -44,18 +45,19 @@ interface Booking {
 // ─── Status styles ────────────────────────────────────────────────────────────
 
 const STATUS = {
-  confirmed: { label: 'Confirmed', bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-  pending:   { label: 'Pending',   bg: 'bg-lime/10',        text: 'text-lime',        dot: 'bg-lime' },
-  cancelled: { label: 'Cancelled', bg: 'bg-cream/8',        text: 'text-cream-dim', dot: 'bg-cream-faint' },
+  confirmed:   { label: 'Confirmed',   bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+  pending:     { label: 'Pending',     bg: 'bg-lime/10',        text: 'text-lime',        dot: 'bg-lime' },
+  cancelled:   { label: 'Cancelled',   bg: 'bg-cream/8',        text: 'text-cream-dim',   dot: 'bg-cream-faint' },
+  unavailable: { label: 'Unavailable', bg: 'bg-cream/8',        text: 'text-cream-dim',   dot: 'bg-cream-faint' },
 } as const;
 
 // ─── Booking row ──────────────────────────────────────────────────────────────
 
 function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => void }) {
   const ev = booking.event;
-  const title = ev?.title ?? 'Unnamed Event';
+  const title = ev?.title ?? 'Event unavailable';
   const date = ev?.date ? new Date(ev.date) : null;
-  const s = STATUS[booking.status] ?? STATUS.pending;
+  const s = !ev ? STATUS.unavailable : (STATUS[booking.status] ?? STATUS.pending);
 
   return (
     <motion.button
@@ -68,12 +70,16 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
         <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden">
           <Image src={ev.image} alt={title} fill sizes="56px" className="object-cover" />
         </div>
-      ) : (
+      ) : ev ? (
         <div className="flex-shrink-0 w-14 h-14 bg-surface-2 border border-border rounded-xl flex flex-col items-center justify-center">
           <p className="font-display text-xl text-cream leading-none">{date?.getDate() ?? '?'}</p>
           <p className="font-mono text-[9px] text-cream-dim uppercase tracking-wider">
             {date?.toLocaleString('en-IN', { month: 'short' }) ?? ''}
           </p>
+        </div>
+      ) : (
+        <div className="flex-shrink-0 w-14 h-14 bg-surface-2 border border-border rounded-xl flex items-center justify-center">
+          <IconTicketOff size={20} className="text-cream-faint" />
         </div>
       )}
 
@@ -81,9 +87,11 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
       <div className="flex-1 min-w-0">
         <p className="font-display text-[16px] text-cream truncate mb-0.5">{title}</p>
         <p className="font-mono text-[11px] text-cream-dim truncate">
-          {date
-            ? date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
-            : 'Date TBD'}
+          {!ev
+            ? 'This listing is no longer available'
+            : date
+              ? date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
+              : 'Date TBD'}
           {ev?.time ? ` · ${ev.time}` : ''}
           {ev?.venue ? ` · ${ev.venue}` : ''}
         </p>
@@ -115,9 +123,10 @@ function TicketModal({ booking, onClose, onCancel }: {
   onCancel: (id: string) => void;
 }) {
   const ev = booking.event;
-  const title = ev?.title ?? 'Your event';
+  const title = ev?.title ?? 'Event unavailable';
   const date = ev?.date ? new Date(ev.date) : null;
   const qrValue = booking.qrCode ?? `UPSOSH-${booking.id}`;
+  const bookingRef = `UPSOSH-${booking.id}`;
   const [cancelling, setCancelling] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
@@ -209,30 +218,49 @@ function TicketModal({ booking, onClose, onCancel }: {
             <div className="p-6">
               {!ev?.image && (
                 <div className="flex items-center justify-between mb-4">
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Your ticket</p>
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">
+                    {ev ? 'Your ticket' : 'Booking details'}
+                  </p>
                   <button onClick={onClose} aria-label="Close ticket" className="text-cream-dim hover:text-cream transition-colors text-lg leading-none">✕</button>
                 </div>
               )}
 
               {/* Title + date */}
               <h3 className="font-display text-[22px] text-cream leading-tight mb-1">{title}</h3>
-              {date && (
-                <p className="font-mono text-[12px] text-cream-dim mb-1">
-                  {date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                  {ev?.time ? ` · ${ev.time}` : ''}
+              {ev ? (
+                <>
+                  {date && (
+                    <p className="font-mono text-[12px] text-cream-dim mb-1">
+                      {date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                      {ev.time ? ` · ${ev.time}` : ''}
+                    </p>
+                  )}
+                  {ev.venue && (
+                    <p className="font-mono text-[12px] text-cream-dim mb-5">{ev.venue}{ev.city ? `, ${ev.city}` : ''}</p>
+                  )}
+                </>
+              ) : (
+                <p className="font-sans text-[13px] text-cream-dim mb-5 leading-relaxed">
+                  This event's listing has been removed or is no longer available. Your booking record is kept for reference.
                 </p>
               )}
-              {ev?.venue && (
-                <p className="font-mono text-[12px] text-cream-dim mb-5">{ev.venue}{ev.city ? `, ${ev.city}` : ''}</p>
-              )}
 
-              {/* QR code */}
-              <div className="bg-white rounded-2xl p-4 flex items-center justify-center mb-5">
-                <QRCode value={qrValue} size={160} level="M" />
-              </div>
-              <p className="font-mono text-[10px] text-cream-dim text-center mb-5 tracking-widest">
-                {qrValue}
-              </p>
+              {/* QR code (only when there's a real event to check into) */}
+              {ev ? (
+                <>
+                  <div className="bg-white rounded-2xl p-4 flex items-center justify-center mb-5">
+                    <QRCode value={qrValue} size={160} level="M" />
+                  </div>
+                  <p className="font-mono text-[10px] text-cream-dim text-center mb-5 tracking-widest">
+                    {qrValue}
+                  </p>
+                </>
+              ) : (
+                <div className="bg-surface-2 rounded-xl px-4 py-3 mb-5 text-center">
+                  <p className="font-mono text-[10px] text-cream-dim uppercase tracking-wider mb-1">Booking reference</p>
+                  <p className="font-mono text-[13px] text-cream tracking-widest">{bookingRef}</p>
+                </div>
+              )}
 
               {/* Payment summary */}
               {booking.totalAmount > 0 ? (
@@ -258,12 +286,14 @@ function TicketModal({ booking, onClose, onCancel }: {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <button
-                  onClick={addToCalendar}
-                  className="flex-1 h-11 border border-border rounded-full font-sans text-[13px] text-cream-dim hover:text-cream hover:border-border-strong transition-colors"
-                >
-                  Add to calendar
-                </button>
+                {ev && (
+                  <button
+                    onClick={addToCalendar}
+                    className="flex-1 h-11 border border-border rounded-full font-sans text-[13px] text-cream-dim hover:text-cream hover:border-border-strong transition-colors"
+                  >
+                    Add to calendar
+                  </button>
+                )}
                 {booking.status === 'confirmed' && (
                   <button
                     onClick={handleCancel}
@@ -286,30 +316,13 @@ function TicketModal({ booking, onClose, onCancel }: {
   );
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// ─── Empty state copy ─────────────────────────────────────────────────────────
 
-function EmptyState({ tab }: { tab: TabType }) {
-  const copy = {
-    upcoming: { heading: 'No upcoming bookings', sub: 'Find something worth showing up to.' },
-    past:     { heading: 'No past events yet',   sub: 'Your history will appear here.' },
-    cancelled: { heading: 'No cancelled bookings', sub: '' },
-  }[tab];
-
-  return (
-    <div className="py-28 text-center">
-      <p className="font-display text-[32px] text-cream mb-3">{copy.heading}</p>
-      {copy.sub && <p className="font-sans text-[15px] text-cream-dim mb-8">{copy.sub}</p>}
-      {tab === 'upcoming' && (
-        <Link
-          href="/discover"
-          className="inline-flex items-center gap-2 h-11 px-7 rounded-full bg-lime text-void font-sans text-[14px] font-semibold hover:bg-lime/90 transition-colors"
-        >
-          Browse events
-        </Link>
-      )}
-    </div>
-  );
-}
+const BOOKINGS_EMPTY_COPY: Record<TabType, { heading: string; description?: string }> = {
+  upcoming:  { heading: 'No upcoming bookings', description: 'Find something worth showing up to.' },
+  past:      { heading: 'No past events yet',   description: 'Your history will appear here.' },
+  cancelled: { heading: 'No cancelled bookings' },
+};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -423,7 +436,11 @@ export default function MyBookingsPage() {
               className="space-y-3"
             >
               {filtered.length === 0 ? (
-                <EmptyState tab={tab} />
+                <EmptyState
+                  heading={BOOKINGS_EMPTY_COPY[tab].heading}
+                  description={BOOKINGS_EMPTY_COPY[tab].description}
+                  action={tab === 'upcoming' ? { label: 'Browse events', href: '/discover' } : undefined}
+                />
               ) : (
                 filtered.map((b) => (
                   <BookingRow key={b.id} booking={b} onClick={() => setSelected(b)} />

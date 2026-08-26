@@ -86,6 +86,16 @@ const config: Config = {
       transitionTimingFunction: {
         vercel: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
+      boxShadow: {
+        // Named entries for the ad hoc glow/panel shadows found across the
+        // app. `glow-lime` is usable as a static className; `panel` and
+        // `glow-lime-strong` are also mirrored as JS constants in lib/motion.ts
+        // (SHADOW_PANEL / SHADOW_GLOW_LIME) for framer-motion animation
+        // targets, which can't consume Tailwind classes directly.
+        'glow-lime':        '0 0 24px rgba(212,255,63,0.15)',
+        'glow-lime-strong': '0 0 32px rgba(212,255,63,0.4)',
+        panel:               '0 16px 40px rgba(10,10,10,0.08)',
+      },
     },
   },
   plugins: [],

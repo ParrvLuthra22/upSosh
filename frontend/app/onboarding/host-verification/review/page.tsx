@@ -34,10 +34,10 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-muted">{title}</p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cream-dim">{title}</p>
       <Link
         href={editHref}
-        className="font-mono text-[11px] text-accent hover:opacity-80 transition-opacity"
+        className="font-mono text-[11px] text-lime hover:opacity-80 transition-opacity"
       >
         Edit
       </Link>
@@ -141,7 +141,7 @@ export default function ReviewPage() {
   return (
     <div className="space-y-8 pb-8">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           Review and submit.
         </h1>
       </div>
@@ -160,8 +160,8 @@ export default function ReviewPage() {
               </div>
             </div>
           ) : (
-            <div className="w-[60px] h-[60px] rounded-xl bg-bg-secondary border border-border flex items-center justify-center flex-shrink-0">
-              <span className="font-mono text-[8px] text-ink-muted text-center">No ID</span>
+            <div className="w-[60px] h-[60px] rounded-xl bg-surface border border-border flex items-center justify-center flex-shrink-0">
+              <span className="font-mono text-[8px] text-cream-dim text-center">No ID</span>
             </div>
           )}
           {data.selfiePreview ? (
@@ -174,8 +174,8 @@ export default function ReviewPage() {
               </div>
             </div>
           ) : (
-            <div className="w-[60px] h-[60px] rounded-xl bg-bg-secondary border border-border flex items-center justify-center flex-shrink-0">
-              <span className="font-mono text-[8px] text-ink-muted text-center">No selfie</span>
+            <div className="w-[60px] h-[60px] rounded-xl bg-surface border border-border flex items-center justify-center flex-shrink-0">
+              <span className="font-mono text-[8px] text-cream-dim text-center">No selfie</span>
             </div>
           )}
         </div>
@@ -186,7 +186,7 @@ export default function ReviewPage() {
         <SectionHeader title="Profile" editHref="/onboarding/host-verification/profile" />
         <div className="space-y-3">
           {data.bio && (
-            <p className="font-sans text-sm text-ink-muted leading-relaxed">
+            <p className="font-sans text-sm text-cream-dim leading-relaxed">
               {data.bio.slice(0, 120)}{data.bio.length > 120 ? '...' : ''}
             </p>
           )}
@@ -195,7 +195,7 @@ export default function ReviewPage() {
               {data.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="font-mono text-[10px] border border-border rounded-full px-2 py-0.5 text-ink-muted"
+                  className="font-mono text-[10px] border border-border rounded-full px-2 py-0.5 text-cream-dim"
                 >
                   {cat}
                 </span>
@@ -209,26 +209,26 @@ export default function ReviewPage() {
       <div className="border border-border rounded-2xl p-5">
         <SectionHeader title="Sample Event" editHref="/onboarding/host-verification/sample-event" />
         <div className="border border-border rounded-xl overflow-hidden">
-          <div className="bg-bg-secondary h-[80px] flex items-center justify-center">
-            <span className="font-mono text-xs text-ink-muted">Event image</span>
+          <div className="bg-surface h-[80px] flex items-center justify-center">
+            <span className="font-mono text-xs text-cream-dim">Event image</span>
           </div>
           <div className="p-4 space-y-1.5">
-            <p className="font-display text-lg text-ink-primary">
+            <p className="font-display text-lg text-cream">
               {data.eventTitle || 'Untitled event'}
             </p>
             <div>
               {data.eventDate && (
-                <p className="font-mono text-xs text-ink-muted">
+                <p className="font-mono text-xs text-cream-dim">
                   {data.eventDate} {data.eventTime && `· ${data.eventTime}`}
                 </p>
               )}
               {data.eventLocation && (
-                <p className="font-mono text-xs text-ink-muted">{data.eventLocation}</p>
+                <p className="font-mono text-xs text-cream-dim">{data.eventLocation}</p>
               )}
             </div>
             <div className="flex items-center gap-2 pt-1">
               {data.eventCategory && (
-                <span className="font-mono text-[10px] border border-border rounded-full px-2 py-0.5 text-ink-muted">
+                <span className="font-mono text-[10px] border border-border rounded-full px-2 py-0.5 text-cream-dim">
                   {data.eventCategory}
                 </span>
               )}
@@ -236,7 +236,7 @@ export default function ReviewPage() {
                 className={`font-mono text-[10px] rounded-full px-2 py-0.5 ${
                   data.eventTicketType === 'free'
                     ? 'bg-verified/10 text-verified'
-                    : 'bg-accent/10 text-accent'
+                    : 'bg-lime/10 text-lime'
                 }`}
               >
                 {data.eventTicketType === 'free' ? 'Free' : data.eventPrice ? `₹${data.eventPrice}` : 'Paid'}
@@ -247,20 +247,20 @@ export default function ReviewPage() {
       </div>
 
       {/* Trust note */}
-      <div className="bg-bg-secondary border border-border rounded-2xl p-5 flex gap-3 items-start">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted flex-shrink-0 mt-0.5">
+      <div className="bg-surface border border-border rounded-2xl p-5 flex gap-3 items-start">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim flex-shrink-0 mt-0.5">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
-        <p className="font-sans text-sm text-ink-muted">
+        <p className="font-sans text-sm text-cream-dim">
           Verification typically takes 24–48 hours. We'll email you once approved.
         </p>
       </div>
 
       {/* Submit */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/host-verification/sample-event')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -268,7 +268,7 @@ export default function ReviewPage() {
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-60 hover:bg-accent transition-colors duration-300 flex items-center gap-2"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-60 hover:bg-lime transition-colors duration-300 flex items-center gap-2"
           >
             {isLoading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

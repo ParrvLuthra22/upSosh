@@ -40,3 +40,9 @@ export const maskReveal: Variants = {
 };
 
 export const EASE_VERCEL = ease;
+
+// Shared box-shadow values for framer-motion animation targets (whileHover,
+// animate, etc.) — these can't be Tailwind classes since Motion animates the
+// raw CSS value, not a static utility class.
+export const SHADOW_PANEL = '0 16px 40px rgba(10,10,10,0.08)';
+export const SHADOW_GLOW_LIME = '0 0 32px rgba(212,255,63,0.4)';

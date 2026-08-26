@@ -101,14 +101,14 @@ export default function HostEventDetailPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+    <div className="min-h-screen bg-void flex items-center justify-center">
       <span className="w-6 h-6 border-2 border-border border-t-accent rounded-full animate-spin" />
     </div>
   );
 
   if (!event) return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-      <p className="font-display text-2xl text-ink-primary">Event not found.</p>
+    <div className="min-h-screen bg-void flex items-center justify-center">
+      <p className="font-display text-2xl text-cream">Event not found.</p>
     </div>
   );
 
@@ -119,16 +119,16 @@ export default function HostEventDetailPage() {
   const confirmedCount = attendees.filter((a) => a.checkedIn).length;
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen bg-void">
       <div className="max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-24">
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted mb-2">[ MANAGE EVENT ]</p>
-            <h1 className="font-display text-3xl text-ink-primary" style={{ letterSpacing: '-0.03em' }}>{event.title}</h1>
+            <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">[ MANAGE EVENT ]</p>
+            <h1 className="font-display text-3xl text-cream" style={{ letterSpacing: '-0.03em' }}>{event.title}</h1>
             {event.date && (
-              <p className="font-mono text-xs text-ink-muted mt-1">
+              <p className="font-mono text-xs text-cream-dim mt-1">
                 {new Date(event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             )}
@@ -136,7 +136,7 @@ export default function HostEventDetailPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowAnnouncement(true)}
-              className="px-4 py-2 bg-accent text-white rounded-full font-sans text-sm font-medium hover:bg-ink-primary transition-colors"
+              className="px-4 py-2 bg-lime text-white rounded-full font-sans text-sm font-medium hover:bg-cream transition-colors"
             >
               Send announcement
             </button>
@@ -150,9 +150,9 @@ export default function HostEventDetailPage() {
             { label: 'Revenue', value: event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—' },
             { label: 'Checked in', value: `${confirmedCount} / ${attendees.length}` },
           ].map((s) => (
-            <div key={s.label} className="border border-border rounded-2xl p-5 bg-bg-primary">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-ink-muted mb-2">{s.label}</p>
-              <p className="font-display text-2xl text-ink-primary">{s.value}</p>
+            <div key={s.label} className="border border-border rounded-2xl p-5 bg-void">
+              <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-2">{s.label}</p>
+              <p className="font-display text-2xl text-cream">{s.value}</p>
             </div>
           ))}
         </div>
@@ -160,12 +160,12 @@ export default function HostEventDetailPage() {
         {/* Capacity bar */}
         <div className="mb-10">
           <div className="flex justify-between items-center mb-2">
-            <p className="font-mono text-[11px] text-ink-muted uppercase tracking-widest">Capacity</p>
-            <p className="font-mono text-xs text-accent">{pct}% full</p>
+            <p className="font-mono text-[11px] text-cream-dim uppercase tracking-widest">Capacity</p>
+            <p className="font-mono text-xs text-lime">{pct}% full</p>
           </div>
           <div className="h-1.5 bg-border rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-accent rounded-full"
+              className="h-full bg-lime rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.8, ease: EASE_VERCEL }}
@@ -175,29 +175,29 @@ export default function HostEventDetailPage() {
 
         {/* Attendees table */}
         <div className="border border-border rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 bg-bg-secondary border-b border-border">
-            <p className="font-mono text-[11px] uppercase tracking-widest text-ink-muted">Attendees</p>
-            <button onClick={downloadCSV} className="font-mono text-xs text-ink-muted hover:text-accent transition-colors">
+          <div className="flex items-center justify-between px-5 py-4 bg-surface border-b border-border">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">Attendees</p>
+            <button onClick={downloadCSV} className="font-mono text-xs text-cream-dim hover:text-lime transition-colors">
               Download CSV ↓
             </button>
           </div>
 
           {attendees.length === 0 ? (
             <div className="px-5 py-12 text-center">
-              <p className="font-display text-xl text-ink-primary mb-2">No attendees yet.</p>
-              <p className="font-sans text-sm text-ink-muted">Share your event link to get bookings.</p>
+              <p className="font-display text-xl text-cream mb-2">No attendees yet.</p>
+              <p className="font-sans text-sm text-cream-dim">Share your event link to get bookings.</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
               {attendees.map((attendee) => (
-                <div key={attendee.id} className="flex items-center justify-between px-5 py-3 hover:bg-bg-secondary transition-colors">
+                <div key={attendee.id} className="flex items-center justify-between px-5 py-3 hover:bg-surface transition-colors">
                   <div>
-                    <p className="font-sans text-sm text-ink-primary">{attendee.name}</p>
-                    <p className="font-mono text-[11px] text-ink-muted">{attendee.email}</p>
+                    <p className="font-sans text-sm text-cream">{attendee.name}</p>
+                    <p className="font-mono text-[11px] text-cream-dim">{attendee.email}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={`font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                      attendee.status === 'confirmed' ? 'bg-verified/10 text-verified' : 'bg-border text-ink-muted'
+                      attendee.status === 'confirmed' ? 'bg-verified/10 text-verified' : 'bg-border text-cream-dim'
                     }`}>
                       {attendee.status}
                     </span>
@@ -207,7 +207,7 @@ export default function HostEventDetailPage() {
                       className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${
                         attendee.checkedIn
                           ? 'bg-verified border-verified text-white'
-                          : 'border-border text-ink-muted hover:border-verified hover:text-verified'
+                          : 'border-border text-cream-dim hover:border-verified hover:text-verified'
                       }`}
                     >
                       ✓
@@ -232,24 +232,24 @@ export default function HostEventDetailPage() {
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowAnnouncement(false); }}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div className="bg-bg-primary border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl">
-              <h3 className="font-display text-xl text-ink-primary mb-4">Send announcement</h3>
-              <p className="font-sans text-sm text-ink-muted mb-4">This message will be sent to all {attendees.length} attendees by email.</p>
+            <div className="bg-void border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl">
+              <h3 className="font-display text-xl text-cream mb-4">Send announcement</h3>
+              <p className="font-sans text-sm text-cream-dim mb-4">This message will be sent to all {attendees.length} attendees by email.</p>
               <textarea
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value)}
                 rows={5}
                 placeholder="Hi everyone! A quick update about tomorrow's event…"
-                className="w-full bg-bg-secondary border border-border rounded-xl px-4 py-3 font-sans text-sm text-ink-primary focus:outline-none focus:border-accent transition-colors resize-none mb-4"
+                className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none mb-4"
               />
               <div className="flex gap-3">
-                <button onClick={() => setShowAnnouncement(false)} className="flex-1 py-2.5 border border-border rounded-full font-sans text-sm text-ink-muted hover:text-ink-primary transition-colors">
+                <button onClick={() => setShowAnnouncement(false)} className="flex-1 py-2.5 border border-border rounded-full font-sans text-sm text-cream-dim hover:text-cream transition-colors">
                   Cancel
                 </button>
                 <button
                   onClick={sendAnnouncement}
                   disabled={!announcementText.trim() || sending}
-                  className="flex-1 py-2.5 bg-accent text-white rounded-full font-sans text-sm font-medium hover:bg-ink-primary transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-lime text-white rounded-full font-sans text-sm font-medium hover:bg-cream transition-colors disabled:opacity-50"
                 >
                   {sending ? 'Sending…' : 'Send to all'}
                 </button>

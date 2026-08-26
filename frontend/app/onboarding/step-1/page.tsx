@@ -28,7 +28,7 @@ function FloatingInput({
   const lifted = focused || hasValue;
 
   const sharedProps = {
-    className: `w-full bg-transparent px-4 pt-6 pb-2 font-sans text-sm text-ink-primary outline-none rounded-2xl resize-none`,
+    className: `w-full bg-transparent px-4 pt-6 pb-2 font-sans text-sm text-cream outline-none rounded-2xl resize-none`,
     onFocus: () => setFocused(true),
     onBlur: () => setFocused(false),
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -43,11 +43,11 @@ function FloatingInput({
     <div className="relative">
       <div
         className={`relative border-2 rounded-2xl transition-all duration-200 ${
-          error ? 'border-red-500' : focused ? 'border-accent' : 'border-border'
-        } ${focused ? 'bg-bg-primary' : 'bg-bg-secondary'}`}
+          error ? 'border-red-500' : focused ? 'border-lime' : 'border-border'
+        } ${focused ? 'bg-void' : 'bg-surface'}`}
       >
         <label
-          className={`absolute left-4 pointer-events-none transition-all duration-200 font-sans text-ink-muted ${
+          className={`absolute left-4 pointer-events-none transition-all duration-200 font-sans text-cream-dim ${
             lifted ? 'top-2 text-[11px]' : 'top-1/2 -translate-y-1/2 text-sm'
           }`}
         >
@@ -59,7 +59,7 @@ function FloatingInput({
           <input {...(sharedProps as React.InputHTMLAttributes<HTMLInputElement>)} />
         )}
         {showCounter && maxLength && (
-          <span className="absolute bottom-2 right-4 font-mono text-[10px] text-ink-muted">
+          <span className="absolute bottom-2 right-4 font-mono text-[10px] text-cream-dim">
             {valueLen}/{maxLength}
           </span>
         )}
@@ -111,10 +111,10 @@ export default function OnboardingStep1() {
   return (
     <div className="space-y-10">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">
+        <h1 className="font-display text-5xl text-cream leading-tight">
           Let's start with you.
         </h1>
-        <p className="font-sans text-sm text-ink-muted">
+        <p className="font-sans text-sm text-cream-dim">
           This is how others will see you on UpSosh.
         </p>
       </div>
@@ -156,14 +156,14 @@ export default function OnboardingStep1() {
             ) : (
               <div
                 className={`w-full h-full rounded-full border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors duration-200 ${
-                  photoHovered ? 'border-accent bg-accent/5' : 'border-border bg-bg-secondary'
+                  photoHovered ? 'border-lime bg-lime/5' : 'border-border bg-surface'
                 }`}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim">
                   <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
                   <circle cx="12" cy="13" r="4" />
                 </svg>
-                <span className="font-mono text-[9px] text-ink-muted">Add photo</span>
+                <span className="font-mono text-[9px] text-cream-dim">Add photo</span>
               </div>
             )}
           </button>
@@ -201,13 +201,13 @@ export default function OnboardingStep1() {
       </div>
 
       {/* Continue button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <div />
         <MagneticButton>
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

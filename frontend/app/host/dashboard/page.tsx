@@ -4,10 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, SHADOW_PANEL, SHADOW_GLOW_LIME } from '@/lib/motion';
 import { useAuth } from '@/lib/stores/auth';
 import { type HostEvent } from '@/lib/hostEventTypes';
 import { getApiUrl } from '@/lib/api';
+import { cardVariants } from '@/components/ui/Card';
+import { cn } from '@/lib/utils';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -128,12 +130,12 @@ function Sidebar({
   setActive: (id: string) => void;
 }) {
   return (
-    <aside className="hidden lg:flex flex-col w-[240px] flex-shrink-0 bg-bg-secondary border-r border-border h-screen sticky top-0 overflow-y-auto">
+    <aside className="hidden lg:flex flex-col w-[240px] flex-shrink-0 bg-surface border-r border-border h-screen sticky top-0 overflow-y-auto">
       {/* Logo */}
       <div className="px-6 py-6 border-b border-border">
         <Link href="/">
-          <span className="font-display text-xl text-ink-primary tracking-tight">UpSosh</span>
-          <span className="font-mono text-[10px] text-ink-muted ml-1.5 uppercase tracking-widest">Host</span>
+          <span className="font-display text-xl text-cream tracking-tight">UpSosh</span>
+          <span className="font-mono text-[10px] text-cream-dim ml-1.5 uppercase tracking-widest">Host</span>
         </Link>
       </div>
 
@@ -153,7 +155,7 @@ function Sidebar({
                 {isActive && (
                   <motion.div
                     layoutId="sidebar-active-bg"
-                    className="absolute inset-0 bg-accent/8 rounded-xl"
+                    className="absolute inset-0 bg-lime/8 rounded-xl"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -161,21 +163,21 @@ function Sidebar({
                 {isActive && (
                   <motion.div
                     layoutId="sidebar-active-bar"
-                    className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-accent"
+                    className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-lime"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   />
                 )}
                 <span
                   aria-hidden="true"
                   className={`relative z-10 transition-colors duration-150 ${
-                    isActive ? 'text-accent' : 'text-ink-muted group-hover:text-ink-primary'
+                    isActive ? 'text-lime' : 'text-cream-dim group-hover:text-cream'
                   }`}
                 >
                   {item.icon}
                 </span>
                 <span
                   className={`relative z-10 font-sans text-sm transition-colors duration-150 ${
-                    isActive ? 'text-ink-primary font-medium' : 'text-ink-muted group-hover:text-ink-primary'
+                    isActive ? 'text-cream font-medium' : 'text-cream-dim group-hover:text-cream'
                   }`}
                 >
                   {item.label}
@@ -206,7 +208,7 @@ function SidebarProfile() {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-sans text-sm font-medium text-ink-primary truncate">{user?.name ?? 'Host'}</p>
+          <p className="font-sans text-sm font-medium text-cream truncate">{user?.name ?? 'Host'}</p>
           {user?.hostStatus === 'verified' && (
             <span
               className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded-full"
@@ -229,7 +231,7 @@ function SidebarProfile() {
 
 function MobileBottomNav({ active, setActive }: { active: string; setActive: (id: string) => void }) {
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg-primary/95 backdrop-blur-xl border-t border-border">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-void/95 backdrop-blur-xl border-t border-border">
       <div className="flex justify-around items-center py-2 px-2">
         {MOBILE_NAV.map((item) => {
           const isActive = active === item.id;
@@ -242,14 +244,14 @@ function MobileBottomNav({ active, setActive }: { active: string; setActive: (id
               {isActive && (
                 <motion.div
                   layoutId="mobile-nav-bg"
-                  className="absolute inset-0 bg-accent/10 rounded-xl"
+                  className="absolute inset-0 bg-lime/10 rounded-xl"
                   transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                 />
               )}
-              <span className={`relative z-10 transition-colors ${isActive ? 'text-accent' : 'text-ink-muted'}`}>
+              <span className={`relative z-10 transition-colors ${isActive ? 'text-lime' : 'text-cream-dim'}`}>
                 {item.icon}
               </span>
-              <span className={`relative z-10 font-mono text-[9px] uppercase tracking-wider transition-colors ${isActive ? 'text-accent' : 'text-ink-muted'}`}>
+              <span className={`relative z-10 font-mono text-[9px] uppercase tracking-wider transition-colors ${isActive ? 'text-lime' : 'text-cream-dim'}`}>
                 {item.label.slice(0, 4)}
               </span>
             </button>
@@ -291,21 +293,21 @@ function StatCard({
   return (
     <motion.div
       ref={ref}
-      className="border border-border rounded-2xl p-6 bg-bg-primary hover:bg-bg-secondary transition-colors duration-200 group"
+      className={cn(cardVariants({ interactive: true, padding: 'lg' }), 'group')}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: EASE_VERCEL }}
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
     >
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted mb-3">{label}</p>
-      <p className="font-display text-[2.5rem] text-ink-primary leading-none mb-3">{displayValue}</p>
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-cream-dim mb-3">{label}</p>
+      <p className="font-display text-[2.5rem] text-cream leading-none mb-3">{displayValue}</p>
       <div className="flex items-center gap-1.5">
         <span
           className={`font-mono text-xs ${positive ? 'text-verified' : 'text-red-500'}`}
         >
           {positive ? '↑' : '↓'} {Math.abs(trend)}%
         </span>
-        <span className="font-mono text-[10px] text-ink-light">vs last month</span>
+        <span className="font-mono text-[10px] text-cream-faint">vs last month</span>
       </div>
     </motion.div>
   );
@@ -315,9 +317,9 @@ function StatCard({
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   live: { bg: 'bg-verified/10', text: 'text-verified', label: 'Live' },
-  draft: { bg: 'bg-border', text: 'text-ink-muted', label: 'Draft' },
-  full: { bg: 'bg-accent/10', text: 'text-accent', label: 'Full' },
-  past: { bg: 'bg-border', text: 'text-ink-light', label: 'Past' },
+  draft: { bg: 'bg-border', text: 'text-cream-dim', label: 'Draft' },
+  full: { bg: 'bg-lime/10', text: 'text-lime', label: 'Full' },
+  past: { bg: 'bg-border', text: 'text-cream-faint', label: 'Past' },
 };
 
 function EventCard({ event, index }: { event: HostEvent; index: number }) {
@@ -326,11 +328,11 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
 
   return (
     <motion.div
-      className="flex-shrink-0 w-[280px] border border-border rounded-2xl overflow-hidden bg-bg-primary group"
+      className={cn(cardVariants({ padding: 'none' }), 'flex-shrink-0 w-[280px] overflow-hidden group')}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1 + index * 0.07, duration: 0.45, ease: EASE_VERCEL }}
-      whileHover={{ y: -4, boxShadow: '0 16px 40px rgba(10,10,10,0.08)', transition: { duration: 0.2 } }}
+      whileHover={{ y: -4, boxShadow: SHADOW_PANEL, transition: { duration: 0.2 } }}
     >
       {/* Image */}
       <div className="relative h-[140px] overflow-hidden">
@@ -343,9 +345,9 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         {/* Date badge */}
-        <div className="absolute bottom-3 left-3 bg-bg-primary/95 rounded-lg px-2.5 py-1.5 text-center min-w-[44px]">
-          <p className="font-display text-xl text-ink-primary leading-none">{event.day}</p>
-          <p className="font-mono text-[9px] text-ink-muted uppercase tracking-widest">{event.month}</p>
+        <div className="absolute bottom-3 left-3 bg-void/95 rounded-lg px-2.5 py-1.5 text-center min-w-[44px]">
+          <p className="font-display text-xl text-cream leading-none">{event.day}</p>
+          <p className="font-mono text-[9px] text-cream-dim uppercase tracking-widest">{event.month}</p>
         </div>
         {/* Status */}
         <div className={`absolute top-3 right-3 ${s.bg} ${s.text} font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full`}>
@@ -355,18 +357,18 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
 
       {/* Content */}
       <div className="p-4">
-        <p className="font-display text-base text-ink-primary leading-snug mb-1 line-clamp-2">{event.title}</p>
-        <p className="font-mono text-[10px] text-ink-muted mb-3">{event.time} · {event.category}</p>
+        <p className="font-display text-base text-cream leading-snug mb-1 line-clamp-2">{event.title}</p>
+        <p className="font-mono text-[10px] text-cream-dim mb-3">{event.time} · {event.category}</p>
 
         {/* Capacity bar */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="font-mono text-[10px] text-ink-muted">{event.attendees}/{event.capacity}</span>
-            <span className="font-mono text-[10px] text-accent">{pct}% full</span>
+            <span className="font-mono text-[10px] text-cream-dim">{event.attendees}/{event.capacity}</span>
+            <span className="font-mono text-[10px] text-lime">{pct}% full</span>
           </div>
           <div className="h-1 bg-border rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-accent rounded-full"
+              className="h-full bg-lime rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ delay: 0.4 + index * 0.07, duration: 0.8, ease: EASE_VERCEL }}
@@ -376,9 +378,9 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
 
         <div className="flex items-center justify-between">
           {event.revenue > 0 ? (
-            <span className="font-mono text-xs text-ink-primary">₹{event.revenue.toLocaleString('en-IN')}</span>
+            <span className="font-mono text-xs text-cream">₹{event.revenue.toLocaleString('en-IN')}</span>
           ) : (
-            <span className="font-mono text-xs text-ink-light">Free</span>
+            <span className="font-mono text-xs text-cream-faint">Free</span>
           )}
         </div>
       </div>
@@ -409,10 +411,10 @@ function AIPromoCard() {
         <div className="max-w-lg">
           {/* Eyebrow */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <span className="font-mono text-[9px] text-accent">AI</span>
+            <div className="w-6 h-6 rounded-full bg-lime/20 border border-lime/30 flex items-center justify-center">
+              <span className="font-mono text-[9px] text-lime">AI</span>
             </div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent/70">AI Planner</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime/70">AI Planner</span>
           </div>
           <h3
             className="font-display leading-[1.1] tracking-tight mb-3"
@@ -434,7 +436,7 @@ function AIPromoCard() {
               background: 'var(--lime)',
               color: 'var(--void)',
             }}
-            whileHover={{ scale: 1.03, boxShadow: '0 0 32px rgba(212,255,63,0.4)' }}
+            whileHover={{ scale: 1.03, boxShadow: SHADOW_GLOW_LIME }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.2 }}
           >
@@ -453,7 +455,7 @@ function AIPromoCard() {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-display text-2xl text-ink-primary tracking-tight">{children}</h2>
+    <h2 className="font-display text-2xl text-cream tracking-tight">{children}</h2>
   );
 }
 
@@ -541,7 +543,7 @@ function HostDashboard() {
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
-    <div className="flex min-h-screen bg-bg-primary">
+    <div className="flex min-h-screen bg-void">
       <Sidebar active={activeNav} setActive={setActiveNav} />
 
       {/* ── Main ──────────────────────────────────────────────────────── */}
@@ -554,13 +556,13 @@ function HostDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: EASE_VERCEL }}
           >
-            <h1 className="font-display text-[clamp(2.2rem,4vw,3.2rem)] text-ink-primary tracking-tight leading-none mb-2">
+            <h1 className="font-display text-[clamp(2.2rem,4vw,3.2rem)] text-cream tracking-tight leading-none mb-2">
               Good {greeting}, {firstName}.
             </h1>
-            <p className="font-sans text-base text-ink-muted">
+            <p className="font-sans text-base text-cream-dim">
               {loadingEvents ? 'Loading your events…' : (
                 upcomingCount > 0
-                  ? <>You have <span className="text-ink-primary font-medium">{upcomingCount} upcoming event{upcomingCount > 1 ? 's' : ''}</span>.</>
+                  ? <>You have <span className="text-cream font-medium">{upcomingCount} upcoming event{upcomingCount > 1 ? 's' : ''}</span>.</>
                   : 'No upcoming events yet. Create your first one!'
               )}
             </p>
@@ -577,7 +579,7 @@ function HostDashboard() {
           <section>
             <div className="flex items-center justify-between mb-5">
               <SectionHeading>Your events</SectionHeading>
-              <Link href="/host/events" className="font-mono text-xs text-ink-muted hover:text-accent transition-colors">
+              <Link href="/host/events" className="font-mono text-xs text-cream-dim hover:text-lime transition-colors">
                 View all →
               </Link>
             </div>
@@ -595,19 +597,19 @@ function HostDashboard() {
                 {/* Add event CTA */}
                 <Link href="/host/events/new">
                   <motion.div
-                    className="flex-shrink-0 w-[280px] border border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center hover:border-accent/40 hover:bg-accent/3 transition-colors duration-200 group cursor-pointer"
+                    className="flex-shrink-0 w-[280px] border border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center hover:border-lime/40 hover:bg-lime/3 transition-colors duration-200 group cursor-pointer"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.45, duration: 0.4 }}
                   >
-                    <div className="w-10 h-10 rounded-full border border-dashed border-border group-hover:border-accent/40 flex items-center justify-center transition-colors">
-                      <svg className="w-5 h-5 text-ink-light group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <div className="w-10 h-10 rounded-full border border-dashed border-border group-hover:border-lime/40 flex items-center justify-center transition-colors">
+                      <svg className="w-5 h-5 text-cream-faint group-hover:text-lime transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-sans text-sm font-medium text-ink-muted group-hover:text-ink-primary transition-colors">New event</p>
-                      <p className="font-mono text-[10px] text-ink-light mt-0.5">Plan with AI →</p>
+                      <p className="font-sans text-sm font-medium text-cream-dim group-hover:text-cream transition-colors">New event</p>
+                      <p className="font-mono text-[10px] text-cream-faint mt-0.5">Plan with AI →</p>
                     </div>
                   </motion.div>
                 </Link>

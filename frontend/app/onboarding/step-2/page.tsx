@@ -43,18 +43,18 @@ export default function OnboardingStep2() {
     <div className="space-y-8">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-5xl text-ink-primary leading-tight">
+          <h1 className="font-display text-5xl text-cream leading-tight">
             What are you into?
           </h1>
           <span
             className={`font-mono text-[11px] transition-colors duration-200 ${
-              canContinue ? 'text-accent' : 'text-ink-muted'
+              canContinue ? 'text-lime' : 'text-cream-dim'
             }`}
           >
             {selected.length} selected
           </span>
         </div>
-        <p className="font-sans text-sm text-ink-muted">
+        <p className="font-sans text-sm text-cream-dim">
           Pick at least 3. We'll tailor your feed.
         </p>
       </div>
@@ -72,15 +72,15 @@ export default function OnboardingStep2() {
               onClick={() => toggle(interest)}
               className={`border rounded-2xl px-4 py-3 font-sans text-sm text-left flex items-center gap-2 transition-all duration-200 ${
                 isSelected
-                  ? 'border-accent bg-accent/[0.08] text-ink-primary'
-                  : 'border-border bg-bg-primary text-ink-muted hover:bg-bg-secondary'
+                  ? 'border-lime bg-lime/[0.08] text-cream'
+                  : 'border-border bg-void text-cream-dim hover:bg-surface'
               }`}
             >
               {isSelected && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="text-accent text-xs flex-shrink-0"
+                  className="text-lime text-xs flex-shrink-0"
                 >
                   ✓
                 </motion.span>
@@ -92,10 +92,10 @@ export default function OnboardingStep2() {
       </div>
 
       {/* Continue button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-1')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -103,7 +103,7 @@ export default function OnboardingStep2() {
           <button
             onClick={handleContinue}
             disabled={!canContinue}
-            className="bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300"
+            className="bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300"
           >
             Continue
           </button>

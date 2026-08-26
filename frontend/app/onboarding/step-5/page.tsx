@@ -62,8 +62,8 @@ export default function OnboardingStep5() {
   return (
     <div className="space-y-10">
       <div className="space-y-3">
-        <h1 className="font-display text-5xl text-ink-primary leading-tight">One last thing.</h1>
-        <p className="font-sans text-sm text-ink-muted">
+        <h1 className="font-display text-5xl text-cream leading-tight">One last thing.</h1>
+        <p className="font-sans text-sm text-cream-dim">
           Want to host events too? You can decide later.
         </p>
       </div>
@@ -78,20 +78,20 @@ export default function OnboardingStep5() {
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           className={`flex-1 border rounded-3xl p-8 text-left transition-all duration-200 ${
             selected === false
-              ? 'border-accent bg-accent/[0.04]'
-              : 'border-border bg-bg-primary hover:bg-bg-secondary'
+              ? 'border-lime bg-lime/[0.04]'
+              : 'border-border bg-void hover:bg-surface'
           }`}
         >
           <div className="mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-muted">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cream-dim">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" />
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <p className="font-display text-xl text-ink-primary mb-2">Just attending</p>
-          <p className="font-sans text-sm text-ink-muted">
+          <p className="font-display text-xl text-cream mb-2">Just attending</p>
+          <p className="font-sans text-sm text-cream-dim">
             Discover and book events curated for you.
           </p>
         </motion.button>
@@ -104,32 +104,31 @@ export default function OnboardingStep5() {
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           className={`relative flex-1 border-2 rounded-3xl p-8 text-left transition-all duration-200 ${
             selected === true
-              ? 'border-accent bg-accent/5'
-              : 'border-accent/40 bg-bg-primary hover:bg-accent/[0.03]'
+              ? 'border-lime bg-lime/5 shadow-glow-lime'
+              : 'border-lime/40 bg-void hover:bg-lime/[0.03]'
           }`}
-          style={selected === true ? { boxShadow: '0 0 24px rgba(255,90,31,0.15)' } : undefined}
         >
           {/* Recommended badge */}
-          <span className="absolute top-4 right-4 font-mono text-[9px] uppercase bg-accent text-white px-2 py-0.5 rounded-full">
+          <span className="absolute top-4 right-4 font-mono text-[9px] uppercase bg-lime text-white px-2 py-0.5 rounded-full">
             Recommended
           </span>
           <div className="mb-4">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-lime">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           </div>
-          <p className="font-display text-xl text-ink-primary mb-2">Host events</p>
-          <p className="font-sans text-sm text-ink-muted">
+          <p className="font-display text-xl text-cream mb-2">Host events</p>
+          <p className="font-sans text-sm text-cream-dim">
             Build your community. UpSosh handles everything else.
           </p>
         </motion.button>
       </div>
 
       {/* Complete button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-bg-primary/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-4')}
-          className="font-mono text-sm text-ink-muted hover:text-ink-primary transition-colors"
+          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
         >
           ← Back
         </button>
@@ -137,7 +136,7 @@ export default function OnboardingStep5() {
           <button
             onClick={handleComplete}
             disabled={selected === null || isLoading}
-            className="w-full bg-ink-primary text-bg-primary font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-300 flex items-center justify-center gap-2"
+            className="w-full bg-cream text-void font-sans text-sm font-medium px-8 py-3.5 rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:bg-lime transition-colors duration-300 flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
