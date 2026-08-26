@@ -29,18 +29,28 @@ import { useAuth } from '@/lib/stores/auth';
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
 function AuthLoadingSkeleton() {
+  // Generic page skeleton — matches the layout of most protected pages.
+  // Only shown in the brief SSR→CSR hydration window (< 100 ms for logged-in users).
   return (
-    <div className="min-h-screen bg-void flex flex-col items-center justify-center gap-6">
-      {/* Pulsing ring */}
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 rounded-full border-2 border-lime/20" />
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-lime animate-spin" />
+    <div className="min-h-screen bg-void animate-pulse">
+      {/* Fake header */}
+      <div className="h-14 border-b border-border bg-void/90 flex items-center px-6 gap-8">
+        <div className="h-4 w-20 bg-surface rounded" />
+        <div className="flex-1" />
+        <div className="h-4 w-16 bg-surface rounded" />
+        <div className="h-4 w-16 bg-surface rounded" />
+        <div className="w-8 h-8 rounded-full bg-surface" />
       </div>
-
-      {/* Skeleton lines */}
-      <div className="flex flex-col items-center gap-3 w-48">
-        <div className="h-2 w-full rounded-full bg-surface animate-pulse" />
-        <div className="h-2 w-3/4 rounded-full bg-surface animate-pulse" />
+      {/* Fake content */}
+      <div className="max-w-3xl mx-auto px-6 pt-20 space-y-6">
+        <div className="h-3 w-24 bg-surface rounded" />
+        <div className="h-10 w-64 bg-surface rounded" />
+        <div className="h-px bg-border" />
+        <div className="space-y-4 pt-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-surface border border-border rounded-2xl" />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -95,16 +105,13 @@ export default function ProtectedRoute({
 
   // Before localStorage has rehydrated we can't know if the user is logged in.
   // Show skeleton only during that brief moment (~50ms).
-  if (!hydrated) {
-    return <>{fallback ?? <AuthLoadingSkeleton />}</>;
-  }
-
-  // Hydrated + user exists → show content immediately.
-  // refresh() runs in the background (AuthProvider); if it later resolves as
-  // 401 the store clears the user and the useEffect above will redirect.
+  // ✅ User is in store (persisted from localStorage) → render immediately.
+  // The background refresh() validates the token; if it returns 401 the store
+  // clears the user and the useEffect above redirects.
   if (user) return <>{children}</>;
 
-  // Hydrated, no user, redirect in flight
+  // No user yet — show skeleton only while waiting for hydration.
+  // After hydration, if still no user the useEffect redirects to /signin.
   return <>{fallback ?? <AuthLoadingSkeleton />}</>;
 }
 
