@@ -12,6 +12,7 @@ import { type MockEvent } from '@/lib/eventTypes';
 import { cn } from '@/lib/utils';
 import type { EventCardProps } from '@/components/EventCard';
 import { EmptyState as SharedEmptyState } from '@/components/ui/EmptyState';
+import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
 
 // ─── Lazy-import EventCard client component ───────────────────────────────────
 // (avoids a circular dep from the server component tree)
@@ -205,12 +206,10 @@ function FilterDrawer({
   onApply: () => void;
   onClear: () => void;
 }) {
-  // Close on Escape
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    if (open) document.addEventListener('keydown', h);
-    return () => document.removeEventListener('keydown', h);
-  }, [open, onClose]);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEscapeKey(onClose, open);
+  useFocusTrap(panelRef, open);
 
   // Lock body scroll
   useEffect(() => {
@@ -229,9 +228,11 @@ function FilterDrawer({
     return (
       <button
         onClick={onToggle}
-        className="flex items-center justify-between py-2.5 w-full"
+        className="flex items-center justify-between py-2.5 w-full rounded-xl px-1 -mx-1 text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors"
       >
-        <span className="font-sans text-[14px] text-cream-dim">{label}</span>
+        <span className="font-sans text-[14px]">{label}</span>
+        {/* w-5 h-5: a checkbox glyph this small reads as a blob at rounded-xl,
+            so it's a deliberate exception to the card/input radius scale. */}
         <span
           className={cn(
             'w-5 h-5 rounded border flex items-center justify-center transition-all',
@@ -264,6 +265,10 @@ function FilterDrawer({
 
           {/* Panel */}
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filter-drawer-title"
             className="fixed top-0 right-0 h-full w-full max-w-sm z-50 bg-surface-2 border-l border-border-strong flex flex-col"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -272,11 +277,11 @@ function FilterDrawer({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
-              <p className="font-display text-[20px] text-cream">Filters</p>
+              <h2 id="filter-drawer-title" className="font-display text-[20px] text-cream">Filters</h2>
               <button
                 onClick={onClose}
                 aria-label="Close filters"
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-cream-dim hover:text-cream hover:bg-cream/5 transition-colors"
               >
                 <IconX size={18} />
               </button>
@@ -314,7 +319,7 @@ function FilterDrawer({
                       key={id}
                       onClick={() => onChange('dateFilter', id)}
                       className={cn(
-                        'h-9 rounded-lg font-sans text-[13px] border transition-colors',
+                        'h-9 rounded-full font-sans text-[13px] border transition-colors',
                         filters.dateFilter === id
                           ? 'bg-lime/10 border-lime/30 text-lime'
                           : 'border-border text-cream-dim hover:text-cream',
@@ -365,12 +370,12 @@ function SpotlightIllustration() {
   return (
     <svg viewBox="0 0 200 160" className="w-40 h-32" fill="none" aria-hidden="true">
       {/* Cone */}
-      <path d="M100 18 L55 148 L145 148 Z" fill="rgba(212,255,63,0.05)" />
+      <path d="M100 18 L55 148 L145 148 Z" fill="var(--lime)" fillOpacity="0.05" />
       {/* Cone edges */}
       <line x1="100" y1="26" x2="56" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
       <line x1="100" y1="26" x2="144" y2="148" stroke="var(--lime)" strokeWidth="1" opacity="0.15" />
       {/* Stage floor */}
-      <rect x="30" y="148" width="140" height="3" rx="1.5" fill="rgba(244,241,234,0.06)" />
+      <rect x="30" y="148" width="140" height="3" rx="1.5" fill="var(--cream)" fillOpacity="0.06" />
       {/* Lamp */}
       <circle cx="100" cy="14" r="10" fill="var(--surface)" stroke="var(--border-strong)" strokeWidth="1.2" />
       <motion.circle
@@ -558,7 +563,7 @@ export default function DiscoverPageClient() {
     <div className="min-h-screen bg-void">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="pt-16 pb-10 px-6 max-w-7xl mx-auto">
+      <div className="pt-16 md:pt-24 pb-10 md:pb-14 px-6 md:px-10 max-w-7xl mx-auto">
         <motion.p
           className="label text-lime mb-4"
           initial={{ opacity: 0, y: 10 }}
@@ -598,8 +603,13 @@ export default function DiscoverPageClient() {
       </div>
 
       {/* ── Sticky filter bar ───────────────────────────────────────────────── */}
-      <div className="sticky top-18 z-40 backdrop-blur-xl bg-void/85 border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
+      {/* top-16 (64px) matches GlobalHeader's floating-pill footprint
+          (pt-5 + its own py-3 pill). The previous `top-18` isn't a value on
+          Tailwind's default spacing scale (only `height.18` was extended in
+          tailwind.config.ts), so it compiled to no offset at all and this
+          bar never actually stuck. */}
+      <div className="sticky top-16 z-40 backdrop-blur-xl bg-void/85 border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 py-3 flex items-center gap-3">
           {/* Category pills — scrollable */}
           <div className="flex-1 min-w-0">
             <PillBar
@@ -636,19 +646,19 @@ export default function DiscoverPageClient() {
       </div>
 
       {/* ── Results count ───────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 pt-8 pb-4">
         <p className="font-mono text-[12px] text-cream-dim uppercase tracking-wider">
           {loading ? 'Loading…' : error ? 'Couldn’t load events' : `${filtered.length} event${filtered.length !== 1 ? 's' : ''}`}
         </p>
       </div>
 
       {/* ── Masonry grid ────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 pb-24">
+      <div className="max-w-7xl mx-auto px-6 md:px-10 pb-24">
         {loading ? (
           // Skeleton placeholders
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="break-inside-avoid mb-5 bg-surface border border-border rounded-3xl overflow-hidden animate-pulse">
+              <div key={i} className="break-inside-avoid mb-5 bg-surface border border-border rounded-2xl overflow-hidden animate-pulse">
                 <div className="aspect-[4/5]" />
                 <div className="p-5 space-y-3">
                   <div className="h-3 bg-surface-2 rounded-lg w-1/3" />

@@ -77,12 +77,17 @@ export function EventCard({
       whileHover={{ y: -6, borderColor: 'var(--border-strong)' }}
       transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
       className={cn(
-        'bg-surface border border-border rounded-3xl overflow-hidden group cursor-pointer'
+        'bg-surface border border-border rounded-2xl group cursor-pointer'
       )}
     >
-      <Link href={`/events/${id}`} legacyBehavior={false} className="block">
-        {/* Image area */}
-        <div className="relative overflow-hidden">
+      <Link href={`/events/${id}`} legacyBehavior={false} className="block rounded-2xl">
+        {/* Image area — overflow-hidden lives here (not on the card root) so a
+            keyboard focus-visible ring on this Link isn't clipped by the card
+            boundary; rounded-t-2xl keeps the image's top corners matched.
+            aspect-[4/5] is required: next/image's `fill` mode only absolutely
+            positions its children, so without an explicit ratio this wrapper
+            had zero height and the entire image + badges never rendered. */}
+        <div className="relative aspect-[4/5] overflow-hidden rounded-t-2xl">
           <Image
             src={imageUrl}
             alt={title}
@@ -93,10 +98,10 @@ export function EventCard({
           />
 
           {/* Bottom gradient overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[rgba(10,10,11,0.4)] to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-void/40 to-transparent pointer-events-none" />
 
           {/* Date badge — top-left */}
-          <div className="absolute top-3 left-3 bg-[rgba(10,10,11,0.6)] backdrop-blur-md rounded-xl px-3 py-2 flex flex-col items-center leading-none">
+          <div className="absolute top-3 left-3 bg-void/60 backdrop-blur-md rounded-xl px-3 py-2 flex flex-col items-center leading-none">
             <span
               className="text-cream text-[32px]"
               style={{ fontFamily: 'Fraunces, serif', fontWeight: 400, lineHeight: 1 }}
@@ -112,7 +117,7 @@ export function EventCard({
           </div>
 
           {/* Category pill — top-right */}
-          <div className="absolute top-3 right-3 bg-[rgba(244,241,234,0.10)] backdrop-blur-md text-cream font-mono text-[11px] uppercase tracking-wider rounded-full px-3 py-1">
+          <div className="absolute top-3 right-3 bg-cream/10 backdrop-blur-md text-cream font-mono text-[11px] uppercase tracking-wider rounded-full px-3 py-1">
             {category}
           </div>
 
@@ -144,9 +149,9 @@ export function EventCard({
             )}
             <span className="font-sans text-[13px] text-cream">{host}</span>
             {isSuperhost ? (
-              <IconStar size={12} className="text-coral" />
+              <IconStar size={12} className="text-emerald" />
             ) : isVerified ? (
-              <IconRosetteDiscountCheck size={12} className="text-lime" />
+              <IconRosetteDiscountCheck size={12} className="text-emerald" />
             ) : null}
           </div>
 
@@ -168,24 +173,20 @@ export function EventCard({
               <span className="truncate max-w-[60%]">{location}</span>
             </div>
 
-            {/* Right: price */}
+            {/* Right: price — Geist Mono + tabular figures, matching the
+                filter drawer's price display so this value doesn't jitter
+                and reads consistently as data across the grid. */}
             {isFree ? (
-              <span
-                className="text-[20px] text-lime"
-                style={{ fontFamily: 'Fraunces, serif', fontWeight: 400 }}
-              >
+              <span className="font-mono text-[18px] text-lime tabular-nums">
                 Free
               </span>
             ) : (
               <div className="flex items-baseline">
-                <span
-                  className="text-[20px] text-lime"
-                  style={{ fontFamily: 'Fraunces, serif', fontWeight: 400 }}
-                >
+                <span className="font-mono text-[18px] text-lime tabular-nums">
                   {currency}
                   {(price as number).toLocaleString('en-IN')}
                 </span>
-                <span className="font-sans text-[11px] text-cream-dim ml-0.5">
+                <span className="font-sans text-[11px] text-cream-dim ml-1">
                   /person
                 </span>
               </div>
@@ -219,7 +220,7 @@ function SpotsBadge({ spotsLeft }: { spotsLeft: number }) {
   }
 
   return (
-    <div className="absolute bottom-3 right-3 bg-[rgba(10,10,11,0.60)] text-cream-dim font-mono text-[11px] rounded-full px-3 py-1 backdrop-blur-md">
+    <div className="absolute bottom-3 right-3 bg-void/60 text-cream-dim font-mono text-[11px] rounded-full px-3 py-1 backdrop-blur-md">
       {spotsLeft} spots
     </div>
   );
