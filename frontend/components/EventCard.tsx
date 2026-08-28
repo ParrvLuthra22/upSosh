@@ -9,6 +9,7 @@ import {
   IconRosetteDiscountCheck,
 } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/motion';
 
 export interface EventCardProps {
   id: string;
@@ -71,10 +72,11 @@ export function EventCard({
   const { day, month } = parseDateParts(date);
   const initials = getInitials(host);
   const isFree = price === 'Free' || price === 0;
+  const reduced = useReducedMotion();
 
   return (
     <motion.div
-      whileHover={{ y: -6, borderColor: 'var(--border-strong)' }}
+      whileHover={{ y: -2, borderColor: 'var(--border-strong)' }}
       transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
       className={cn(
         'bg-surface border border-border rounded-2xl group cursor-pointer'
@@ -199,6 +201,8 @@ export function EventCard({
 }
 
 function SpotsBadge({ spotsLeft }: { spotsLeft: number }) {
+  const reduced = useReducedMotion();
+
   if (spotsLeft === 0) {
     return (
       <div className="absolute bottom-3 right-3 bg-coral/20 text-coral font-mono text-[11px] rounded-full px-3 py-1 backdrop-blur-md">
@@ -210,8 +214,8 @@ function SpotsBadge({ spotsLeft }: { spotsLeft: number }) {
   if (spotsLeft <= 3) {
     return (
       <motion.div
-        animate={{ opacity: [1, 0.6, 1] }}
-        transition={{ repeat: Infinity, duration: 1.8 }}
+        animate={reduced ? undefined : { opacity: [1, 0.6, 1] }}
+        transition={reduced ? undefined : { repeat: Infinity, duration: 1.8 }}
         className="absolute bottom-3 right-3 bg-coral/20 text-coral font-mono text-[11px] rounded-full px-3 py-1 backdrop-blur-md"
       >
         {spotsLeft} left

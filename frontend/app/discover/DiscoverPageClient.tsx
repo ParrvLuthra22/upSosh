@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import type { EventCardProps } from '@/components/EventCard';
 import { EmptyState as SharedEmptyState } from '@/components/ui/EmptyState';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
+import { duration, ease, useReducedMotion, staggerGroup, staggerItem } from '@/lib/motion';
 
 // ─── Lazy-import EventCard client component ───────────────────────────────────
 // (avoids a circular dep from the server component tree)
@@ -207,6 +208,7 @@ function FilterDrawer({
   onClear: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   useEscapeKey(onClose, open);
   useFocusTrap(panelRef, open);
@@ -255,7 +257,7 @@ function FilterDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: reduced ? duration.instant : duration.fast }}
             onClick={onClose}
             role="button"
             tabIndex={0}
@@ -263,17 +265,18 @@ function FilterDrawer({
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClose(); }}
           />
 
-          {/* Panel */}
+          {/* Panel — slides in from the right normally; under reduced motion it
+              just appears (no directional travel) so nothing crosses the screen. */}
           <motion.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="filter-drawer-title"
             className="fixed top-0 right-0 h-full w-full max-w-sm z-50 bg-surface-2 border-l border-border-strong flex flex-col"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={SPRING}
+            initial={reduced ? { opacity: 0 } : { x: '100%' }}
+            animate={reduced ? { opacity: 1 } : { x: 0 }}
+            exit={reduced ? { opacity: 0 } : { x: '100%' }}
+            transition={reduced ? { duration: duration.instant } : SPRING}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
@@ -367,6 +370,7 @@ function FilterDrawer({
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function SpotlightIllustration() {
+  const reduced = useReducedMotion();
   return (
     <svg viewBox="0 0 200 160" className="w-40 h-32" fill="none" aria-hidden="true">
       {/* Cone */}
@@ -381,8 +385,8 @@ function SpotlightIllustration() {
       <motion.circle
         cx="100" cy="14" r="5"
         fill="var(--lime)"
-        animate={{ opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        animate={reduced ? undefined : { opacity: [0.6, 1, 0.6] }}
+        transition={reduced ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       />
       {/* Inner cone glow */}
       <ellipse cx="100" cy="148" rx="35" ry="4" fill="var(--lime)" opacity="0.06" />
@@ -458,6 +462,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 function EventGrid({ events }: { events: MockEvent[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '0px 0px -100px 0px' });
+  const reduced = useReducedMotion();
 
   if (events.length === 0) return <EmptyState />;
 
@@ -470,9 +475,15 @@ function EventGrid({ events }: { events: MockEvent[] }) {
         <motion.div
           key={ev.id}
           className="break-inside-avoid mb-5"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: reduced ? 0 : 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.55, ease: EASE, delay: i * 0.06 }}
+          transition={{
+            duration: reduced ? duration.instant : duration.base,
+            ease: ease.out,
+            // Capped at the 8th item — beyond that every card arrives together
+            // rather than the tail trailing further and further behind.
+            delay: reduced ? 0 : Math.min(i, 7) * 0.06,
+          }}
         >
           <EventCard {...toCardProps(ev)} />
         </motion.div>
@@ -520,6 +531,7 @@ export default function DiscoverPageClient() {
   const [events, setEvents]         = useState<MockEvent[]>([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(false);
+  const reducedMotion                = useReducedMotion();
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -562,32 +574,23 @@ export default function DiscoverPageClient() {
   return (
     <div className="min-h-screen bg-void">
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="pt-16 md:pt-24 pb-10 md:pb-14 px-6 md:px-10 max-w-7xl mx-auto">
-        <motion.p
-          className="label text-lime mb-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE }}
-        >
+      {/* ── Header — a staggerGroup so the label/heading/search reveal in a
+          fixed, capped sequence instead of 3 hand-tuned delay values. ────── */}
+      <motion.div
+        className="pt-16 md:pt-24 pb-10 md:pb-14 px-6 md:px-10 max-w-7xl mx-auto"
+        initial="hidden"
+        animate="visible"
+        variants={staggerGroup(reducedMotion)}
+      >
+        <motion.p className="label text-lime mb-4" variants={staggerItem(reducedMotion)}>
           [ DISCOVER ]
         </motion.p>
-        <motion.h1
-          className="display-lg text-cream text-balance mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: EASE, delay: 0.08 }}
-        >
+        <motion.h1 className="display-lg text-cream text-balance mb-8" variants={staggerItem(reducedMotion)}>
           Events worth showing up to.
         </motion.h1>
 
         {/* Search bar */}
-        <motion.div
-          className="relative max-w-lg"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: EASE, delay: 0.18 }}
-        >
+        <motion.div className="relative max-w-lg" variants={staggerItem(reducedMotion)}>
           <IconSearch
             size={16}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-cream-dim pointer-events-none"
@@ -600,7 +603,7 @@ export default function DiscoverPageClient() {
             className="w-full h-12 bg-surface border border-border rounded-2xl pl-10 pr-4 font-sans text-[15px] text-cream placeholder:text-cream-dim outline-none focus:border-lime focus:ring-2 focus:ring-lime/20 transition-all"
           />
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* ── Sticky filter bar ───────────────────────────────────────────────── */}
       {/* top-16 (64px) matches GlobalHeader's floating-pill footprint
