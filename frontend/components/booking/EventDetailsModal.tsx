@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { api } from '@/lib/api';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
+import { useReducedMotion } from '@/lib/motion';
 
 const EventDetailsModal = () => {
     const { selectedEvent, setSelectedEvent, addToCart, toggleCheckout } = useBookingStore();
@@ -13,8 +14,9 @@ const EventDetailsModal = () => {
     const contentRef = useRef<HTMLDivElement>(null);
     const [qty, setQty] = useState(1);
     const [host, setHost] = useState<any>(null);
+    const reduced = useReducedMotion();
 
-    
+
     useFocusTrap(contentRef, !!selectedEvent);
     useEscapeKey(() => handleClose(), !!selectedEvent);
 
@@ -24,20 +26,28 @@ const EventDetailsModal = () => {
             setHost(null);
             api.getHostById(selectedEvent.hostId).then(setHost).catch(console.error);
 
-            
-            gsap.timeline()
-                .to(modalRef.current, { opacity: 1, duration: 0.3, pointerEvents: 'auto' })
-                .fromTo(contentRef.current,
-                    { y: 20, opacity: 0 },
-                    { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
-                    '-=0.1'
-                );
+            if (reduced) {
+                gsap.set([modalRef.current, contentRef.current], { opacity: 1, y: 0, pointerEvents: 'auto' });
+            } else {
+                gsap.timeline()
+                    .to(modalRef.current, { opacity: 1, duration: 0.3, pointerEvents: 'auto' })
+                    .fromTo(contentRef.current,
+                        { y: 20, opacity: 0 },
+                        { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
+                        '-=0.1'
+                    );
+            }
         }
-    }, [selectedEvent]);
+    }, [selectedEvent, reduced]);
 
     if (!selectedEvent) return null;
 
     const handleClose = () => {
+        if (reduced) {
+            gsap.set([contentRef.current, modalRef.current], { opacity: 0 });
+            setSelectedEvent(null);
+            return;
+        }
         gsap.to(contentRef.current, { y: 20, opacity: 0, duration: 0.2, ease: 'power2.in' });
         gsap.to(modalRef.current, {
             opacity: 0,

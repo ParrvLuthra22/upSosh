@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconCheck, IconX, IconExternalLink } from '@tabler/icons-react';
 import { toast } from 'sonner';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { api } from '@/lib/api';
 import { useEscapeKey } from '@/lib/a11y';
 
@@ -365,6 +365,7 @@ function DetailModal({
 }) {
   const categories = parseCategories(app.categories);
   const hasSampleEvent = !!(app.sampleEventTitle || app.sampleEventDesc || app.sampleEventVenue);
+  const reduced = useReducedMotion();
 
   useEscapeKey(onClose, true);
 
@@ -375,6 +376,7 @@ function DetailModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: reduced ? 0 : 0.2 }}
         onClick={onClose}
         role="button"
         tabIndex={0}
@@ -384,16 +386,19 @@ function DetailModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
         <motion.div
           className="bg-void border border-border rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
-          initial={{ opacity: 0, scale: 0.96, y: 12 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="host-app-modal-title"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 12 }}
-          transition={{ duration: 0.2, ease: EASE_VERCEL }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
+          transition={{ duration: reduced ? 0 : 0.2, ease: EASE_VERCEL }}
         >
           {/* Header */}
           <div className="flex items-start justify-between px-6 py-5 border-b border-border sticky top-0 bg-void">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-widest text-cream-dim mb-1">Host application</p>
-              <h3 className="font-display text-xl text-cream">{app.user.name}</h3>
+              <h3 id="host-app-modal-title" className="font-display text-xl text-cream">{app.user.name}</h3>
               <p className="font-mono text-xs text-cream-dim mt-0.5">{app.user.email}</p>
             </div>
             <button onClick={onClose} aria-label="Close" className="text-cream-dim hover:text-cream transition-colors p-1">
@@ -561,6 +566,7 @@ function RejectModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const reduced = useReducedMotion();
   useEscapeKey(onCancel, true);
 
   return (
@@ -570,6 +576,7 @@ function RejectModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: reduced ? 0 : 0.2 }}
         onClick={onCancel}
         role="button"
         tabIndex={0}
@@ -579,12 +586,15 @@ function RejectModal({
       <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
         <motion.div
           className="bg-void border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl"
-          initial={{ opacity: 0, scale: 0.96, y: 12 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reject-modal-title"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 12 }}
-          transition={{ duration: 0.2, ease: EASE_VERCEL }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
+          transition={{ duration: reduced ? 0 : 0.2, ease: EASE_VERCEL }}
         >
-          <h3 className="font-display text-xl text-cream mb-2">Reject application</h3>
+          <h3 id="reject-modal-title" className="font-display text-xl text-cream mb-2">Reject application</h3>
           <p className="font-sans text-sm text-cream-dim mb-4">
             Rejecting <span className="text-cream">{appName}</span>'s host application. Add a note explaining
             why — this is saved for your own records.

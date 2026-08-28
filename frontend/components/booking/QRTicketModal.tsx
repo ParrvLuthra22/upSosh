@@ -6,6 +6,7 @@ import QRCode from 'react-qr-code';
 import { Booking } from '@/lib/api';
 import { downloadQRCode, generateICS } from '@/lib/ticketUtils';
 import { useEscapeKey } from '@/lib/a11y';
+import { useReducedMotion } from '@/lib/motion';
 
 interface QRTicketModalProps {
     booking: Booking;
@@ -16,20 +17,21 @@ interface QRTicketModalProps {
 const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose }) => {
     const modalRef = useRef<HTMLDivElement>(null);
     const ticketRef = useRef<HTMLDivElement>(null);
+    const reduced = useReducedMotion();
 
     useEffect(() => {
         if (isOpen) {
-            gsap.to(modalRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.3 });
+            gsap.to(modalRef.current, { opacity: 1, pointerEvents: 'auto', duration: reduced ? 0 : 0.3 });
             gsap.fromTo(
                 ticketRef.current,
-                { y: 50, opacity: 0, rotateX: -10 },
-                { y: 0, opacity: 1, rotateX: 0, duration: 0.6, ease: 'back.out(1.2)' }
+                reduced ? { opacity: 0 } : { y: 50, opacity: 0, rotateX: -10 },
+                reduced ? { opacity: 1, duration: 0 } : { y: 0, opacity: 1, rotateX: 0, duration: 0.6, ease: 'back.out(1.2)' }
             );
         } else {
-            gsap.to(ticketRef.current, { y: 50, opacity: 0, rotateX: -10, duration: 0.3 });
-            gsap.to(modalRef.current, { opacity: 0, pointerEvents: 'none', duration: 0.3, delay: 0.1 });
+            gsap.to(ticketRef.current, reduced ? { opacity: 0, duration: 0 } : { y: 50, opacity: 0, rotateX: -10, duration: 0.3 });
+            gsap.to(modalRef.current, { opacity: 0, pointerEvents: 'none', duration: reduced ? 0 : 0.3, delay: reduced ? 0 : 0.1 });
         }
-    }, [isOpen]);
+    }, [isOpen, reduced]);
 
     useEscapeKey(onClose, isOpen);
 
@@ -40,6 +42,9 @@ const QRTicketModal: React.FC<QRTicketModalProps> = ({ booking, isOpen, onClose 
         <div
             ref={modalRef}
             className="fixed inset-0 z-[80] flex items-center justify-center p-4 opacity-0 pointer-events-none"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Digital ticket"
         >
             <div
                 className="absolute inset-0 bg-black/80 backdrop-blur-md"

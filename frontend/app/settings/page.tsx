@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -222,6 +222,7 @@ function HostSection({ user }: { user: any }) {
 function DangerZone() {
   const [deleteInput, setDeleteInput] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const reduced = useReducedMotion();
 
   useEscapeKey(() => setShowDeleteModal(false), showDeleteModal);
   const { signOut } = useAuth();
@@ -262,6 +263,7 @@ function DangerZone() {
             <motion.div
               className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: reduced ? 0 : 0.2 }}
               onClick={() => setShowDeleteModal(false)}
               role="button"
               tabIndex={0}
@@ -270,11 +272,16 @@ function DangerZone() {
             />
             <motion.div
               className="fixed inset-0 z-50 flex items-center justify-center px-6"
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: EASE_VERCEL }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-account-title"
+              initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+              animate={reduced ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+              exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+              transition={{ duration: reduced ? 0 : 0.2, ease: EASE_VERCEL }}
             >
               <div className="bg-void border border-border rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <h2 className="font-display text-2xl text-cream mb-3">Are you sure?</h2>
+                <h2 id="delete-account-title" className="font-display text-2xl text-cream mb-3">Are you sure?</h2>
                 <p className="font-sans text-sm text-cream-dim mb-6">
                   This action <strong>cannot</strong> be undone. Type <code className="font-mono text-lime">DELETE</code> below to confirm.
                 </p>
@@ -312,6 +319,7 @@ export default function SettingsPage() {
   const [active, setActive] = useState<Section>('account');
   // Initialise directly — no loading flash
   const [user, setUser] = useState<any>(authUser ?? null);
+  const reduced = useReducedMotion();
 
   // Keep in sync with store updates
   useEffect(() => { if (authUser) setUser(authUser); }, [authUser]);
@@ -396,10 +404,10 @@ export default function SettingsPage() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
-                initial={{ opacity: 0, x: 16 }}
+                initial={reduced ? { opacity: 0 } : { opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
-                transition={{ duration: 0.25, ease: EASE_VERCEL }}
+                exit={reduced ? { opacity: 0 } : { opacity: 0, x: -16 }}
+                transition={{ duration: reduced ? 0 : 0.25, ease: EASE_VERCEL }}
               >
                 {sections[active]}
               </motion.div>

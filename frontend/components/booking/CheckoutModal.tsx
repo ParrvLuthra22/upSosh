@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { api } from '@/lib/api';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
+import { useReducedMotion } from '@/lib/motion';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -25,6 +26,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
     useFocusTrap(contentRef, isOpen);
     useEscapeKey(onClose, isOpen);
+    const reduced = useReducedMotion();
 
     
     useEffect(() => {
@@ -57,13 +59,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         if (isOpen) {
             setStatus('idle');
             setErrorMessage('');
-            gsap.to(modalRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.3 });
-            gsap.fromTo(contentRef.current, { y: 50, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' });
+            gsap.to(modalRef.current, { opacity: 1, pointerEvents: 'auto', duration: reduced ? 0 : 0.3 });
+            gsap.fromTo(
+                contentRef.current,
+                reduced ? { opacity: 0 } : { y: 50, opacity: 0, scale: 0.95 },
+                reduced ? { opacity: 1, duration: 0 } : { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' },
+            );
         } else {
-            gsap.to(contentRef.current, { y: 50, opacity: 0, scale: 0.95, duration: 0.3 });
-            gsap.to(modalRef.current, { opacity: 0, pointerEvents: 'none', duration: 0.3, delay: 0.1 });
+            gsap.to(contentRef.current, reduced ? { opacity: 0, duration: 0 } : { y: 50, opacity: 0, scale: 0.95, duration: 0.3 });
+            gsap.to(modalRef.current, { opacity: 0, pointerEvents: 'none', duration: reduced ? 0 : 0.3, delay: reduced ? 0 : 0.1 });
         }
-    }, [isOpen]);
+    }, [isOpen, reduced]);
 
     const total = checkoutItems.reduce((sum, item) => sum + item.price * item.qty, 0);
 

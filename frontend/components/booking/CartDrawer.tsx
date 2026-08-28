@@ -5,25 +5,27 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
+import { useReducedMotion } from '@/lib/motion';
 
 const CartDrawer = () => {
     const { cart, isCartOpen, toggleCart, removeFromCart, updateCartQty, toggleCheckout } = useBookingStore();
     const drawerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const reduced = useReducedMotion();
 
-    
+
     useFocusTrap(drawerRef, isCartOpen);
     useEscapeKey(() => toggleCart(false), isCartOpen);
 
     useEffect(() => {
         if (isCartOpen) {
-            gsap.to(overlayRef.current, { opacity: 1, pointerEvents: 'auto', duration: 0.3 });
-            gsap.to(drawerRef.current, { x: 0, duration: 0.4, ease: 'power3.out' });
+            gsap.to(overlayRef.current, { opacity: 1, pointerEvents: 'auto', duration: reduced ? 0 : 0.3 });
+            gsap.to(drawerRef.current, { x: 0, duration: reduced ? 0 : 0.4, ease: 'power3.out' });
         } else {
-            gsap.to(overlayRef.current, { opacity: 0, pointerEvents: 'none', duration: 0.3, delay: 0.1 });
-            gsap.to(drawerRef.current, { x: '100%', duration: 0.3, ease: 'power3.in' });
+            gsap.to(overlayRef.current, { opacity: 0, pointerEvents: 'none', duration: reduced ? 0 : 0.3, delay: reduced ? 0 : 0.1 });
+            gsap.to(drawerRef.current, { x: '100%', duration: reduced ? 0 : 0.3, ease: 'power3.in' });
         }
-    }, [isCartOpen]);
+    }, [isCartOpen, reduced]);
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import QRCode from 'react-qr-code';
@@ -129,6 +129,7 @@ function TicketModal({ booking, onClose, onCancel }: {
   const bookingRef = `UPSOSH-${booking.id}`;
   const [cancelling, setCancelling] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const reduced = useReducedMotion();
 
   useEscapeKey(onClose, true);
 
@@ -178,6 +179,7 @@ function TicketModal({ booking, onClose, onCancel }: {
         <motion.div
           className="fixed inset-0 z-50 bg-void/80 backdrop-blur-sm"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: reduced ? 0 : 0.2 }}
           onClick={onClose}
           role="button"
           tabIndex={0}
@@ -189,13 +191,17 @@ function TicketModal({ booking, onClose, onCancel }: {
         <motion.div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          transition={{ duration: reduced ? 0 : 0.2 }}
         >
           <motion.div
             className="w-full max-w-sm bg-surface border border-border-strong rounded-3xl overflow-hidden shadow-2xl"
-            initial={{ y: 40, scale: 0.97 }}
-            animate={{ y: 0, scale: 1 }}
-            exit={{ y: 40, scale: 0.97 }}
-            transition={{ duration: 0.28, ease: EASE_VERCEL }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ticket-modal-title"
+            initial={reduced ? { opacity: 0 } : { y: 40, scale: 0.97 }}
+            animate={reduced ? { opacity: 1 } : { y: 0, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { y: 40, scale: 0.97 }}
+            transition={{ duration: reduced ? 0 : 0.28, ease: EASE_VERCEL }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Event image header */}
@@ -226,7 +232,7 @@ function TicketModal({ booking, onClose, onCancel }: {
               )}
 
               {/* Title + date */}
-              <h3 className="font-display text-[22px] text-cream leading-tight mb-1">{title}</h3>
+              <h3 id="ticket-modal-title" className="font-display text-[22px] text-cream leading-tight mb-1">{title}</h3>
               {ev ? (
                 <>
                   {date && (
