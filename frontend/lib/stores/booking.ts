@@ -177,7 +177,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
   submit: async () => {
     const { event, eventId, guestCount, guestDetails, paymentMethod } = get();
-    if (!event || !eventId || !paymentMethod) return;
+    if (!event || !eventId) return;
 
     set({ isProcessing: true, errorMessage: null });
 
