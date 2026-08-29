@@ -30,6 +30,7 @@ import {
 } from '@/lib/plannerTypes';
 import { withAuth } from '@/components/ProtectedRoute';
 import { toast } from 'sonner';
+import { useReducedMotion } from '@/lib/motion';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -73,6 +74,7 @@ function formatTs(d: Date) {
 
 function RotatingText({ messages }: { messages: string[] }) {
   const [idx, setIdx] = useState(0);
+  const reduced = useReducedMotion();
   useEffect(() => {
     const id = setInterval(() => setIdx((i) => (i + 1) % messages.length), 2000);
     return () => clearInterval(id);
@@ -84,10 +86,10 @@ function RotatingText({ messages }: { messages: string[] }) {
         <motion.p
           key={idx}
           className="font-mono text-[13px] text-cream-dim absolute inset-0 text-center"
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: reduced ? 0 : 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.35, ease: EASE }}
+          exit={{ opacity: 0, y: reduced ? 0 : -8 }}
+          transition={{ duration: reduced ? 0.1 : 0.35, ease: EASE }}
         >
           {messages[idx]}
         </motion.p>
@@ -275,12 +277,13 @@ function ResultsView({
   onNew: () => void;
 }) {
   const [activeSection, setActiveSection] = useState<SectionId>('venues');
+  const reduced = useReducedMotion();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: reduced ? 0 : 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: EASE }}
+      transition={{ duration: reduced ? 0.1 : 0.6, ease: EASE }}
       className="space-y-8"
     >
       {/* Header */}
@@ -330,10 +333,10 @@ function ResultsView({
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSection}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: reduced ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.3, ease: EASE }}
+          exit={{ opacity: 0, y: reduced ? 0 : -6 }}
+          transition={{ duration: reduced ? 0.1 : 0.3, ease: EASE }}
         >
           {activeSection === 'venues' && (
             <div className="space-y-3">
@@ -478,6 +481,7 @@ function NumberStepper({
 type Phase = 'form' | 'loading' | 'result';
 
 function PlannerPage() {
+  const reduced = useReducedMotion();
   const [phase, setPhase] = useState<Phase>('form');
   const [form, setForm] = useState<PlanForm>({
     eventType: '',
@@ -598,10 +602,10 @@ function PlannerPage() {
             {phase === 'form' && (
               <motion.div
                 key="form"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: reduced ? 0 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.5, ease: EASE }}
+                exit={{ opacity: 0, y: reduced ? 0 : -12 }}
+                transition={{ duration: reduced ? 0.1 : 0.5, ease: EASE }}
               >
                 {/* Hero copy */}
                 <p className="label text-lime mb-4">[ AI Planner ]</p>
@@ -704,12 +708,13 @@ function PlannerPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.4, ease: EASE }}
+                transition={{ duration: reduced ? 0.1 : 0.4, ease: EASE }}
               >
                 {/* Ripple spinner */}
                 <div className="relative w-16 h-16 flex items-center justify-center">
-                  {/* Outer pulse rings */}
-                  {[0, 1].map((i) => (
+                  {/* Outer pulse rings — decorative, frozen under reduced motion; the
+                      plain CSS spin ring below still communicates loading state */}
+                  {!reduced && [0, 1].map((i) => (
                     <motion.div
                       key={i}
                       className="absolute inset-0 rounded-full border border-lime/30"

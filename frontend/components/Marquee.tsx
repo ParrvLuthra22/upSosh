@@ -23,6 +23,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,6 +73,7 @@ export default function Marquee({
   className,
 }: MarqueeProps) {
   const [paused, setPaused] = useState(false);
+  const reduced = useReducedMotion();
 
   // Double the array — the seam is hidden at the 50% mark
   const doubled = [...items, ...items];
@@ -84,7 +86,9 @@ export default function Marquee({
     animationDuration: `${speed}s`,
     animationTimingFunction: 'linear',
     animationIterationCount: 'infinite',
-    animationPlayState: paused ? 'paused' : 'running',
+    // Reduced motion always wins — the ticker freezes on its first frame
+    // instead of a continuous, unstoppable scroll.
+    animationPlayState: reduced || paused ? 'paused' : 'running',
     willChange: 'transform',
   };
 
@@ -99,7 +103,7 @@ export default function Marquee({
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: reduced ? 0.1 : 0.6 }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-hidden="true"

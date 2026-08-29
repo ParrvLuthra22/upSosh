@@ -2,7 +2,7 @@
 
 import { useRef, ReactNode } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 
 interface ImageRevealProps {
   children: ReactNode;
@@ -30,14 +30,16 @@ export default function ImageReveal({
 }: ImageRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once, margin: '-5% 0px' });
+  const reduced = useReducedMotion();
+  const start = reduced ? 'inset(0 0% 0 0)' : clipStart[direction];
 
   return (
     <motion.div
       ref={ref}
       className={className}
-      initial={{ clipPath: clipStart[direction] }}
-      animate={inView ? { clipPath: 'inset(0 0% 0 0)' } : { clipPath: clipStart[direction] }}
-      transition={{ duration, ease: EASE_VERCEL, delay }}
+      initial={{ clipPath: start }}
+      animate={inView ? { clipPath: 'inset(0 0% 0 0)' } : { clipPath: start }}
+      transition={{ duration: reduced ? 0.1 : duration, ease: EASE_VERCEL, delay: reduced ? 0 : delay }}
       style={{ willChange: 'clip-path' }}
     >
       {children}

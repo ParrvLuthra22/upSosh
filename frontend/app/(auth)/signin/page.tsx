@@ -13,6 +13,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/stores/auth';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/motion';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const BG_URL = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1400&q=80&fit=crop';
@@ -20,11 +21,12 @@ const BG_URL = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1
 // ─── Decorative asterisk ──────────────────────────────────────────────────────
 
 function LimeAsterisk() {
+  const reduced = useReducedMotion();
   return (
     <motion.div
       className="absolute bottom-10 right-10 select-none pointer-events-none z-20"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+      animate={reduced ? undefined : { rotate: 360 }}
+      transition={reduced ? undefined : { duration: 24, repeat: Infinity, ease: 'linear' }}
       aria-hidden="true"
     >
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
@@ -149,6 +151,7 @@ function SignInForm() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SignInPage() {
+  const reduced = useReducedMotion();
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-2 bg-void">
       {/* LEFT — photo + editorial */}
@@ -191,8 +194,8 @@ export default function SignInPage() {
       {/* RIGHT — form */}
       <div className="flex items-center justify-center p-8 min-h-screen lg:min-h-0">
         <motion.div className="w-full max-w-sm"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: EASE }}>
+          initial={{ opacity: 0, y: reduced ? 0 : 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduced ? 0.1 : 0.55, ease: EASE }}>
           <Link href="/" className="font-display italic text-[22px] text-cream tracking-tight block lg:hidden mb-8">
             UpSosh
           </Link>

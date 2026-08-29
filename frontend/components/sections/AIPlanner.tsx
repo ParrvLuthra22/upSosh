@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { EASE_VERCEL, fadeInUp, staggerContainer } from '@/lib/motion';
+import { EASE_VERCEL, fadeInUp, staggerContainer, staggerGroup, staggerItem, useReducedMotion } from '@/lib/motion';
 import MagneticButton from '@/components/ui/MagneticButton';
 import TextReveal from '@/components/ui/TextReveal';
 
@@ -12,10 +12,11 @@ const SUGGESTIONS = [
 ];
 
 function PlannerMockup() {
+  const reduced = useReducedMotion();
   return (
     <motion.div
-      animate={{ y: [0, -8, 0] }}
-      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      animate={reduced ? undefined : { y: [0, -8, 0] }}
+      transition={reduced ? undefined : { duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       className="relative"
     >
       {/* Glow */}
@@ -96,36 +97,37 @@ function PlannerMockup() {
 }
 
 export default function AIPlanner() {
+  const reduced = useReducedMotion();
   return (
     <section className="bg-surface border-t border-border py-24 md:py-32 px-6 md:px-16 overflow-hidden">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
         {/* Text side */}
         <motion.div
-          variants={staggerContainer}
+          variants={reduced ? staggerGroup(true) : staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-10% 0px' }}
         >
           <motion.p
-            variants={fadeInUp}
+            variants={reduced ? staggerItem(true) : fadeInUp}
             className="font-mono text-xs uppercase tracking-[0.2em] text-cream-dim mb-6"
           >
             [ 03 — THE DIFFERENCE ]
           </motion.p>
 
           <motion.h2
-            variants={fadeInUp}
+            variants={reduced ? staggerItem(true) : fadeInUp}
             className="display-md text-cream leading-[1.1] tracking-tight mb-6"
           >
             Plan like you've done this a hundred times.
             <span className="italic text-cream-dim"> Even if it's your first.</span>
           </motion.h2>
 
-          <motion.p variants={fadeInUp} className="font-sans text-base text-cream-dim leading-relaxed mb-10 max-w-md">
+          <motion.p variants={reduced ? staggerItem(true) : fadeInUp} className="font-sans text-base text-cream-dim leading-relaxed mb-10 max-w-md">
             The UpSosh AI Planner helps you set pricing, predict attendance, and cut no-shows — with WhatsApp reminders built in. No spreadsheets. No chasing UPI screenshots.
           </motion.p>
 
-          <motion.div variants={fadeInUp}>
+          <motion.div variants={reduced ? staggerItem(true) : fadeInUp}>
             <MagneticButton>
               <a
                 href="/planner"
@@ -140,10 +142,10 @@ export default function AIPlanner() {
 
         {/* Mockup side */}
         <motion.div
-          initial={{ opacity: 0, x: 40 }}
+          initial={{ opacity: 0, x: reduced ? 0 : 40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: '-10% 0px' }}
-          transition={{ duration: 0.9, ease: EASE_VERCEL }}
+          transition={{ duration: reduced ? 0.1 : 0.9, ease: EASE_VERCEL }}
         >
           <PlannerMockup />
         </motion.div>

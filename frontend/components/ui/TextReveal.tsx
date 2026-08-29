@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 
 interface TextRevealProps {
   text: string;
@@ -25,6 +25,7 @@ export default function TextReveal({
 }: TextRevealProps) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once, margin: '-10% 0px' });
+  const reduced = useReducedMotion();
 
   const units = splitBy === 'words' ? text.split(' ') : text.split('');
   const sep = splitBy === 'words' ? ' ' : '';
@@ -38,13 +39,17 @@ export default function TextReveal({
           <motion.span
             aria-hidden
             style={{ display: 'inline-block' }}
-            initial={{ opacity: 0, y: '110%' }}
-            animate={inView ? { opacity: 1, y: '0%' } : { opacity: 0, y: '110%' }}
-            transition={{
-              duration: 0.65,
-              ease: EASE_VERCEL,
-              delay: delay + i * stagger,
-            }}
+            initial={{ opacity: 0, y: reduced ? '0%' : '110%' }}
+            animate={
+              inView
+                ? { opacity: 1, y: '0%' }
+                : { opacity: 0, y: reduced ? '0%' : '110%' }
+            }
+            transition={
+              reduced
+                ? { duration: 0.1, delay: delay + i * (stagger / 3) }
+                : { duration: 0.65, ease: EASE_VERCEL, delay: delay + i * stagger }
+            }
           >
             {unit}
           </motion.span>

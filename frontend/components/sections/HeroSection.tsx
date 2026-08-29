@@ -9,19 +9,11 @@ import {
   useSpring,
 } from 'framer-motion';
 import { IconArrowRight, IconChevronDown } from '@tabler/icons-react';
+import { useReducedMotion } from '@/lib/motion';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 // ─── Stagger config ───────────────────────────────────────────────────────────
-
-const FADE_UP = {
-  hidden: { opacity: 0, y: 24 },
-  show: (delay: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: EASE, delay },
-  }),
-};
 
 function FadeUp({
   delay,
@@ -32,13 +24,13 @@ function FadeUp({
   children: React.ReactNode;
   className?: string;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.div
       className={className}
-      variants={FADE_UP}
-      initial="hidden"
-      animate="show"
-      custom={delay}
+      initial={{ opacity: 0, y: reduced ? 0 : 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE, delay: reduced ? 0 : delay }}
     >
       {children}
     </motion.div>
@@ -48,11 +40,12 @@ function FadeUp({
 // ─── Pulsing lime dot ─────────────────────────────────────────────────────────
 
 function PulseDot() {
+  const reduced = useReducedMotion();
   return (
     <motion.span
       className="inline-block w-2 h-2 rounded-full bg-lime flex-shrink-0"
-      animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
-      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+      animate={reduced ? undefined : { scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+      transition={reduced ? undefined : { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
     />
   );
 }
@@ -63,6 +56,7 @@ function PulseDot() {
 const WAVE_PATH = 'M2,8 Q28,2 55,8 Q82,14 110,8 Q137,2 165,8 Q192,14 218,8';
 
 function WavyUnderline() {
+  const reduced = useReducedMotion();
   return (
     <svg
       viewBox="0 0 220 16"
@@ -85,9 +79,9 @@ function WavyUnderline() {
         fill="none"
         strokeLinecap="round"
         strokeDasharray="220"
-        initial={{ strokeDashoffset: 220 }}
+        initial={{ strokeDashoffset: reduced ? 0 : 220 }}
         animate={{ strokeDashoffset: 0 }}
-        transition={{ duration: 0.9, ease: EASE, delay: 0.5 }}
+        transition={{ duration: reduced ? 0 : 0.9, ease: EASE, delay: reduced ? 0 : 0.5 }}
       />
     </svg>
   );
@@ -186,11 +180,13 @@ function SecondaryButton() {
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
 
-  // Parallax scroll for "moments." word
+  // Parallax scroll for "moments." word — disabled under reduced motion,
+  // where scroll-linked movement is exactly what the preference opts out of.
   const { scrollY } = useScroll();
   const momentY = useSpring(
-    useTransform(scrollY, [0, 600], [0, -30]),
+    useTransform(scrollY, [0, 600], [0, reduced ? 0 : -30]),
     { stiffness: 120, damping: 30, restDelta: 0.001 },
   );
 
@@ -261,18 +257,18 @@ export default function HeroSection() {
           className="font-mono text-[10px] uppercase tracking-widest text-cream-dim"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
+          transition={{ delay: reduced ? 0 : 1.1, duration: reduced ? 0.1 : 0.6 }}
         >
           scroll
         </motion.p>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
+          transition={{ delay: reduced ? 0 : 1.1, duration: reduced ? 0.1 : 0.6 }}
         >
           <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            animate={reduced ? undefined : { y: [0, 6, 0] }}
+            transition={reduced ? undefined : { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           >
             <IconChevronDown size={18} className="text-cream-dim" />
           </motion.div>

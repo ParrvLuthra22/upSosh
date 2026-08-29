@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { EASE_VERCEL, staggerContainer, fadeInUp } from '@/lib/motion';
+import { EASE_VERCEL, staggerContainer, fadeInUp, staggerGroup, staggerItem, useReducedMotion } from '@/lib/motion';
 
 // ─── Stats — hardcoded real numbers with count-up on inView ──────────────────
 
@@ -22,9 +22,14 @@ function CountUp({
   active: boolean;
 }) {
   const [count, setCount] = useState(0);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (!active) return;
+    if (reduced) {
+      setCount(end);
+      return;
+    }
     const duration = 1800;
     const start = Date.now();
     let raf: number;
@@ -36,7 +41,7 @@ function CountUp({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, end]);
+  }, [active, end, reduced]);
 
   return (
     <span className="font-display text-[clamp(2.5rem,6vw,5rem)] text-cream leading-none tracking-tight tabular-nums">
@@ -51,6 +56,7 @@ function CountUp({
 export default function Testimonials() {
   const statsRef = useRef<HTMLDivElement>(null);
   const statsInView = useInView(statsRef, { once: true, margin: '-10% 0px' });
+  const reduced = useReducedMotion();
 
   return (
     <section className="bg-void border-t border-border py-24 md:py-36 px-6 md:px-16">
@@ -58,27 +64,27 @@ export default function Testimonials() {
 
         {/* Pull quote */}
         <motion.div
-          variants={staggerContainer}
+          variants={reduced ? staggerGroup(true) : staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-10% 0px' }}
           className="mb-24 md:mb-32"
         >
           <motion.p
-            variants={fadeInUp}
+            variants={reduced ? staggerItem(true) : fadeInUp}
             className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-10"
           >
             [ 04 — SOCIAL PROOF ]
           </motion.p>
 
           <motion.blockquote
-            variants={fadeInUp}
+            variants={reduced ? staggerItem(true) : fadeInUp}
             className="font-display italic text-cream text-[clamp(2rem,5vw,3.5rem)] leading-[1.15] tracking-tight mb-10"
           >
             "I was managing RSVPs on WhatsApp and collecting UPI screenshots manually. UpSosh replaced all of it — our no-shows dropped by half the first month."
           </motion.blockquote>
 
-          <motion.footer variants={fadeInUp} className="flex items-center gap-4">
+          <motion.footer variants={reduced ? staggerItem(true) : fadeInUp} className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-lime flex items-center justify-center">
               <span className="font-display text-[13px] font-bold text-void">AS</span>
             </div>
@@ -98,10 +104,10 @@ export default function Testimonials() {
             <motion.div
               key={stat.label}
               className="bg-surface hover:bg-surface-2 transition-colors px-8 md:px-10 py-10 md:py-12 flex flex-col gap-2"
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: EASE_VERCEL, delay: i * 0.1 }}
+              transition={{ duration: reduced ? 0.1 : 0.6, ease: EASE_VERCEL, delay: reduced ? 0 : i * 0.1 }}
             >
               <CountUp end={stat.value} suffix={stat.suffix} active={statsInView} />
               <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-cream-dim mt-2">

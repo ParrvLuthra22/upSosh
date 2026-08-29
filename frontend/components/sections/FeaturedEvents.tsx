@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import ImageReveal from '@/components/ui/ImageReveal';
-import { EASE_VERCEL, staggerContainer, fadeInUp } from '@/lib/motion';
+import { EASE_VERCEL, staggerContainer, fadeInUp, useReducedMotion } from '@/lib/motion';
 
 const EVENTS = [
   {
@@ -58,14 +58,15 @@ const EVENTS = [
 ];
 
 function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?: number }) {
+  const reduced = useReducedMotion();
   return (
     <motion.article
       className={`group relative rounded-2xl overflow-hidden border border-border bg-surface ${event.span}`}
       data-cursor="VIEW"
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: reduced ? 0 : 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-5% 0px' }}
-      transition={{ duration: 0.7, ease: EASE_VERCEL, delay }}
+      transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : delay }}
     >
       <div className="relative overflow-hidden aspect-[4/5] md:h-full md:aspect-auto min-h-[280px]">
         <ImageReveal direction="top" delay={delay + 0.1} className="relative w-full h-full">
@@ -101,6 +102,7 @@ function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?:
 
 export default function FeaturedEvents() {
   const headingRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
   return (
     <section className="bg-void border-t border-border py-24 md:py-32 px-6 md:px-16">
@@ -112,16 +114,16 @@ export default function FeaturedEvents() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: reduced ? 0.1 : 0.5 }}
           >
             [ 02 — FEATURED ]
           </motion.p>
           <motion.h2
             className="display-lg text-cream leading-[1.0] tracking-tight"
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: reduced ? 0 : 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.1 }}
+            transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : 0.1 }}
           >
             Happening now.
           </motion.h2>
@@ -132,7 +134,7 @@ export default function FeaturedEvents() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: reduced ? 0.1 : 0.5, delay: reduced ? 0 : 0.3 }}
         >
           See all events →
         </motion.a>

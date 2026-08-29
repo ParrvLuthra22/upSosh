@@ -17,6 +17,7 @@ import {
 } from '@tabler/icons-react';
 import { useAuth } from '@/lib/stores/auth';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/motion';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const BG_URL = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1400&q=80&fit=crop';
@@ -41,6 +42,7 @@ function getStrength(pwd: string): { score: number; label: string; color: string
 
 function StrengthBar({ password }: { password: string }) {
   const { score, label, color } = getStrength(password);
+  const reduced = useReducedMotion();
   if (!password) return null;
   return (
     <div className="mt-2">
@@ -49,7 +51,7 @@ function StrengthBar({ password }: { password: string }) {
           className={cn('h-full rounded-full', color)}
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          transition={{ duration: 0.4, ease: EASE }}
+          transition={{ duration: reduced ? 0.1 : 0.4, ease: EASE }}
         />
       </div>
       <p className={cn('font-mono text-[11px] mt-1', {
@@ -129,11 +131,12 @@ function RoleCard({ role, selected, onSelect }: { role: typeof ROLES[0]; selecte
 // ─── Floating asterisk ────────────────────────────────────────────────────────
 
 function LimeAsterisk() {
+  const reduced = useReducedMotion();
   return (
     <motion.div
       className="absolute bottom-10 right-10 select-none pointer-events-none z-20"
-      animate={{ rotate: -360 }}
-      transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+      animate={reduced ? undefined : { rotate: -360 }}
+      transition={reduced ? undefined : { duration: 30, repeat: Infinity, ease: 'linear' }}
       aria-hidden="true"
     >
       <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
@@ -151,6 +154,7 @@ function LimeAsterisk() {
 export default function SignUpPage() {
   const router = useRouter();
   const { register, isLoading } = useAuth();
+  const reduced = useReducedMotion();
 
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
@@ -233,9 +237,9 @@ export default function SignUpPage() {
       <div className="flex items-center justify-center p-8 min-h-screen lg:min-h-0">
         <motion.div
           className="w-full max-w-sm"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: reduced ? 0 : 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: EASE }}
+          transition={{ duration: reduced ? 0.1 : 0.55, ease: EASE }}
         >
           {/* Mobile wordmark */}
           <Link href="/" className="font-display italic text-[22px] text-cream tracking-tight block lg:hidden mb-8">

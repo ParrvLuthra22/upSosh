@@ -16,6 +16,7 @@
 
 import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -215,13 +216,14 @@ function StepCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const { Illustration } = step;
+  const reduced = useReducedMotion();
 
   return (
     <motion.div
       className="bg-surface border border-border rounded-3xl p-8 h-full flex flex-col"
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: reduced ? 0 : 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.65, ease: EASE, delay }}
+      transition={{ duration: reduced ? 0.1 : 0.65, ease: EASE, delay: reduced ? 0 : delay }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -231,7 +233,7 @@ function StepCard({
         style={{ fontSize: 96, fontWeight: 300, lineHeight: 1 }}
         initial={{ opacity: 0 }}
         animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, ease: EASE, delay: delay + 0.3 }}
+        transition={{ duration: reduced ? 0.1 : 0.5, ease: EASE, delay: reduced ? 0 : delay + 0.3 }}
       >
         {step.num}
       </motion.p>
@@ -265,6 +267,7 @@ function StepCard({
 export default function HowItWorks() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-8% 0px' });
+  const reduced = useReducedMotion();
 
   return (
     <section
@@ -275,9 +278,9 @@ export default function HowItWorks() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: reduced ? 0 : 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: EASE }}
+          transition={{ duration: reduced ? 0.1 : 0.6, ease: EASE }}
         >
           <p className="label text-lime mb-4">01 — THE FLOW</p>
           <h2 className="display-md text-cream text-balance max-w-xl">

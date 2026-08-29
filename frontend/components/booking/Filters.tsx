@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useBookingStore } from '@/lib/stores/bookingCart';
+import { ease } from '@/lib/motion';
 
 const Filters = () => {
     const { filters, setFilters, applyFilters } = useBookingStore();
@@ -70,9 +72,10 @@ const Filters = () => {
                     role="switch"
                     aria-checked={filters.isSuperhost}
                 >
-                    <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-cream transition-transform ${filters.isSuperhost ? 'translate-x-6' : 'translate-x-1'
-                            }`}
+                    <motion.span
+                        className="inline-block h-4 w-4 rounded-full bg-cream"
+                        animate={{ x: filters.isSuperhost ? 24 : 4 }}
+                        transition={ease.spring}
                     />
                 </button>
             </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { EASE_VERCEL, SHADOW_PANEL, SHADOW_GLOW_LIME } from '@/lib/motion';
+import { EASE_VERCEL, SHADOW_PANEL, SHADOW_GLOW_LIME, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/lib/stores/auth';
 import { type HostEvent } from '@/lib/hostEventTypes';
 import { getApiUrl } from '@/lib/api';
@@ -16,9 +16,11 @@ import { cn } from '@/lib/utils';
 function useCountUp(target: number, isInView: boolean, duration = 1400): number {
   const [value, setValue] = useState(0);
   const rafRef = useRef<number | null>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (!isInView) return;
+    if (reduced) { setValue(target); return; }
     const start = performance.now();
     function tick() {
       const elapsed = performance.now() - start;
@@ -29,7 +31,7 @@ function useCountUp(target: number, isInView: boolean, duration = 1400): number 
     }
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [target, isInView, duration]);
+  }, [target, isInView, duration, reduced]);
 
   return value;
 }

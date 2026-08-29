@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +20,7 @@ function EarningsCalculator() {
   const gross = events * attendees * price;
   const fee = Math.round(gross * 0.08);
   const net = gross - fee;
+  const reduced = useReducedMotion();
 
   const Slider = ({ label, min, max, value, onChange, format }: any) => (
     <div className="mb-8">
@@ -58,9 +59,9 @@ function EarningsCalculator() {
               key={net}
               className="font-display leading-none mb-4"
               style={{ fontSize: 'clamp(3rem,6vw,5rem)', color: 'var(--lime)' }}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: EASE_VERCEL }}
+              transition={{ duration: reduced ? 0.1 : 0.3, ease: EASE_VERCEL }}
             >
               ₹{net.toLocaleString('en-IN')}
               <span className="font-sans text-lg text-white/40 ml-2">/month</span>
@@ -92,8 +93,10 @@ function StatNum({ target, prefix = '', suffix = '' }: { target: number; prefix?
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
   const [v, setV] = useState(0);
+  const reduced = useReducedMotion();
   useEffect(() => {
     if (!inView) return;
+    if (reduced) { setV(target); return; }
     const dur = 1400;
     const start = performance.now();
     const tick = () => {
@@ -102,7 +105,7 @@ function StatNum({ target, prefix = '', suffix = '' }: { target: number; prefix?
       if (p < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-  }, [inView, target]);
+  }, [inView, target, reduced]);
   return <span ref={ref}>{prefix}{v.toLocaleString('en-IN')}{suffix}</span>;
 }
 
@@ -119,6 +122,7 @@ const FAQS = [
 
 function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
+  const reduced = useReducedMotion();
   return (
     <section className="py-20 px-6 md:px-12 max-w-3xl mx-auto">
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-4">[ FAQ ]</p>
@@ -143,7 +147,7 @@ function FAQ() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: EASE_VERCEL }}
+                  transition={{ duration: reduced ? 0.1 : 0.3, ease: EASE_VERCEL }}
                   className="overflow-hidden"
                 >
                   <p className="font-sans text-base text-cream-dim leading-relaxed pb-5">{faq.a}</p>
@@ -162,6 +166,7 @@ function FAQ() {
 export default function BecomeAHostPage() {
   const { user, isAuth } = useAuth();
   const router = useRouter();
+  const reduced = useReducedMotion();
 
   function handleApply() {
     if (!isAuth) { router.push('/signup?from=/become-a-host'); return; }
@@ -191,14 +196,14 @@ export default function BecomeAHostPage() {
           <div>
             <motion.p
               className="font-mono text-[11px] uppercase tracking-[0.2em] text-lime mb-6"
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE_VERCEL }}
+              initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0.1 : 0.6, ease: EASE_VERCEL }}
             >
               [ HOST ON UPSOSH ]
             </motion.p>
             <motion.h1
               className="font-display text-white leading-[0.95] mb-6"
               style={{ fontSize: 'clamp(3rem,7vw,6rem)', letterSpacing: '-0.04em' }}
-              initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE_VERCEL, delay: 0.1 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0.1 : 0.8, ease: EASE_VERCEL, delay: reduced ? 0 : 0.1 }}
             >
               Turn your idea into a{' '}
               <em className="italic" style={{ color: 'var(--lime)' }}>gathering.</em>
@@ -206,12 +211,12 @@ export default function BecomeAHostPage() {
             <motion.p
               className="font-sans text-xl leading-relaxed mb-10"
               style={{ color: 'rgba(250,250,247,0.65)', maxWidth: '480px' }}
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.25 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : 0.25 }}
             >
               Whether it's a Sunday run, a creator coffee, or a book circle — UpSosh gives you the tools to host with confidence.
             </motion.p>
             <motion.div
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE_VERCEL, delay: 0.35 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : 0.35 }}
             >
               <MagneticButton>
                 <Button onClick={handleApply} variant="primary" size="lg" shape="pill">
@@ -224,8 +229,8 @@ export default function BecomeAHostPage() {
           {/* Floating mockup */}
           <motion.div
             className="hidden md:flex items-center justify-center"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            animate={reduced ? undefined : { y: [0, -10, 0] }}
+            transition={reduced ? undefined : { duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
             <div className="w-80 h-64 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-5">

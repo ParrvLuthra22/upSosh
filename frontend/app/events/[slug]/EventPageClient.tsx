@@ -33,6 +33,7 @@ import {
 import { type MockEvent } from '@/lib/eventTypes';
 import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/motion';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
@@ -160,13 +161,14 @@ function FadeUp({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: '-60px 0px' });
+  const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
       className={className}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: reduced ? 0 : 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.65, ease: EASE, delay }}
+      transition={{ duration: reduced ? 0.1 : 0.65, ease: EASE, delay: reduced ? 0 : delay }}
     >
       {children}
     </motion.div>
@@ -185,11 +187,12 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function HeroImage({ src, alt }: { src: string; alt: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   });
-  const rawY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const rawY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -60]);
   const y = useSpring(rawY, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   return (
@@ -384,13 +387,14 @@ function BookingCard({
   const serviceFee = Math.round(subtotal * 0.1);
   const total = subtotal + serviceFee;
   const isFree = unitPrice === 0;
+  const reduced = useReducedMotion();
 
   return (
     <motion.div
       className="bg-surface-2 border border-border-strong rounded-3xl p-7"
-      initial={{ opacity: 0, x: 40 }}
+      initial={{ opacity: 0, x: reduced ? 0 : 40 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={SPRING}
+      transition={reduced ? { duration: 0.1 } : SPRING}
     >
       {/* Price */}
       <div className="flex items-baseline gap-2 mb-6">
@@ -469,9 +473,9 @@ function BookingCard({
             <span className="font-sans text-[14px] text-cream font-medium">Total</span>
             <motion.span
               key={total}
-              initial={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: reduced ? 0 : -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: reduced ? 0.1 : 0.25 }}
               style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: 'var(--lime)' }}
             >
               ₹{total.toLocaleString('en-IN')}
@@ -484,8 +488,8 @@ function BookingCard({
       {event.spotsLeft > 0 && event.spotsLeft <= 3 && (
         <motion.p
           className="font-mono text-[12px] text-coral text-center mb-4 uppercase tracking-wider"
-          animate={{ opacity: [1, 0.5, 1] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
+          animate={reduced ? undefined : { opacity: [1, 0.5, 1] }}
+          transition={reduced ? undefined : { duration: 1.8, repeat: Infinity }}
         >
           Only {event.spotsLeft} spot{event.spotsLeft > 1 ? 's' : ''} left
         </motion.p>
@@ -593,6 +597,7 @@ function ErrorScreen({ onRetry }: { onRetry: () => void }) {
 export default function EventPageClient() {
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : (params.slug as string);
+  const reduced = useReducedMotion();
 
   const [event, setEvent] = useState<MockEvent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -737,10 +742,10 @@ export default function EventPageClient() {
                   <motion.li
                     key={i}
                     className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -12 }}
+                    initial={{ opacity: 0, x: reduced ? 0 : -12 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, margin: '-40px' }}
-                    transition={{ duration: 0.5, ease: EASE, delay: i * 0.07 }}
+                    transition={{ duration: reduced ? 0.1 : 0.5, ease: EASE, delay: reduced ? 0 : i * 0.07 }}
                   >
                     <IconCheck size={16} className="text-lime flex-shrink-0 mt-0.5" strokeWidth={2.5} />
                     <span
@@ -785,10 +790,10 @@ export default function EventPageClient() {
                 {ext.attendees.map((a, i) => (
                   <motion.div
                     key={a.name}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: reduced ? 0 : 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-30px' }}
-                    transition={{ duration: 0.45, ease: EASE, delay: i * 0.06 }}
+                    transition={{ duration: reduced ? 0.1 : 0.45, ease: EASE, delay: reduced ? 0 : i * 0.06 }}
                   >
                     <AttendeeCard {...a} />
                   </motion.div>
