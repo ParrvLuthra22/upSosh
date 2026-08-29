@@ -8,14 +8,13 @@ A booking platform for premium micro-events — run clubs, supper clubs, worksho
 
 ## Screenshots
 
-*(file paths referenced below — add the actual images at these paths)*
-
-| | |
+| `/discover` | Event detail |
 |---|---|
-| `docs/screenshots/discover.png` | `/discover` — the event grid |
-| `docs/screenshots/event-detail.png` | An event detail page |
-| `docs/screenshots/booking-flow.png` | The booking modal, mid-flow |
-| `docs/screenshots/ticket.png` | A confirmed QR ticket |
+| ![Discover grid](docs/screenshots/discover.png) | ![Event detail page](docs/screenshots/event-detail.png) |
+
+| Booking flow | Ticket |
+|---|---|
+| ![Booking modal](docs/screenshots/booking-flow.png) | *(`docs/screenshots/ticket.png` — add a confirmed QR ticket here; capturing one needs a real logged-in session with a paid booking, which wasn't captured here)* |
 
 ---
 
