@@ -74,7 +74,7 @@ const CartDrawer = () => {
                     ) : (
                         cart.map((item) => (
                             <div key={item.id} className="flex gap-4">
-                                <div className="w-20 h-20 relative bg-neutral-100 dark:bg-neutral-900 flex-shrink-0">
+                                <div className="w-20 h-20 relative bg-surface flex-shrink-0">
                                     <Image
                                         src={item.image}
                                         alt={item.title}
@@ -93,20 +93,20 @@ const CartDrawer = () => {
                                             <button
                                                 onClick={() => updateCartQty(item.id, item.qty - 1)}
                                                 aria-label="Decrease quantity"
-                                                className="w-8 h-full flex items-center justify-center text-cream hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-l-full"
+                                                className="w-8 h-full flex items-center justify-center text-cream hover:bg-cream/5 rounded-l-full"
                                             >-</button>
                                             <span className="w-6 text-center text-sm font-medium">{item.qty}</span>
                                             <button
                                                 onClick={() => updateCartQty(item.id, item.qty + 1)}
                                                 aria-label="Increase quantity"
-                                                className="w-8 h-full flex items-center justify-center text-cream hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-r-full"
+                                                className="w-8 h-full flex items-center justify-center text-cream hover:bg-cream/5 rounded-r-full"
                                             >+</button>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <span className="font-medium text-cream">₹{item.price * item.qty}</span>
                                             <button
                                                 onClick={() => removeFromCart(item.id)}
-                                                className="text-cream/40 hover:text-red-500 transition-colors"
+                                                className="text-cream/40 hover:text-coral transition-colors"
                                             >
                                                 Remove
                                             </button>

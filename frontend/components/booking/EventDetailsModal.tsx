@@ -101,7 +101,7 @@ const EventDetailsModal = () => {
                 </button>
 
                 
-                <div className="md:w-1/2 h-64 md:h-auto relative bg-neutral-100 dark:bg-neutral-900">
+                <div className="md:w-1/2 h-64 md:h-auto relative bg-surface">
                     <Image
                         src={selectedEvent.image}
                         alt={selectedEvent.title}
@@ -157,7 +157,7 @@ const EventDetailsModal = () => {
                             </div>
                         )}
 
-                        <div className="prose prose-neutral dark:prose-invert">
+                        <div className="prose prose-invert">
                             <p className="text-cream/80 leading-relaxed text-lg font-light">
                                 {selectedEvent.description}
                             </p>

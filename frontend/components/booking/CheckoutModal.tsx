@@ -334,19 +334,19 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     return (
         <div ref={modalRef} className="fixed inset-0 z-[70] flex items-center justify-center p-4 opacity-0 pointer-events-none" role="dialog" aria-modal="true">
             <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                className="absolute inset-0 bg-void/80 backdrop-blur-md"
                 onClick={status === 'uploading' ? undefined : onClose}
                 role="button"
                 tabIndex={status === 'uploading' ? -1 : 0}
                 aria-label="Close"
                 onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && status !== 'uploading') onClose(); }}
             />
-            <div ref={contentRef} className="relative w-full max-w-2xl bg-black border border-white/10 rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black sticky top-0 z-10">
-                    <h2 className="text-2xl font-display font-bold text-white">
+            <div ref={contentRef} className="relative w-full max-w-2xl bg-void border border-border rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b border-border flex items-center justify-between bg-void sticky top-0 z-10">
+                    <h2 className="text-2xl font-display font-bold text-cream">
                         {status === 'success' ? '✅ Booking Submitted!' : status === 'payment-details' ? '💳 Payment Details' : 'Complete Your Purchase'}
                     </h2>
-                    {status !== 'uploading' && <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
+                    {status !== 'uploading' && <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-cream/10 text-cream/50 hover:text-cream transition-colors"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>}
                 </div>
                 <div className="p-8">
                     {status === 'success' ? (
@@ -354,13 +354,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                             <div className="w-24 h-24 bg-lime/20 text-lime rounded-full flex items-center justify-center">
                                 <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                             </div>
-                            <h3 className="text-3xl font-bold text-white">Booking Submitted!</h3>
+                            <h3 className="text-3xl font-bold text-cream">Booking Submitted!</h3>
                             <div className="bg-lime/10 border border-lime/20 rounded-xl p-4 w-full">
                                 <p className="text-lime font-medium">⏳ Pending Verification</p>
-                                <p className="text-white/60 text-sm mt-2">Your booking will be confirmed once we verify your payment. You'll receive an email confirmation within 24 hours.</p>
+                                <p className="text-cream/60 text-sm mt-2">Your booking will be confirmed once we verify your payment. You'll receive an email confirmation within 24 hours.</p>
                             </div>
-                            <div className="bg-white/10 rounded-xl p-6 w-full">
-                                <p className="text-sm text-white/50 mb-2">Booking Reference</p>
+                            <div className="bg-cream/10 rounded-xl p-6 w-full">
+                                <p className="text-sm text-cream/50 mb-2">Booking Reference</p>
                                 <p className="text-2xl font-mono font-bold text-lime">{bookingDetails?.id}</p>
                             </div>
                             <button onClick={onClose} className="w-full py-3 px-6 rounded-xl bg-lime text-void font-bold hover:opacity-90">Done</button>
@@ -368,24 +368,24 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                     ) : status === 'uploading' ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
                             <div className="w-16 h-16 border-4 border-lime border-t-transparent rounded-full animate-spin"></div>
-                            <h3 className="text-2xl font-bold text-white">Submitting Booking...</h3>
-                            <p className="text-white/60">Please wait while we process your request</p>
+                            <h3 className="text-2xl font-bold text-cream">Submitting Booking...</h3>
+                            <p className="text-cream/60">Please wait while we process your request</p>
                         </div>
                     ) : status === 'payment-details' ? (
                         <div className="space-y-6">
-                            {errorMessage && <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-white/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
+                            {errorMessage && <div className="p-4 bg-cream/5 border border-border rounded-xl text-cream/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
                             
                             <div className="bg-lime/10 border border-lime/20 rounded-xl p-6 space-y-4">
                                 <h3 className="text-lg font-bold text-lime flex items-center gap-2">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     How to Pay
                                 </h3>
-                                <p className="text-white/60 text-sm">Send ₹{total.toFixed(2)} using the QR code, UPI ID, or Bank Account details below, then upload your payment screenshot.</p>
+                                <p className="text-cream/60 text-sm">Send ₹{total.toFixed(2)} using the QR code, UPI ID, or Bank Account details below, then upload your payment screenshot.</p>
                             </div>
 
                             
-                            <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center space-y-4">
-                                <h3 className="text-lg font-bold text-white">Scan QR Code to Pay</h3>
+                            <div className="bg-cream/10 rounded-xl p-6 flex flex-col items-center space-y-4">
+                                <h3 className="text-lg font-bold text-cream">Scan QR Code to Pay</h3>
                                 <div className="bg-white p-4 rounded-xl">
                                     <Image
                                         src="/payment-qr.png"
@@ -395,27 +395,27 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                         className="w-64 h-64 object-contain"
                                     />
                                 </div>
-                                <p className="text-sm text-white/50 text-center">Scan with any UPI app (Google Pay, PhonePe, Paytm, etc.)</p>
-                                <p className="text-xs text-white/50 text-center">Amount: ₹{total.toFixed(2)}</p>
+                                <p className="text-sm text-cream/50 text-center">Scan with any UPI app (Google Pay, PhonePe, Paytm, etc.)</p>
+                                <p className="text-xs text-cream/50 text-center">Amount: ₹{total.toFixed(2)}</p>
                             </div>
 
-                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-white mb-4">Payment Methods</h3>
+                            <div className="bg-cream/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-cream mb-4">Payment Methods</h3>
                                 
                                 <div className="space-y-3">
-                                    <div className="bg-black border border-white/10 rounded-lg p-4">
-                                        <p className="text-sm text-white/50 mb-1">UPI ID</p>
+                                    <div className="bg-void border border-border rounded-lg p-4">
+                                        <p className="text-sm text-cream/50 mb-1">UPI ID</p>
                                         <p className="text-xl font-mono font-bold text-lime">upsosh@ptyes</p>
                                         <button onClick={() => navigator.clipboard.writeText('upsosh@ptyes')} className="text-sm text-lime hover:opacity-80 mt-2">Copy UPI ID</button>
                                     </div>
                                     
-                                    <div className="bg-black border border-white/10 rounded-lg p-4">
-                                        <p className="text-sm text-white/50 mb-2">Bank Transfer</p>
+                                    <div className="bg-void border border-border rounded-lg p-4">
+                                        <p className="text-sm text-cream/50 mb-2">Bank Transfer</p>
                                         <div className="space-y-1 text-sm">
-                                            <p className="text-white/60"><span className="text-white/40">Account Holder:</span> Aadit Vachher</p>
-                                            <p className="text-white/60"><span className="text-white/40">Bank:</span> HDFC Bank</p>
-                                            <p className="text-white/60"><span className="text-white/40">Account Number:</span> 50100828764622</p>
-                                            <p className="text-white/60"><span className="text-white/40">IFSC Code:</span> HDFC0000027</p>
+                                            <p className="text-cream/60"><span className="text-cream/40">Account Holder:</span> Aadit Vachher</p>
+                                            <p className="text-cream/60"><span className="text-cream/40">Bank:</span> HDFC Bank</p>
+                                            <p className="text-cream/60"><span className="text-cream/40">Account Number:</span> 50100828764622</p>
+                                            <p className="text-cream/60"><span className="text-cream/40">IFSC Code:</span> HDFC0000027</p>
                                         </div>
                                         <button 
                                             onClick={() => navigator.clipboard.writeText('50100828764622')} 
@@ -427,13 +427,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                 </div>
                             </div>
 
-                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-white">📸 Upload Payment Proof</h3>
-                                <p className="text-sm text-white/50">Take a screenshot of your payment and upload it here</p>
+                            <div className="bg-cream/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-cream">📸 Upload Payment Proof</h3>
+                                <p className="text-sm text-cream/50">Take a screenshot of your payment and upload it here</p>
                                 
                                 <label className="block">
                                     <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                                    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-lime/50 cursor-pointer transition-colors">
+                                    <div className="border-2 border-dashed border-border-strong rounded-xl p-8 text-center hover:border-lime/50 cursor-pointer transition-colors">
                                         {previewUrl ? (
                                             <div className="space-y-3">
                                                 <Image src={previewUrl} alt="Payment proof" unoptimized width={400} height={300} className="max-h-48 w-auto mx-auto rounded-lg object-contain" />
@@ -441,9 +441,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
-                                                <svg className="w-12 h-12 mx-auto text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                                                <p className="text-white font-medium">Click to upload screenshot</p>
-                                                <p className="text-xs text-white/50">PNG, JPG up to 5MB</p>
+                                                <svg className="w-12 h-12 mx-auto text-cream/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                                                <p className="text-cream font-medium">Click to upload screenshot</p>
+                                                <p className="text-xs text-cream/50">PNG, JPG up to 5MB</p>
                                             </div>
                                         )}
                                     </div>
@@ -451,30 +451,30 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                             </div>
 
                             <div className="flex gap-3">
-                                <button onClick={() => setStatus('idle')} className="flex-1 py-3 px-6 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20">Back</button>
+                                <button onClick={() => setStatus('idle')} className="flex-1 py-3 px-6 rounded-xl bg-cream/10 text-cream font-bold hover:bg-cream/20">Back</button>
                                 <button onClick={handleSubmitManualPayment} disabled={!paymentProof} className="flex-1 py-3 px-6 rounded-xl bg-lime text-void font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">Submit Booking</button>
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {errorMessage && <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-white/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
+                            {errorMessage && <div className="p-4 bg-cream/5 border border-border rounded-xl text-cream/80 flex items-center gap-3"><svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>{errorMessage}</span></div>}
                             
-                            <div className="bg-white/10 rounded-xl p-6 space-y-4">
-                                <h3 className="text-lg font-bold text-white mb-4">Order Summary</h3>
+                            <div className="bg-cream/10 rounded-xl p-6 space-y-4">
+                                <h3 className="text-lg font-bold text-cream mb-4">Order Summary</h3>
                                 <div className="space-y-3">
                                     {checkoutItems.map((item) => (
                                         <div key={item.event?.id || item.id} className="flex justify-between items-center">
                                             <div>
-                                                <p className="font-medium text-white">{item.event?.title || item.title}</p>
-                                                <p className="text-sm text-white/50">Qty: {item.qty}</p>
+                                                <p className="font-medium text-cream">{item.event?.title || item.title}</p>
+                                                <p className="text-sm text-cream/50">Qty: {item.qty}</p>
                                             </div>
-                                            <p className="font-bold text-white">₹{(item.price * item.qty).toFixed(2)}</p>
+                                            <p className="font-bold text-cream">₹{(item.price * item.qty).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="border-t border-white/10 pt-4 mt-4">
+                                <div className="border-t border-border pt-4 mt-4">
                                     <div className="flex justify-between items-center text-xl font-bold">
-                                        <span className="text-white">Total</span>
+                                        <span className="text-cream">Total</span>
                                         <span className="text-lime">₹{total.toFixed(2)}</span>
                                     </div>
                                 </div>
@@ -482,7 +482,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
                             
                             <div className="space-y-4">
-                                <h3 className="text-lg font-bold text-white">Choose Payment Method</h3>
+                                <h3 className="text-lg font-bold text-cream">Choose Payment Method</h3>
                                 
                                 
                                 <button 
@@ -492,24 +492,24 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                                     Pay Online (Card/UPI/Wallet)
                                 </button>
-                                <p className="text-center text-xs text-white/50">Instant Secure payment powered by Dodo Payments(platform charges may apply)</p>
+                                <p className="text-center text-xs text-cream/50">Instant Secure payment powered by Dodo Payments(platform charges may apply)</p>
                                 
                                 
                                 <div className="flex items-center gap-4 my-4">
-                                    <div className="flex-1 h-px bg-white/10"></div>
-                                    <span className="text-sm text-white/50">or</span>
-                                    <div className="flex-1 h-px bg-white/10"></div>
+                                    <div className="flex-1 h-px bg-cream/10"></div>
+                                    <span className="text-sm text-cream/50">or</span>
+                                    <div className="flex-1 h-px bg-cream/10"></div>
                                 </div>
                                 
                                 
                                 <button 
                                     onClick={handleShowPaymentDetails} 
-                                    className="w-full py-4 px-6 rounded-xl bg-white/10 border border-white/10 text-white font-bold text-lg hover:bg-white/20 transition-colors flex items-center justify-center gap-3"
+                                    className="w-full py-4 px-6 rounded-xl bg-cream/10 border border-border text-cream font-bold text-lg hover:bg-cream/20 transition-colors flex items-center justify-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                                     Pay via UPI/Bank Transfer
                                 </button>
-                                <p className="text-center text-xs text-white/50">Manual verification (6-8 hours)</p>
+                                <p className="text-center text-xs text-cream/50">Manual verification (6-8 hours)</p>
                             </div>
                         </div>
                     )}
