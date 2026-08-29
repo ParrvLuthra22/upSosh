@@ -28,6 +28,7 @@ import bookingRoutes from './routes/bookings';
 import paymentRoutes from './routes/payments';
 import aiRoutes from './routes/ai';
 import uploadRoutes from './routes/uploads';
+import notificationRoutes from './routes/notifications';
 import prisma from './lib/prisma';
 
 // A process.exit(1) here during a Jest run would kill the whole test
@@ -154,6 +155,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Root
 app.get('/', (req: Request, res: Response) => {

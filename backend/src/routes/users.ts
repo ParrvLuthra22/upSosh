@@ -48,8 +48,13 @@ router.patch('/me/password', requireAuth, async (req: AuthRequest, res: Response
     const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const valid = await bcrypt.compare(String(currentPassword), user.password);
-    if (!valid) return res.status(400).json({ message: 'Current password is incorrect' });
+    // A Google-only account (password: null) has no current password to
+    // verify — this becomes "add a password" for it instead of "change
+    // password", giving that account a fallback sign-in method.
+    if (user.password) {
+      const valid = await bcrypt.compare(String(currentPassword), user.password);
+      if (!valid) return res.status(400).json({ message: 'Current password is incorrect' });
+    }
 
     const hashed = await bcrypt.hash(String(newPassword), 12);
     await prisma.user.update({ where: { id: req.user!.id }, data: { password: hashed } });

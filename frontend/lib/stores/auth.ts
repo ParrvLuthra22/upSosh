@@ -93,6 +93,15 @@ interface AuthStore {
   register: (payload: RegisterPayload) => Promise<void>;
 
   /**
+   * POST /api/auth/google with a Google ID token (the `credential` Google
+   * Identity Services hands back) → saves JWT to cookie + state. Same
+   * shape as login/register otherwise — signs in an existing account,
+   * links an existing password account on first use, or creates a new
+   * account, all decided server-side.
+   */
+  loginWithGoogle: (credential: string) => Promise<void>;
+
+  /**
    * POST /api/auth/signout → clears state + cookie.
    */
   logout: () => Promise<void>;
@@ -180,6 +189,30 @@ export const useAuthStore = create<AuthStore>()(
 
           const body = await res.json();
           if (!res.ok) throw new Error(body.message ?? body.error ?? 'Registration failed');
+
+          const { user } = body as { user: User };
+          purgeLegacyCredentials();
+          set({ user, token: null, isLoading: false });
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+
+      // ── Google sign-in ─────────────────────────────────────────────────────
+
+      loginWithGoogle: async (credential) => {
+        set({ isLoading: true });
+        try {
+          const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential }),
+            credentials: 'include',
+          });
+
+          const body = await res.json();
+          if (!res.ok) throw new Error(body.message ?? body.error ?? 'Google sign-in failed');
 
           const { user } = body as { user: User };
           purgeLegacyCredentials();
@@ -313,6 +346,7 @@ export function useAuth() {
     // Actions
     login: store.login,
     register: store.register,
+    loginWithGoogle: store.loginWithGoogle,
     logout: store.logout,
     refresh: store.refresh,
     setUser: store.setUser,

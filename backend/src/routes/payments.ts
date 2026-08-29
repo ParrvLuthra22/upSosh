@@ -4,6 +4,7 @@ import Razorpay from 'razorpay';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendBookingConfirmation } from '../lib/email';
+import { notify } from '../lib/notify';
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -220,6 +221,13 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
       isFree: false,
     }).catch(() => {});
 
+    notify(
+      booking.userId,
+      'booking',
+      "You're in!",
+      `Your spot for "${updatedBooking!.event?.title ?? 'the event'}" is confirmed.`,
+    );
+
     return res.json({ success: true, booking: updatedBooking });
   } catch (err: unknown) {
     console.error('POST /payments/verify error:', errorMessage(err));
@@ -316,6 +324,13 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
                 qrCode: paidBooking.qrCode ?? paidBooking.id,
                 isFree: false,
               }).catch(() => {});
+
+              notify(
+                paidBooking.userId,
+                'booking',
+                "You're in!",
+                `Your spot for "${paidBooking.event?.title ?? 'the event'}" is confirmed.`,
+              );
             }
             if (paidBooking?.eventId) {
               await prisma.event.update({

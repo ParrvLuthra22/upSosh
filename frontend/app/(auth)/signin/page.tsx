@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/stores/auth';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/motion';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const BG_URL = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1400&q=80&fit=crop';
@@ -137,6 +138,13 @@ function SignInForm() {
             : 'Sign in'}
         </motion.button>
       </form>
+
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1 h-px bg-border" />
+        <span className="font-mono text-[11px] uppercase tracking-widest text-cream-faint">or</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+      <GoogleSignInButton redirectTo={redirectTo} />
 
       <p className="text-center font-sans text-[14px] text-cream-dim mt-6">
         New here?{' '}

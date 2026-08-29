@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { z } from 'zod';
+import { OAuth2Client } from 'google-auth-library';
 import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
@@ -91,6 +92,14 @@ async function signinHandler(req: Request, res: Response): Promise<Response> {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // A Google-only account (signed up via "Continue with Google", never set
+    // a local password) has password: null. bcrypt.compare() throws on a
+    // non-string hash rather than just returning false, so this has to be
+    // checked first, not left to fall into that catch as a generic 500.
+    if (!user.password) {
+      return res.status(401).json({ message: 'This account uses Google sign-in. Continue with Google instead.' });
+    }
+
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
@@ -131,6 +140,90 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response): Promise<
     return res.json({ user: sanitizeUser(user) });
   } catch (err: unknown) {
     console.error('Get me error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/google — sign in (or sign up) with a Google ID token.
+//
+// This is the "Sign In With Google" ID-token flow (Google Identity
+// Services on the frontend), not the authorization-code OAuth flow — the
+// browser gets a signed JWT straight from Google and hands it to us here.
+// We only ever need GOOGLE_CLIENT_ID to verify that JWT's signature and
+// audience; no client secret, no redirect URIs, no server-side token
+// exchange.
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+router.post('/google', async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { credential } = req.body as { credential?: unknown };
+    if (typeof credential !== 'string' || !credential) {
+      return res.status(400).json({ message: 'Missing Google credential' });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      return res.status(503).json({ message: 'Google sign-in is not configured' });
+    }
+
+    let email: string | undefined;
+    let googleId: string | undefined;
+    let name: string | undefined;
+    let picture: string | undefined;
+    try {
+      const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: clientId });
+      const payload = ticket.getPayload();
+      email = payload?.email;
+      googleId = payload?.sub;
+      name = payload?.name;
+      picture = payload?.picture;
+      // Google marks an address unverified for e.g. a freshly-created
+      // Workspace alias — accepting it would let someone sign in as an
+      // email they don't actually control yet.
+      if (payload && payload.email_verified === false) {
+        return res.status(401).json({ message: 'Google account email is not verified' });
+      }
+    } catch {
+      return res.status(401).json({ message: 'Invalid Google credential' });
+    }
+
+    if (!email || !googleId) {
+      return res.status(401).json({ message: 'Invalid Google credential' });
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      if (user.deletedAt) {
+        return res.status(401).json({ message: 'This account no longer exists' });
+      }
+      // First time this existing (password-based) account signs in with
+      // Google — link it rather than creating a second account for the
+      // same address.
+      if (!user.googleId) {
+        user = await prisma.user.update({ where: { id: user.id }, data: { googleId } });
+      }
+    } else {
+      const displayName = name ?? email.split('@')[0];
+      const username = await generateUsername(displayName);
+      user = await prisma.user.create({
+        data: {
+          name: displayName,
+          email,
+          username,
+          googleId,
+          password: null,
+          photoUrl: picture ?? null,
+        },
+      });
+    }
+
+    const token = generateToken(user.id);
+    res.cookie('token', token, COOKIE_OPTS);
+
+    return res.status(200).json({ user: sanitizeUser(user), token, message: 'Signed in with Google' });
+  } catch (err: unknown) {
+    console.error('Google signin error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

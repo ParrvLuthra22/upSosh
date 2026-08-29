@@ -5,6 +5,7 @@ import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { hostApplySchema } from '../lib/schemas';
+import { notify } from '../lib/notify';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -116,6 +117,13 @@ router.patch('/admin/applications/:id/approve', requireAuth, async (req: AuthReq
       }),
     ]);
 
+    notify(
+      application.userId,
+      'host',
+      "You're a verified host!",
+      'Your host application was approved — you can now create events.',
+    );
+
     return res.json({ message: 'Application approved', application: updatedApp });
   } catch (err: unknown) {
     console.error('PATCH /hosts/admin/applications/:id/approve error:', errorMessage(err));
@@ -146,6 +154,13 @@ router.patch('/admin/applications/:id/reject', requireAuth, async (req: AuthRequ
         data: { hostStatus: 'none' },
       }),
     ]);
+
+    notify(
+      application.userId,
+      'host',
+      'Host application update',
+      reviewNotes ? `Your application wasn't approved this time: ${reviewNotes}` : "Your application wasn't approved this time.",
+    );
 
     return res.json({ message: 'Application rejected', application: updatedApp });
   } catch (err: unknown) {

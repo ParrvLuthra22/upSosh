@@ -7,6 +7,7 @@ import { validateBody } from '../middleware/validate';
 import { createBookingSchema } from '../lib/schemas';
 import { sendBookingConfirmation } from '../lib/email';
 import { getRazorpayClient } from './payments';
+import { notify } from '../lib/notify';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -104,6 +105,13 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
         qrCode: booking.qrCode ?? booking.id,
         isFree: true,
       }).catch(() => {});
+
+      notify(
+        booking.userId,
+        'booking',
+        "You're in!",
+        `Your spot for "${event?.title ?? 'the event'}" is confirmed.`,
+      );
     }
 
     return res.status(201).json({ booking, message: 'Booking created successfully' });

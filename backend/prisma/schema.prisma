@@ -56,7 +56,14 @@ model User {
   id                   String     @id @default(cuid())
   email                String     @unique
   username             String     @unique
-  password             String
+  // Optional — a Google-only account (googleId set, no password ever chosen)
+  // has no local password to hash. auth.ts's password-based /signin route
+  // must check for this before bcrypt.compare(), which throws on a
+  // non-string hash instead of just failing the comparison.
+  password             String?
+  // Set on first Google sign-in for this email, whether that creates a new
+  // account or links to an existing password account with a matching email.
+  googleId             String?    @unique
   name                 String
   photoUrl             String?
   bio                  String?
@@ -96,8 +103,28 @@ model User {
   bookings             Booking[]
   hostApplication      HostApplication?
   uploads              Upload[]
+  notifications        Notification[]
 
   @@index([resetToken])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 'booking' | 'event' | 'host' | 'verification' | 'general' — matches the
+  // frontend's Notification type in components/layout/GlobalHeader.tsx.
+  // Not a Prisma enum: this list is UI copy, not a schema-level invariant,
+  // and a plain string means adding a new notification type is a
+  // frontend-and-route change, not a migration.
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, read])
 }
 
 model Host {

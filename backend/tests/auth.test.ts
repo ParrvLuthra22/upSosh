@@ -27,6 +27,11 @@ describe('POST /api/auth/signup', () => {
     expect(res.status).toBe(201);
 
     const stored = await prisma.user.findUniqueOrThrow({ where: { id: res.body.user.id } });
+    // password is nullable on the model now (a Google-only account has
+    // none) — a user created via this password-signup route always has
+    // one, so a missing hash here is itself a real failure, not a type
+    // formality to assert past.
+    if (!stored.password) throw new Error('Expected a password hash for a password-signup user');
     expect(stored.password).not.toBe(plainPassword);
     expect(stored.password.startsWith('$2')).toBe(true); // bcrypt hash prefix
     await expect(bcrypt.compare(plainPassword, stored.password)).resolves.toBe(true);
