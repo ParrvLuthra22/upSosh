@@ -41,6 +41,7 @@ import {
 import { getLenis } from '@/components/ui/SmoothScroll';
 import { Input } from '@/components/ui/input';
 import { cn, unitPrice, formatINR as fmtRupee } from '@/lib/utils';
+import { useReducedMotion } from '@/lib/motion';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -74,6 +75,7 @@ function StepDots({ step }: { step: 1 | 2 | 3 }) {
 // ─── Animated check SVG (step 3) ─────────────────────────────────────────────
 
 function AnimatedCheck() {
+  const reduced = useReducedMotion();
   return (
     <svg width="120" height="120" viewBox="0 0 120 120" fill="none" aria-hidden="true">
       {/* Outer circle */}
@@ -83,9 +85,9 @@ function AnimatedCheck() {
         strokeWidth="4"
         strokeLinecap="round"
         strokeDasharray="339.3"
-        initial={{ strokeDashoffset: 339.3, opacity: 0 }}
+        initial={reduced ? { strokeDashoffset: 0, opacity: 1 } : { strokeDashoffset: 339.3, opacity: 0 }}
         animate={{ strokeDashoffset: 0, opacity: 1 }}
-        transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.9, ease: EASE, delay: 0.1 }}
       />
       {/* Checkmark path — total length ≈ 75 */}
       <motion.path
@@ -95,9 +97,9 @@ function AnimatedCheck() {
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeDasharray="75"
-        initial={{ strokeDashoffset: 75 }}
+        initial={reduced ? { strokeDashoffset: 0 } : { strokeDashoffset: 75 }}
         animate={{ strokeDashoffset: 0 }}
-        transition={{ duration: 0.55, ease: EASE, delay: 0.85 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.55, ease: EASE, delay: 0.85 }}
       />
     </svg>
   );
@@ -106,7 +108,9 @@ function AnimatedCheck() {
 // ─── Confetti ─────────────────────────────────────────────────────────────────
 
 function useConfetti() {
+  const reduced = useReducedMotion();
   useEffect(() => {
+    if (reduced) return;
     import('canvas-confetti').then(({ default: confetti }) => {
       const fire = (particleRatio: number, opts: object) =>
         confetti({
@@ -121,7 +125,7 @@ function useConfetti() {
       fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['var(--coral)'] });
       fire(0.1,  { spread: 120, startVelocity: 45, colors: ['var(--lime)'] });
     });
-  }, []);
+  }, [reduced]);
 }
 
 // ─── Event mini-card ──────────────────────────────────────────────────────────
@@ -414,6 +418,7 @@ function Step2Payment() {
 function Step3Confirmation() {
   useConfetti();
   const { event, guestCount, close } = useBookingStore();
+  const reduced = useReducedMotion();
   if (!event) return null;
 
   const img = event.imageUrl ?? event.image ?? '';
@@ -439,18 +444,18 @@ function Step3Confirmation() {
     <div className="px-6 py-10 flex flex-col items-center text-center">
       {/* Animated check */}
       <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
+        initial={reduced ? { opacity: 1 } : { scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ ...SPRING, delay: 0.05 }}
+        transition={reduced ? { duration: 0 } : { ...SPRING, delay: 0.05 }}
       >
         <AnimatedCheck />
       </motion.div>
 
       {/* Headline */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.6, ease: EASE, delay: 0.7 }}
       >
         <h2
           className="text-cream mt-6 mb-2"
@@ -466,9 +471,9 @@ function Step3Confirmation() {
       {/* Event recap */}
       <motion.div
         className="w-full mt-8 bg-cream/5 rounded-2xl p-4 flex items-center gap-3 text-left"
-        initial={{ opacity: 0, y: 12 }}
+        initial={reduced ? { opacity: 1 } : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: EASE, delay: 0.85 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.5, ease: EASE, delay: 0.85 }}
       >
         <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-surface">
           {img && <Image src={img} alt={event.title} width={56} height={56} className="w-full h-full object-cover" />}
@@ -492,9 +497,9 @@ function Step3Confirmation() {
       {/* CTAs */}
       <motion.div
         className="w-full mt-6 space-y-3"
-        initial={{ opacity: 0, y: 12 }}
+        initial={reduced ? { opacity: 1 } : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: EASE, delay: 1.0 }}
+        transition={reduced ? { duration: 0 } : { duration: 0.5, ease: EASE, delay: 1.0 }}
       >
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -534,12 +539,15 @@ function Step3Confirmation() {
 
 function ModalContent() {
   const { step, direction, close } = useBookingStore();
+  const reduced = useReducedMotion();
 
-  const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit:   (dir: number) => ({ x: dir > 0 ? -30 : 30, opacity: 0 }),
-  };
+  const variants = reduced
+    ? { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+        enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
+        center: { x: 0, opacity: 1 },
+        exit:   (dir: number) => ({ x: dir > 0 ? -30 : 30, opacity: 0 }),
+      };
 
   return (
     <>
@@ -582,7 +590,7 @@ function ModalContent() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.28, ease: EASE }}
+            transition={{ duration: reduced ? 0 : 0.28, ease: EASE }}
           >
             {step === 1 && <Step1Review />}
             {step === 2 && <Step2Payment />}
@@ -598,6 +606,7 @@ function ModalContent() {
 
 export default function BookingFlow() {
   const { isOpen, close } = useBookingStore();
+  const reduced = useReducedMotion();
 
   // Escape key
   useEffect(() => {
@@ -650,7 +659,7 @@ export default function BookingFlow() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: reduced ? 0 : 0.2 }}
           onClick={close}
         >
           {/*
@@ -674,10 +683,10 @@ export default function BookingFlow() {
             }}
             // Apply the fixed height on sm+ via inline responsive (can't use Tailwind here
             // because Framer Motion controls the style prop).  We inject a global rule instead.
-            initial={{ opacity: 0, y: 56 }}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 56 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: 'spring', stiffness: 340, damping: 32 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: 40 }}
+            transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 340, damping: 32 }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drag handle — mobile only */}
