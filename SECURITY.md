@@ -123,3 +123,9 @@ A second test, `'rejects a tampered signature — valid payload, wrong HMAC'`, c
 ## Why these two, and not a general write-up
 
 Both of these were caught by actually attempting the exploit against a running instance — not by reading the code and reasoning about what *might* go wrong. That's deliberate: a signature check that "looks right" (HMAC comparison, `crypto.timingSafeEqual`, all present) can still be trivially bypassed if it's checking the right cryptography against the wrong data. The fix in both cases wasn't cryptographic — it was binding: making sure a payment credential can only ever be redeemed against the one thing it was issued for.
+
+---
+
+## Reporting a vulnerability
+
+Both issues above were found and fixed before this document existed to disclose them to anyone else — there was no prior report to credit. If you find something similar, please don't open a public GitHub issue or test it against real bookings/payments beyond what's needed to confirm it. Email **parrvluthra@gmail.com** with a description and, if you have one, the minimal reproduction. Given this is a small, single-maintainer project, there's no bug bounty and no formal SLA, but reports will be read and real issues fixed.
