@@ -18,6 +18,7 @@ import {
   AnimatePresence,
   useMotionValue,
   useTransform,
+  useDragControls,
 } from 'framer-motion';
 import {
   IconX,
@@ -41,7 +42,7 @@ import {
 import { getLenis } from '@/components/ui/SmoothScroll';
 import { Input } from '@/components/ui/input';
 import { cn, unitPrice, formatINR as fmtRupee } from '@/lib/utils';
-import { useReducedMotion } from '@/lib/motion';
+import { useReducedMotion, useFakeProgress } from '@/lib/motion';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -291,6 +292,7 @@ function Step2Payment() {
     submit,
   } = useBookingStore();
   const [terms, setTerms] = useState(false);
+  const progress = useFakeProgress(isProcessing);
   if (!event) return null;
 
   const price = unitPrice(event.price);
@@ -388,16 +390,25 @@ function Step2Payment() {
         <button
           onClick={submit}
           disabled={!canSubmit && !isFree}
-          className="w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
+          className="relative w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 overflow-hidden transition-opacity disabled:opacity-40"
           style={{ backgroundColor: 'var(--lime)', color: 'var(--void)' }}
         >
-          {isProcessing ? (
-            <span className="w-4 h-4 border-2 border-void/30 border-t-void rounded-full animate-spin" />
-          ) : isFree ? (
-            <>Confirm booking <IconCheck size={16} strokeWidth={2.5} /></>
-          ) : (
-            <>Pay {fmtRupee(total)} <IconArrowRight size={16} strokeWidth={2.5} /></>
+          {isProcessing && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 bg-void/10"
+              style={{ width: `${progress}%`, transition: 'width 100ms linear' }}
+            />
           )}
+          <span className="relative">
+            {isProcessing ? (
+              'Processing…'
+            ) : isFree ? (
+              <span className="flex items-center gap-2">Confirm booking <IconCheck size={16} strokeWidth={2.5} /></span>
+            ) : (
+              <span className="flex items-center gap-2">Pay {fmtRupee(total)} <IconArrowRight size={16} strokeWidth={2.5} /></span>
+            )}
+          </span>
         </button>
         <button
           onClick={back}
@@ -607,6 +618,12 @@ function ModalContent() {
 export default function BookingFlow() {
   const { isOpen, close } = useBookingStore();
   const reduced = useReducedMotion();
+  // Drag-to-dismiss is initiated from the handle only (via dragListener={false}
+  // + dragControls.start below) — the panel body has its own scrollable
+  // content (ModalContent's overflow-y-auto region), and letting drag="y"
+  // listen on the whole panel would hijack every vertical scroll gesture
+  // there as a dismiss attempt instead.
+  const dragControls = useDragControls();
 
   // Escape key
   useEffect(() => {
@@ -688,9 +705,21 @@ export default function BookingFlow() {
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: 40 }}
             transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 340, damping: 32 }}
             onClick={(e) => e.stopPropagation()}
+            drag={reduced ? false : 'y'}
+            dragListener={false}
+            dragControls={dragControls}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 120 || info.velocity.y > 600) close();
+            }}
           >
-            {/* Drag handle — mobile only */}
-            <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+            {/* Drag handle — mobile only. The only part of the sheet that
+                starts a drag, so scrolling the form/content below still works. */}
+            <div
+              className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+              onPointerDown={(e) => !reduced && dragControls.start(e)}
+            >
               <div style={{ width: 36, height: 4, borderRadius: 99, backgroundColor: 'var(--cream-faint)' }} />
             </div>
 

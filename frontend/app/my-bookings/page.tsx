@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -130,6 +130,7 @@ function TicketModal({ booking, onClose, onCancel }: {
   const [cancelling, setCancelling] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const reduced = useReducedMotion();
+  const dragControls = useDragControls();
 
   useEscapeKey(onClose, true);
 
@@ -203,7 +204,23 @@ function TicketModal({ booking, onClose, onCancel }: {
             exit={reduced ? { opacity: 0 } : { y: 40, scale: 0.97 }}
             transition={{ duration: reduced ? 0 : 0.28, ease: EASE_VERCEL }}
             onClick={(e) => e.stopPropagation()}
+            drag={reduced ? false : 'y'}
+            dragListener={false}
+            dragControls={dragControls}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 120 || info.velocity.y > 600) onClose();
+            }}
           >
+            {/* Drag handle — mobile only */}
+            <div
+              className="sm:hidden flex justify-center pt-3 pb-1 touch-none cursor-grab active:cursor-grabbing"
+              onPointerDown={(e) => !reduced && dragControls.start(e)}
+            >
+              <div style={{ width: 36, height: 4, borderRadius: 99, backgroundColor: 'var(--cream-faint)' }} />
+            </div>
+
             {/* Event image header */}
             {ev?.image && (
               <div className="h-36 overflow-hidden relative">
@@ -339,6 +356,7 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fetching, setFetching] = useState(true);
   const [selected, setSelected] = useState<Booking | null>(null);
+  const reduced = useReducedMotion();
 
   // Guard on `hydrated`, not just `loading`: the store's initial isLoading is
   // false until refresh() sets it, so without this a returning logged-in user
@@ -435,10 +453,10 @@ export default function MyBookingsPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={tab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: reduced ? 0 : 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.22, ease: EASE_VERCEL }}
+              exit={{ opacity: 0, y: reduced ? 0 : -10 }}
+              transition={{ duration: reduced ? 0.1 : 0.22, ease: EASE_VERCEL }}
               className="space-y-3"
             >
               {filtered.length === 0 ? (
@@ -448,8 +466,21 @@ export default function MyBookingsPage() {
                   action={tab === 'upcoming' ? { label: 'Browse events', href: '/discover' } : undefined}
                 />
               ) : (
-                filtered.map((b) => (
-                  <BookingRow key={b.id} booking={b} onClick={() => setSelected(b)} />
+                filtered.map((b, i) => (
+                  <motion.div
+                    key={b.id}
+                    layout={!reduced}
+                    initial={{ opacity: 0, y: reduced ? 0 : 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: reduced ? 0.1 : 0.3,
+                      ease: EASE_VERCEL,
+                      delay: reduced ? 0 : Math.min(i, 7) * 0.06,
+                      layout: { duration: 0.3, ease: EASE_VERCEL },
+                    }}
+                  >
+                    <BookingRow booking={b} onClick={() => setSelected(b)} />
+                  </motion.div>
                 ))
               )}
             </motion.div>

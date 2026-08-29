@@ -33,7 +33,7 @@ import {
 import { type MockEvent } from '@/lib/eventTypes';
 import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useReducedMotion } from '@/lib/motion';
+import { useReducedMotion, useCountTransition } from '@/lib/motion';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
@@ -388,6 +388,9 @@ function BookingCard({
   const total = subtotal + serviceFee;
   const isFree = unitPrice === 0;
   const reduced = useReducedMotion();
+  const subtotalDisplay = useCountTransition(subtotal);
+  const serviceFeeDisplay = useCountTransition(serviceFee);
+  const totalDisplay = useCountTransition(total);
 
   return (
     <motion.div
@@ -463,23 +466,20 @@ function BookingCard({
         <div className="bg-cream/5 rounded-xl p-4 mb-5 space-y-2">
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
             <span>Subtotal ({guests} × ₹{unitPrice.toLocaleString('en-IN')})</span>
-            <span>₹{subtotal.toLocaleString('en-IN')}</span>
+            <span className="font-mono tabular-nums">₹{subtotalDisplay.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
             <span>Service fee (10%)</span>
-            <span>₹{serviceFee.toLocaleString('en-IN')}</span>
+            <span className="font-mono tabular-nums">₹{serviceFeeDisplay.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between items-baseline border-t border-border pt-2 mt-2">
             <span className="font-sans text-[14px] text-cream font-medium">Total</span>
-            <motion.span
-              key={total}
-              initial={{ opacity: 0, y: reduced ? 0 : -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reduced ? 0.1 : 0.25 }}
+            <span
+              className="tabular-nums"
               style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 26, fontWeight: 400, color: 'var(--lime)' }}
             >
-              ₹{total.toLocaleString('en-IN')}
-            </motion.span>
+              ₹{totalDisplay.toLocaleString('en-IN')}
+            </span>
           </div>
         </div>
       )}

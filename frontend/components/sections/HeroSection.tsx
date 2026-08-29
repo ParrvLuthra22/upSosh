@@ -2,12 +2,7 @@
 
 import { useRef } from 'react';
 import Link from 'next/link';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-} from 'framer-motion';
+import { motion } from 'framer-motion';
 import { IconArrowRight, IconChevronDown } from '@tabler/icons-react';
 import { useReducedMotion } from '@/lib/motion';
 
@@ -182,14 +177,6 @@ export default function HeroSection() {
   const containerRef = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
 
-  // Parallax scroll for "moments." word — disabled under reduced motion,
-  // where scroll-linked movement is exactly what the preference opts out of.
-  const { scrollY } = useScroll();
-  const momentY = useSpring(
-    useTransform(scrollY, [0, 600], [0, reduced ? 0 : -30]),
-    { stiffness: 120, damping: 30, restDelta: 0.001 },
-  );
-
   return (
     <section
       ref={containerRef}
@@ -217,14 +204,14 @@ export default function HeroSection() {
           <FadeUp delay={0.2}>
             <span className="block mt-1">
               <span className="text-cream">become </span>
-              {/* "moments." — lime italic + parallax + wavy underline */}
-              <motion.span
+              {/* "moments." — lime italic + wavy underline */}
+              <span
                 className="italic text-lime"
-                style={{ y: momentY, position: 'relative', display: 'inline-block' }}
+                style={{ position: 'relative', display: 'inline-block' }}
               >
                 moments.
                 <WavyUnderline />
-              </motion.span>
+              </span>
             </span>
           </FadeUp>
         </h1>

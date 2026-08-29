@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EASE_VERCEL } from '@/lib/motion';
+import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -100,6 +100,7 @@ export default function HostEventsPage() {
   const [tab, setTab] = useState<Tab>('live');
   const [events, setEvents] = useState<HostEvent[]>([]);
   const [fetching, setFetching] = useState(true);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (!loading && (!isAuth || user?.hostStatus !== 'verified')) {
@@ -208,10 +209,16 @@ export default function HostEventsPage() {
               return (
                 <motion.div
                   key={event.id}
+                  layout={!reduced}
                   className="flex flex-col gap-2 md:grid md:grid-cols-[1fr_auto_auto_auto_auto] md:gap-4 px-5 py-4 md:items-center border-b border-border last:border-0 hover:bg-surface transition-colors"
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: reduced ? 0 : 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.3, ease: EASE_VERCEL }}
+                  transition={{
+                    delay: reduced ? 0 : Math.min(i, 7) * 0.04,
+                    duration: reduced ? 0.1 : 0.3,
+                    ease: EASE_VERCEL,
+                    layout: { duration: 0.3, ease: EASE_VERCEL },
+                  }}
                 >
                   <div className="min-w-0 flex items-center justify-between gap-3 md:block">
                     <div className="min-w-0">

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { EventCardProps } from '@/components/EventCard';
 import { EmptyState as SharedEmptyState } from '@/components/ui/EmptyState';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
-import { duration, ease, useReducedMotion, staggerGroup, staggerItem } from '@/lib/motion';
+import { duration, ease, useReducedMotion, staggerContainer, staggerItem } from '@/lib/motion';
 
 // ─── Lazy-import EventCard client component ───────────────────────────────────
 // (avoids a circular dep from the server component tree)
@@ -474,6 +474,7 @@ function EventGrid({ events }: { events: MockEvent[] }) {
       {events.map((ev, i) => (
         <motion.div
           key={ev.id}
+          layout={!reduced}
           className="break-inside-avoid mb-5"
           initial={{ opacity: 0, y: reduced ? 0 : 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -483,6 +484,11 @@ function EventGrid({ events }: { events: MockEvent[] }) {
             // Capped at the 8th item — beyond that every card arrives together
             // rather than the tail trailing further and further behind.
             delay: reduced ? 0 : Math.min(i, 7) * 0.06,
+            // Filter/sort re-renders reuse existing cards (keyed by ev.id), so
+            // this only ever replays for a card that's genuinely new to the
+            // list. Repositioned survivors get this same duration/ease via the
+            // `layout` prop above instead of snapping straight to their new spot.
+            layout: { duration: duration.base, ease: ease.out },
           }}
         >
           <EventCard {...toCardProps(ev)} />
@@ -574,13 +580,13 @@ export default function DiscoverPageClient() {
   return (
     <div className="min-h-screen bg-void">
 
-      {/* ── Header — a staggerGroup so the label/heading/search reveal in a
+      {/* ── Header — a staggerContainer so the label/heading/search reveal in a
           fixed, capped sequence instead of 3 hand-tuned delay values. ────── */}
       <motion.div
         className="pt-16 md:pt-24 pb-10 md:pb-14 px-6 md:px-10 max-w-7xl mx-auto"
         initial="hidden"
         animate="visible"
-        variants={staggerGroup(reducedMotion)}
+        variants={staggerContainer(reducedMotion)}
       >
         <motion.p className="label text-lime mb-4" variants={staggerItem(reducedMotion)}>
           [ DISCOVER ]

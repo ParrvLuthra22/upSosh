@@ -1,12 +1,18 @@
+import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion as useFramerReducedMotion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 
 // ─────────────────────────────────────────────────────────────────────────
-// Legacy exports below (EASE_VERCEL, fadeInUp, staggerContainer, blurReveal,
+// Legacy exports below (EASE_VERCEL, fadeInUp, legacyStagger, blurReveal,
 // maskReveal) predate this system and are left untouched — EASE_VERCEL is
-// imported in 24 files, fadeInUp/staggerContainer drive 3 live home-page
-// sections (Testimonials, AIPlanner, FeaturedEvents). blurReveal/maskReveal
-// have zero importers (confirmed) and are dead but harmless.
+// imported in 24 files, fadeInUp/legacyStagger drive 2 live home-page
+// sections (Testimonials, AIPlanner). blurReveal/maskReveal have zero
+// importers (confirmed) and are dead but harmless.
+//
+// legacyStagger was named `staggerContainer` until the animation-system
+// brief asked for that exact name on the new stagger-orchestrator function
+// below — renamed here (not the new one) so the brief's literal name wins
+// and nothing has to keep working around the collision.
 //
 // New code should use `duration`/`ease`/the variant functions below instead
 // of writing inline transition objects — that scattering is how the color
@@ -24,7 +30,7 @@ export const fadeInUp: Variants = {
   },
 };
 
-export const staggerContainer: Variants = {
+export const legacyStagger: Variants = {
   hidden: {},
   visible: {
     transition: {
@@ -133,22 +139,104 @@ export function slideInRight(reduced = false): Variants {
 
 /**
  * Parent orchestrator for staggered entrances — pair with `staggerItem` on
- * children. Named `staggerGroup`, not `staggerContainer`: that name is
- * already live (see the legacy block above) with different timing feeding
- * 3 shipped sections. Flagged for the user rather than silently overwritten
- * or silently renamed out from under those call sites — see chat.
+ * children. The legacy stagger export (different timing, 2 shipped
+ * sections) was renamed to `legacyStagger` to free up this name.
  * Cap stagger groups at ~8 children; longer chains make the last item feel
  * late (enforced by the caller slicing its array, not by this primitive).
  */
-export function staggerGroup(reduced = false): Variants {
+export function staggerContainer(reduced = false): Variants {
   return {
     hidden: {},
     visible: { transition: { staggerChildren: reduced ? 0 : 0.06, delayChildren: reduced ? 0 : 0.04 } },
   };
 }
 
-/** A single item inside a `staggerGroup` — same motion as `fadeUp`, named
+/** A single item inside a `staggerContainer` — same motion as `fadeUp`, named
  * separately so call sites read intent (child of a stagger) at a glance. */
 export function staggerItem(reduced = false): Variants {
   return fadeUp(reduced);
+}
+
+/**
+ * Animates a displayed integer from its previous value to `value` over
+ * `durationMs` — for a price, count, or capacity figure that changes in
+ * place (guest stepper, live total) rather than mounting fresh. Distinct
+ * from a mount-triggered count-up (0 -> target on scroll-into-view,
+ * hand-rolled per call site elsewhere in the app): this one re-fires from
+ * wherever the number currently sits every time `value` changes.
+ * Under reduced motion, snaps straight to the new value — no ticking.
+ */
+export function useCountTransition(value: number, durationMs = 300): number {
+  const [display, setDisplay] = useState(value);
+  const fromRef = useRef(value);
+  const rafRef = useRef<number | null>(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const from = fromRef.current;
+    const to = value;
+    if (from === to) return;
+
+    if (reduced) {
+      setDisplay(to);
+      fromRef.current = to;
+      return;
+    }
+
+    const start = performance.now();
+    function tick(now: number) {
+      const progress = Math.min((now - start) / durationMs, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(from + (to - from) * eased));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        fromRef.current = to;
+      }
+    }
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, durationMs, reduced]);
+
+  return display;
+}
+
+/**
+ * A determinate-feeling progress value (0-`ceiling`) for an operation with
+ * no real server-reported progress — a single POST awaiting a response,
+ * like a payment submission. An indefinite spinner tells the user nothing;
+ * this eases toward `ceiling` while `active` is true and never quite
+ * reaches it, so it reads as "this is happening and getting closer"
+ * instead of "wait, no idea how long." Resets to 0 when `active` goes
+ * false so the next submission starts clean. Under reduced motion, jumps
+ * straight to `ceiling` rather than easing.
+ */
+export function useFakeProgress(active: boolean, ceiling = 92): number {
+  const [progress, setProgress] = useState(0);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (!active) {
+      setProgress(0);
+      return;
+    }
+    if (reduced) {
+      setProgress(ceiling);
+      return;
+    }
+    const start = performance.now();
+    let raf: number;
+    function tick(now: number) {
+      const elapsedSeconds = (now - start) / 1000;
+      setProgress(ceiling * (1 - Math.exp(-elapsedSeconds / 1.2)));
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, ceiling, reduced]);
+
+  return progress;
 }

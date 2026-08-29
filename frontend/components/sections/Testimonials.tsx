@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { EASE_VERCEL, staggerContainer, fadeInUp, staggerGroup, staggerItem, useReducedMotion } from '@/lib/motion';
+import { EASE_VERCEL, legacyStagger, fadeInUp, staggerContainer, staggerItem, useReducedMotion } from '@/lib/motion';
 
 // ─── Stats — hardcoded real numbers with count-up on inView ──────────────────
 
@@ -64,7 +64,7 @@ export default function Testimonials() {
 
         {/* Pull quote */}
         <motion.div
-          variants={reduced ? staggerGroup(true) : staggerContainer}
+          variants={reduced ? staggerContainer(true) : legacyStagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-10% 0px' }}

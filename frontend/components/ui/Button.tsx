@@ -81,6 +81,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const classes = cn(buttonVariants({ variant, size, shape }), className);
+    // Press-scale is reserved for the primary CTA — applying it to every
+    // button in the app (secondary, outline, ghost, danger) reads as noise
+    // rather than the deliberate "this is the one to press" signal it's for.
+    const isPrimary = (variant ?? 'primary') === 'primary';
 
     const content = (
       <>
@@ -102,8 +106,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <motion.a
           href={href}
           className={classes}
-          whileTap={{ scale: 0.97 }}
-          transition={{ duration: 0.1 }}
+          whileTap={isPrimary ? { scale: 0.97 } : undefined}
+          transition={isPrimary ? { duration: 0.1 } : undefined}
           onClick={onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
           {...(props as React.ComponentPropsWithoutRef<typeof motion.a>)}
         >
@@ -117,8 +121,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={classes}
         disabled={isLoading || disabled}
-        whileTap={{ scale: 0.97 }}
-        transition={{ duration: 0.1 }}
+        whileTap={isPrimary ? { scale: 0.97 } : undefined}
+        transition={isPrimary ? { duration: 0.1 } : undefined}
         onClick={onClick}
         {...(props as React.ComponentPropsWithoutRef<typeof motion.button>)}
       >

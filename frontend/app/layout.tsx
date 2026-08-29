@@ -71,7 +71,7 @@ export default function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="bg-void text-cream antialiased cursor-none md:cursor-none">
+      <body className="bg-void text-cream antialiased">
         <noscript>
           <div style={{ padding: '20px', textAlign: 'center', background: 'var(--lime)', color: 'var(--void)' }}>
             JavaScript is disabled. For the best experience, please enable JavaScript or download our mobile app.

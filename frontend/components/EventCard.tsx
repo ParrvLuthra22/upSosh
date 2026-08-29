@@ -9,7 +9,7 @@ import {
   IconRosetteDiscountCheck,
 } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
-import { useReducedMotion } from '@/lib/motion';
+import { useReducedMotion, duration, ease } from '@/lib/motion';
 
 export interface EventCardProps {
   id: string;
@@ -77,7 +77,7 @@ export function EventCard({
   return (
     <motion.div
       whileHover={{ y: -2, borderColor: 'var(--border-strong)' }}
-      transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+      transition={{ duration: duration.fast, ease: ease.out }}
       className={cn(
         'bg-surface border border-border rounded-2xl group cursor-pointer'
       )}

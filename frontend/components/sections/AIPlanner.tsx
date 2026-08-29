@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { EASE_VERCEL, fadeInUp, staggerContainer, staggerGroup, staggerItem, useReducedMotion } from '@/lib/motion';
+import { EASE_VERCEL, fadeInUp, legacyStagger, staggerContainer, staggerItem, useReducedMotion } from '@/lib/motion';
 import MagneticButton from '@/components/ui/MagneticButton';
-import TextReveal from '@/components/ui/TextReveal';
 
 const SUGGESTIONS = [
   { label: 'Lodhi Garden Morning Run', time: '6AM · 8 spots', icon: '◎' },
@@ -103,7 +102,7 @@ export default function AIPlanner() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
         {/* Text side */}
         <motion.div
-          variants={reduced ? staggerGroup(true) : staggerContainer}
+          variants={reduced ? staggerContainer(true) : legacyStagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-10% 0px' }}

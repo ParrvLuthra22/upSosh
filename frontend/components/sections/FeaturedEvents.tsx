@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import ImageReveal from '@/components/ui/ImageReveal';
-import { EASE_VERCEL, staggerContainer, fadeInUp, useReducedMotion } from '@/lib/motion';
+import { EASE_VERCEL, fadeInUp, useReducedMotion } from '@/lib/motion';
 
 const EVENTS = [
   {

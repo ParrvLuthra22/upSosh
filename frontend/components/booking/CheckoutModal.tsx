@@ -6,7 +6,7 @@ import gsap from 'gsap';
 import { useBookingStore } from '@/lib/stores/bookingCart';
 import { api } from '@/lib/api';
 import { useFocusTrap, useEscapeKey } from '@/lib/a11y';
-import { useReducedMotion } from '@/lib/motion';
+import { useReducedMotion, useFakeProgress } from '@/lib/motion';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -27,6 +27,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     useFocusTrap(contentRef, isOpen);
     useEscapeKey(onClose, isOpen);
     const reduced = useReducedMotion();
+    const uploadProgress = useFakeProgress(status === 'uploading');
 
     
     useEffect(() => {
@@ -367,7 +368,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                         </div>
                     ) : status === 'uploading' ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-                            <div className="w-16 h-16 border-4 border-lime border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-full max-w-xs h-1.5 rounded-full bg-cream/10 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-lime"
+                                    style={{ width: `${uploadProgress}%`, transition: 'width 100ms linear' }}
+                                />
+                            </div>
                             <h3 className="text-2xl font-bold text-cream">Submitting Booking...</h3>
                             <p className="text-cream/60">Please wait while we process your request</p>
                         </div>
