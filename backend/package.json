@@ -4,7 +4,7 @@
     "description": "Backend api for upSosh",
     "main": "dist/src/index.js",
     "scripts": {
-        "start": "node dist/src/index.js",
+        "start": "prisma migrate deploy && node dist/src/index.js",
         "dev": "nodemon",
         "build": "prisma generate && tsc",
         "typecheck": "prisma generate && tsc --noEmit",

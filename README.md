@@ -41,7 +41,7 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
 | Images | Cloudinary | Upload + transform + CDN in one service, so the backend doesn't need its own image-processing pipeline |
 | AI planner | OpenRouter (`google/gemini-2.0-flash-001`) | One API surface for LLM calls without hard-coupling to a single provider's SDK |
 | Testing | Jest + Supertest (backend), Playwright (one real E2E) | Supertest drives the actual Express app in integration tests against a real Postgres, not a mocked one; Playwright's single test exercises the full stack including a real Razorpay test-mode payment |
-| Hosting | Railway (backend), Vercel (frontend) | Railway for a long-running Node process with a straightforward Nixpacks build; Vercel because it's the reference host for Next.js |
+| Hosting | Render (backend), Vercel (frontend) | Render for a long-running Node process without managing infrastructure directly; Vercel because it's the reference host for Next.js. `railway.toml` also exists in the repo as a working alternative backend target, currently unused |
 
 ---
 
@@ -50,7 +50,7 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
 ```
 ┌──────────────┐        /api/*         ┌──────────────┐        Prisma        ┌──────────────┐
 │   Next.js    │ ───────────────────▶  │   Express    │ ───────────────────▶ │  PostgreSQL  │
-│  (Vercel)    │ ◀─────────────────── │  (Railway)    │ ◀─────────────────── │              │
+│  (Vercel)    │ ◀─────────────────── │  (Render)     │ ◀─────────────────── │              │
 └──────────────┘   httpOnly cookie     └──────┬───────┘                      └──────────────┘
                                                │
                        ┌───────────────────────┼───────────────────────┬──────────────────────┐
@@ -283,7 +283,9 @@ What's deliberately not built, and why — so a missing feature reads as a decis
 
 ## Deployment
 
-**Backend → Railway.** `railway.toml` is the single source of truth for the build and start commands — Nixpacks, `npm ci` then `npm run build` inside `backend/`, and a start command that runs `prisma migrate deploy` *before* `npm run start` on every single deploy, so the schema can never drift silently from what's in the repo. Health check is `GET /health`. Set every "backend" variable from the table above in Railway's environment settings — `DATABASE_URL` is normally provisioned automatically if Postgres is a Railway-managed add-on.
+**Backend → Render (currently live at `upsosh.onrender.com`).** There's no `render.yaml` in this repo — the build/start commands are set directly in Render's dashboard, not tracked here. Build: `npm ci && npm run build` inside `backend/`. Start: `npm run start`, which itself runs `prisma migrate deploy` before starting the server (`backend/package.json`) — that's deliberately in the npm script rather than a host-specific config file, so the schema can't drift silently on *any* host, Render included. Health check: `GET /health`. Set every "backend" variable from the table above in Render's environment settings.
+
+`railway.toml` is also in this repo and is a working deploy target (Nixpacks build, same `npm run start`-driven migration step) — it's just not what's currently serving production traffic.
 
 **Frontend → Vercel.** Root directory `frontend`, build `npm run build`, output `.next`. Set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_FRONTEND_URL`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, and (optionally) `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in the project's environment variables — these are inlined at build time, so changing one means a new deploy, not a restart.
 

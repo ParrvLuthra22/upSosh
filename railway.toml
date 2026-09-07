@@ -11,8 +11,9 @@ phases.install = { cmd = "cd backend && npm ci" }
 phases.build = { cmd = "cd backend && npm run build" }
 
 [deploy]
-# Migrations run on every deploy, before the server accepts traffic.
-# Without this the schema drifts and has to be patched by hand.
-startCommand = "cd backend && npx prisma migrate deploy && npm run start"
+# `npm run start` itself runs `prisma migrate deploy` before starting the
+# server (backend/package.json) — same mechanism on every host (Railway,
+# Render, ...), not something only this file knows about.
+startCommand = "cd backend && npm run start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
