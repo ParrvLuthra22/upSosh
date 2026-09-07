@@ -54,6 +54,5 @@ export const config = {
     '/host/:path*',
     '/onboarding/:path*',
     '/admin/:path*',
-    '/booking/:path*',
   ],
 };

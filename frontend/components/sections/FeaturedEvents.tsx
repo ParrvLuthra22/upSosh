@@ -129,7 +129,7 @@ export default function FeaturedEvents() {
           </motion.h2>
         </div>
         <motion.a
-          href="/booking"
+          href="/discover"
           className="hidden md:block font-sans text-sm text-cream-dim hover:text-cream transition-colors"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
