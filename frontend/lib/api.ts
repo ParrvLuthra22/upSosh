@@ -10,7 +10,8 @@
  * resolved to). They are merged into this one file, at this one path, so the
  * import alias is no longer ambiguous.
  *
- * • Reads NEXT_PUBLIC_API_URL (or falls back to the rewrites proxy prefix "")
+ * • Always goes through the same-origin "" + next.config.js rewrite proxy,
+ *   never a direct NEXT_PUBLIC_API_URL origin — see the BASE_URL comment.
  * • credentials: 'include' on every request — auth is the backend's httpOnly
  *   cookie; there is no client-readable token to attach as a Bearer header
  * • On 401: clears the auth store and redirects to /signin
@@ -31,16 +32,34 @@ import { useAuthStore } from '@/lib/stores/auth';
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 
 /**
- * When NEXT_PUBLIC_API_URL is set (e.g. in production) requests go to that
- * origin directly. In development the Next.js rewrite rule proxies /api/* to
- * the backend, so we use an empty base and let the rewrite handle it.
+ * Always "" — every request stays same-origin and goes through
+ * next.config.js's `/api/:path* -> NEXT_PUBLIC_BACKEND_URL` rewrite, in both
+ * dev and production.
+ *
+ * This used to read NEXT_PUBLIC_API_URL and, when that was set to the
+ * backend's own origin (as it is in production), send requests directly
+ * cross-origin instead of through the rewrite. auth.ts's login/signout/
+ * refresh calls were already hardcoded to the relative path, so the two
+ * mechanisms authenticated against two different origins: the httpOnly
+ * session cookie is scoped to whichever origin actually set it (the
+ * frontend's own domain, via the rewrite), and a browser will never attach
+ * a cookie scoped to one origin to a request aimed at a different one —
+ * there's no "close enough." Every call through api.* or authApi.* — events,
+ * bookings, notifications, `/api/auth/me` — was going out with no cookie attached,
+ * getting a 401, and this file's own 401 handler below was reading that as
+ * "signed out" and forcing a hard redirect to /signin. Direct cross-origin
+ * calls cannot carry this cookie no matter how BASE_URL is set — the
+ * rewrite proxy is the only path that keeps auth working, so this is no
+ * longer a configurable value.
  */
-const BASE_URL: string =
-  (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) || '';
+const BASE_URL = '';
 
-// For the handful of call sites that need a raw `fetch()` (file uploads,
-// server-side generateMetadata, etc.) instead of the api.* methods below —
-// same NEXT_PUBLIC_API_URL-or-rewrite-proxy resolution, one place to change it.
+// For the handful of client-component call sites that need a raw `fetch()`
+// (file uploads, etc.) instead of the api.* methods below — always "", same
+// as BASE_URL, so they stay on the same rewrite-proxied, cookie-carrying
+// path. Every current caller is a 'use client' component; this would need
+// an absolute URL if a Server Component ever called it, since a relative
+// fetch has no implicit origin outside the browser.
 export function getApiUrl(): string {
   return BASE_URL;
 }
