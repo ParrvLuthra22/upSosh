@@ -1,5 +1,7 @@
 # upSosh
 
+[![CI](https://github.com/ParrvLuthra22/upSosh/actions/workflows/ci.yml/badge.svg)](https://github.com/ParrvLuthra22/upSosh/actions/workflows/ci.yml)
+
 A booking platform for premium micro-events — run clubs, supper clubs, workshops, book circles. Hosts list an event, attendees browse and pay through Razorpay, and a QR ticket lands in their inbox.
 
 **Live:** [upsosh.app](https://upsosh.app)
@@ -14,13 +16,23 @@ A booking platform for premium micro-events — run clubs, supper clubs, worksho
 
 | Booking flow | Ticket |
 |---|---|
-| ![Booking modal](docs/screenshots/booking-flow.png) | *(`docs/screenshots/ticket.png` — add a confirmed QR ticket here; capturing one needs a real logged-in session with a paid booking, which wasn't captured here)* |
+| ![Booking modal](docs/screenshots/booking-flow.png) | ![Confirmed ticket](docs/screenshots/ticket.png) |
 
 ---
 
 ## What it does
 
 An attendee browses events on `/discover`, opens one, and books it. Free events confirm instantly; paid events go through a real Razorpay checkout, and the booking only confirms once the server has independently verified the payment. A host applies for verification, and once approved can create and manage their own events from a dashboard that shows real booking counts and revenue, not client-side estimates. Everything — session, payment amount, resource ownership — is decided server-side; the frontend never gets to assert anything the backend trusts on faith.
+
+---
+
+## Traction
+
+- Events hosted: TODO(parrv): events hosted
+- Bookings: TODO(parrv): bookings
+- GMV: TODO(parrv): GMV
+- Cities: TODO(parrv): cities
+- Hosts: TODO(parrv): hosts
 
 ---
 
@@ -255,7 +267,7 @@ cd frontend && npm run test:e2e
 
 **Backend, what's covered** (`backend/tests/`): password hashing on signup and the generic-error-on-wrong-password behavior (`auth.test.ts`); IDOR checks across bookings, payment orders, event creation, and host approval (`authorization.test.ts`); booking capacity including a genuine concurrency test — N+1 simultaneous requests for the last seat, asserting exactly one succeeds — and refund-on-cancel (`booking.test.ts`); the client-controlled-amount and signature-replay regression tests described in `SECURITY.md` (`payments.test.ts`). All 16 run against a real database via Supertest driving the actual Express app — nothing here is mocked at the HTTP layer.
 
-**Frontend, what's covered:** one test, `frontend/tests/booking-flow.spec.ts` — signup, browse to a paid event, book it, pay with a real Razorpay test-mode card including the 3-D Secure OTP step, land on the in-modal confirmation, and see the confirmed ticket in `/my-bookings`. It's slow (a real network round-trip through Razorpay's actual checkout) and needs real `RAZORPAY_TEST_KEY_ID`/`RAZORPAY_TEST_KEY_SECRET` credentials to run at all — without them it fails at the checkout step, which is expected, not a bug in the test.
+**Frontend, what's covered:** one test, `frontend/tests/booking-flow.spec.ts` — signup, browse to a paid event, book it, pay with a real Razorpay test-mode card including the 3-D Secure OTP step, land on the in-modal confirmation, and see the confirmed ticket in `/my-bookings`. It's slow (a real network round-trip through Razorpay's actual checkout) and needs real `RAZORPAY_TEST_KEY_ID`/`RAZORPAY_TEST_KEY_SECRET` credentials to run at all — without them it fails at the checkout step, which is expected, not a bug in the test. This one runs in CI too (`.github/workflows/ci.yml`'s `e2e` job), against `RAZORPAY_TEST_KEY_ID`/`RAZORPAY_TEST_KEY_SECRET` repo secrets — a real Razorpay test-mode payment on every push and PR, not just locally.
 
 **What's honestly not covered:** no frontend component/unit tests exist (`frontend/package.json`'s `test` script is `jest --passWithNoTests` — it passes because there's nothing to run, not because anything was verified). No test covers the AI planner, image uploads, or the admin host-approval UI beyond the one authorization check named above. No load/performance testing exists anywhere.
 
