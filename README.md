@@ -1,6 +1,8 @@
 # upSosh
 
-A booking platform for premium micro-events — run clubs, supper clubs, workshops, book circles. Hosts list an event, attendees browse and pay through Razorpay, and a QR ticket lands in their inbox.
+[![CI](https://github.com/ParrvLuthra22/upSosh/actions/workflows/ci.yml/badge.svg)](https://github.com/ParrvLuthra22/upSosh/actions/workflows/ci.yml)
+
+**India's curated micro-events platform.** Run clubs, supper clubs, book circles, workshops — hosts list an event, attendees browse and pay through Razorpay, and a scannable QR ticket lands in their inbox. Everything — pricing, seat allocation, payment verification — is decided on the server, never the client.
 
 **Live:** [upsosh.app](https://upsosh.app)
 
@@ -8,19 +10,46 @@ A booking platform for premium micro-events — run clubs, supper clubs, worksho
 
 ## Screenshots
 
-| `/discover` | Event detail |
-|---|---|
-| ![Discover grid](docs/screenshots/discover.png) | ![Event detail page](docs/screenshots/event-detail.png) |
-
-| Booking flow | Ticket |
-|---|---|
-| ![Booking modal](docs/screenshots/booking-flow.png) | *(`docs/screenshots/ticket.png` — add a confirmed QR ticket here; capturing one needs a real logged-in session with a paid booking, which wasn't captured here)* |
+<table>
+<tr>
+<td align="center"><b>Discover</b></td>
+<td align="center"><b>Event detail</b></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/discover.png" alt="Discover page — curated event grid" width="480"/></td>
+<td><img src="docs/screenshots/event-detail.png" alt="Event detail page with booking CTA" width="480"/></td>
+</tr>
+<tr>
+<td align="center"><b>Razorpay checkout</b></td>
+<td align="center"><b>Confirmed QR ticket</b></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/booking-flow.png" alt="Razorpay checkout modal" width="480"/></td>
+<td><img src="docs/screenshots/ticket.png" alt="Confirmed ticket with scannable QR code" width="480"/></td>
+</tr>
+</table>
 
 ---
 
 ## What it does
 
-An attendee browses events on `/discover`, opens one, and books it. Free events confirm instantly; paid events go through a real Razorpay checkout, and the booking only confirms once the server has independently verified the payment. A host applies for verification, and once approved can create and manage their own events from a dashboard that shows real booking counts and revenue, not client-side estimates. Everything — session, payment amount, resource ownership — is decided server-side; the frontend never gets to assert anything the backend trusts on faith.
+An attendee opens `/discover`, finds an event — a Sunday run club, a candlelit supper circle, a weekend workshop — and books it in three taps. Free events confirm instantly. Paid events go through a real Razorpay checkout: the server creates the order at a price it computed from the database (not from anything the client sent), Razorpay captures the money, and the server independently verifies the payment before marking the booking confirmed. A QR ticket is emailed via Resend and lives under `/my-bookings`.
+
+Hosts apply for verification through the app. Once approved they get a dashboard with real booking counts, revenue, and attendee data for every event they've created. They upload event images to Cloudinary, and can use the AI Planner (OpenRouter → Gemini Flash) to brainstorm and draft event listings. Google sign-in is supported as an alternative to email/password.
+
+Everything consequential — session validity, payment amount, resource ownership — is asserted by the backend, not trusted from the frontend.
+
+---
+
+## Traction
+
+| Metric | Count |
+|---|---|
+| Events hosted | — |
+| Bookings completed | — |
+| Hosts verified | — |
+| Cities active | — |
+| Gross GMV (INR) | — |
 
 ---
 
@@ -28,20 +57,20 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
 
 | Layer | Technology | Why |
 |---|---|---|
-| Frontend | Next.js 14 (App Router), React 18, TypeScript | App Router for the file-based routing and server components; TypeScript because a booking/payment app is exactly the kind of thing you don't want to typo your way into a bug in |
-| Styling | Tailwind CSS | Fast to build a consistent dark-mode design system without hand-rolling a CSS architecture |
-| State | Zustand | Smaller and less ceremony than Redux for what this app needs — a handful of stores (auth, booking flow, discover filters), not a large normalized cache |
-| Animation | Framer Motion, GSAP | Framer Motion for React-driven UI motion (modals, page transitions); GSAP specifically for the booking flow's more hand-tuned choreography — both were already in use before this became a two-library situation worth avoiding, so the honest reason the second one is still here is inertia, not a considered choice |
-| Backend | Express 4, TypeScript | A REST API with no unusual routing needs; Express is the boring, well-understood choice, and boring is correct for a payment path |
-| ORM | Prisma 6 | Generated types keep the database schema and TypeScript types from silently drifting apart, and migrations are checked into git |
-| Database | PostgreSQL 16 | Relational integrity matters here — a booking, its event, and its payment status need real foreign keys and transactions, not eventual consistency |
-| Auth | Custom JWT (`jsonwebtoken`) + bcrypt, httpOnly cookie | No session store to run; the cookie is httpOnly so an XSS can't read it out of `localStorage` (this app used to keep a copy there — see `lib/stores/auth.ts`'s comments for why that changed) |
-| Payments | Razorpay | The processor with the most direct India/UPI support, which is the primary market this app is built for |
-| Email | Resend | Small, modern transactional-email API; no queue infrastructure needed at this volume |
-| Images | Cloudinary | Upload + transform + CDN in one service, so the backend doesn't need its own image-processing pipeline |
-| AI planner | OpenRouter (`google/gemini-2.0-flash-001`) | One API surface for LLM calls without hard-coupling to a single provider's SDK |
-| Testing | Jest + Supertest (backend), Playwright (one real E2E) | Supertest drives the actual Express app in integration tests against a real Postgres, not a mocked one; Playwright's single test exercises the full stack including a real Razorpay test-mode payment |
-| Hosting | Render (backend), Vercel (frontend) | Render for a long-running Node process without managing infrastructure directly; Vercel because it's the reference host for Next.js. `railway.toml` also exists in the repo as a working alternative backend target, currently unused |
+| Frontend | Next.js 14 (App Router), React 18, TypeScript | App Router for file-based routing and React Server Components; TypeScript because a booking/payment app is exactly where you don't want to typo into a bug |
+| Styling | Tailwind CSS | Fast to build a consistent dark-mode design system without a custom CSS architecture |
+| State | Zustand | Smaller and less ceremony than Redux — auth store, booking flow store, discover filters. Each persisted to `localStorage` through the Zustand persist middleware |
+| Animation | Framer Motion | Page transitions, modals, skeleton loaders, the intro screen |
+| Backend | Express 4, TypeScript | REST API with no unusual routing needs. Express is the boring, well-understood choice, and boring is correct for a payment path |
+| ORM | Prisma 6 | Generated types keep database schema and TypeScript types in sync; migrations are checked into git |
+| Database | PostgreSQL 16 (Neon) | Relational integrity matters here — a booking, its event, and its payment status need real foreign keys and transactions |
+| Auth | JWT (`jsonwebtoken`) + bcrypt, httpOnly cookie | No session store; the cookie is httpOnly so XSS can't read it. Google ID-token sign-in (`google-auth-library`) supported as an alternative |
+| Payments | Razorpay | The processor with the most direct India/UPI support |
+| Email | Resend | Transactional emails — booking confirmations and password-reset links |
+| Images | Cloudinary | Upload + transform + CDN in one service, so the backend doesn't need its own image pipeline |
+| AI planner | OpenRouter (`google/gemini-2.0-flash-001`) | One API surface for LLM calls without coupling to a single provider's SDK |
+| Testing | Jest + Supertest (backend), Playwright (E2E) | Supertest drives the actual Express app against a real Postgres — no mocked HTTP layer |
+| Hosting | Render (backend), Vercel (frontend) | Render for a long-running Node process; Vercel as the reference host for Next.js. `railway.toml` exists as a working alternative |
 
 ---
 
@@ -50,7 +79,7 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
 ```
 ┌──────────────┐        /api/*         ┌──────────────┐        Prisma        ┌──────────────┐
 │   Next.js    │ ───────────────────▶  │   Express    │ ───────────────────▶ │  PostgreSQL  │
-│  (Vercel)    │ ◀─────────────────── │  (Render)     │ ◀─────────────────── │              │
+│  (Vercel)    │ ◀─────────────────── │  (Render)    │ ◀─────────────────── │   (Neon)     │
 └──────────────┘   httpOnly cookie     └──────┬───────┘                      └──────────────┘
                                                │
                        ┌───────────────────────┼───────────────────────┬──────────────────────┐
@@ -61,9 +90,62 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
                 └─────────────┘        └─────────────┘        └─────────────┘        └─────────────┘
 ```
 
-**Auth.** `POST /api/auth/signin` (or `/signup`) checks the password with bcrypt and signs a JWT (`{ userId }`, 7-day expiry) into an httpOnly cookie — `backend/src/routes/auth.ts`. Every request that needs a session sends that cookie automatically (`credentials: 'include'` on the frontend, `cookie-parser` on the backend); there's no bearer token stored in JS anywhere. `middleware/auth.ts`'s `requireAuth` verifies the JWT, re-reads the user from the database (so a soft-deleted user's existing token stops working immediately, not just at next expiry), and attaches `req.user`. Google sign-in (`POST /api/auth/google`) is a second way to reach the same session: it verifies a Google-issued ID token against Google's public keys (`google-auth-library`) instead of checking a password, then signs the identical JWT cookie.
+**Rewrite proxy.** Every `/api/*` call from the Next.js frontend goes through `next.config.js`'s rewrite → same-origin → the backend. There is no direct cross-origin call. This is the only way the httpOnly session cookie — which is scoped to the frontend's origin — travels with every request. The `NEXT_PUBLIC_BACKEND_URL` env var is used only by the rewrite; nothing in client-side code ever builds a cross-origin URL.
 
-**Payments** are the part of this app where "the frontend asked for it" is never sufficient justification for anything happening. The full walkthrough is below, in its own section — it's the most technically involved part of the codebase and deserves more than a paragraph.
+**Auth.** `POST /api/auth/signin` (or `/signup`) checks the password with bcrypt, signs a JWT (`{ userId }`, 7-day expiry) into an httpOnly cookie. `middleware/auth.ts`'s `requireAuth` verifies the JWT and re-reads the user from the database every request (so a soft-deleted user's existing token stops working immediately). Google sign-in (`POST /api/auth/google`) verifies a Google-issued ID token, then issues the same JWT cookie.
+
+**Payments** are the most technically involved part of the codebase — the full walkthrough is in its own section below.
+
+---
+
+## Features
+
+### For attendees
+- **Browse events** on `/discover` — filterable by category, city, date range, and price
+- **Book in seconds** — guest details, Razorpay checkout (UPI, cards, net banking), instant confirmation
+- **QR ticket** — scannable ticket with booking ID, event details, payment breakdown; lives at `/my-bookings`
+- **Cancel bookings** — two-tap confirmation; a real Razorpay refund fires on cancellation of a paid booking
+- **Booking confirmation email** — sent via Resend on every confirmed booking
+- **Password reset** — token-based flow, email delivered via Resend
+
+### For hosts
+- **Host dashboard** (`/host/dashboard`) — real booking counts, revenue, and attendee lists per event
+- **Create & manage events** — title, description, date/time, venue, capacity, price, category, image
+- **Image upload** — to Cloudinary; auto-cropped and CDN-served
+- **AI event planner** (`/planner`) — paste a brief, get a structured event plan (title, description, format, suggested price, logistics) from Gemini Flash via OpenRouter
+- **Verification** — apply through the app; approved hosts get a verified badge
+
+### For admins
+- **Host approval** — review pending host applications at `/admin`
+- **Payment oversight** — view booking and payment status across all events
+
+---
+
+## Data model
+
+The core tables and their relationships:
+
+```
+User ──┬── owns ──▶ HostApplication
+       ├── has ───▶ Booking ──▶ Event ──▶ Host
+       └── receives Notification
+
+Payment is embedded on Booking:
+  Booking { paymentStatus, paymentMethod, razorpayOrderId, razorpayPaymentId, qrCode, ... }
+```
+
+Key Prisma enums:
+
+| Enum | Values |
+|---|---|
+| `BookingStatus` | `pending`, `confirmed`, `cancelled`, `refunded`, `expired` |
+| `PaymentStatus` | `unpaid`, `paid`, `failed`, `refunded` |
+| `PaymentMethod` | `razorpay`, `upi`, `free` |
+| `EventStatus` | `draft`, `live`, `full`, `past`, `cancelled` |
+| `Role` | `user`, `host`, `admin` |
+| `HostStatus` | `none`, `pending`, `verified` |
+
+`BookingStatus.expired` catches bookings left unpaid for more than 15 minutes — a background sweep in `backend/src/index.ts` sets them on a schedule, so the UI never shows a ghost booking as "pending" indefinitely.
 
 ---
 
@@ -73,28 +155,28 @@ An attendee browses events on `/discover`, opens one, and books it. Free events 
 
 - **Node 20+** (developed on 22) — `node -v`
 - **npm 10+** — ships with Node 20+
-- **Docker**, for local Postgres (or a native Postgres 14+ install)
+- **Docker** for local Postgres (or a native Postgres 14+ install)
 
-Optional — the app runs without these, but the corresponding feature is disabled: a Razorpay test account (payments), a Resend key (email), Cloudinary credentials (uploads), an OpenRouter key (the AI planner), a Google OAuth Client ID (Google sign-in).
+The following are optional — the app runs without them, but the corresponding feature is disabled: a Razorpay test account (payments), a Resend key (email), Cloudinary credentials (uploads), an OpenRouter key (the AI planner), a Google OAuth Client ID (Google sign-in).
 
 ### Steps
 
-Verified by actually deleting `node_modules`, dropping the local database, and running this exact sequence on a clean checkout before writing it down.
+Verified by deleting `node_modules`, dropping the local database, and running this exact sequence on a clean checkout:
 
 ```bash
 # 1. Clone and install
-git clone <your-repo-url> upSosh
+git clone https://github.com/ParrvLuthra22/upSosh.git upSosh
 cd upSosh
-npm install                    # installs both workspaces, runs `prisma generate`
+npm install           # installs both workspaces, runs `prisma generate`
 
 # 2. Start Postgres
-docker compose up -d           # Postgres 16 on :5432, user/pass/db all "postgres"/"postgres"/"upsosh"
+docker compose up -d  # Postgres 16 on :5432, user/pass/db: postgres/postgres/upsosh
 
 # 3. Env files, migrate, seed — one command
 npm run setup
 ```
 
-`npm run setup` copies `backend/.env.example` → `backend/.env` and `frontend/.env.example` → `frontend/.env` (never overwriting a file that already exists), applies every pending Prisma migration, and seeds 3 users, 3 hosts, and 10 events dated relative to today (`backend/src/scripts/seed.ts`). It prints this at the end:
+`npm run setup` copies `backend/.env.example` → `backend/.env` and `frontend/.env.example` → `frontend/.env` (never overwriting an existing file), applies every pending Prisma migration, and seeds 3 users, 3 hosts, and 10 events dated relative to today. It prints this at the end:
 
 ```
   LOG IN WITH ANY OF THESE (password is the same for all three):
@@ -112,13 +194,13 @@ npm run setup
 npm run dev
 ```
 
-| | |
+| Service | URL |
 |---|---|
 | Frontend | http://localhost:3000 |
 | API | http://localhost:4000 |
 | Health check | http://localhost:4000/health |
 
-**Port 5432 already taken by another project?** Postgres will accept the connection and then reject the password — it shows up as `authentication failed`, not `can't connect`, which is confusing the first time. Pick a different port and pass it to both commands:
+**Port 5432 already taken?** Postgres will accept the connection and reject the password — it shows as `authentication failed`, not `can't connect`. Pick a different port:
 
 ```bash
 POSTGRES_PORT=5433 docker compose up -d
@@ -127,50 +209,50 @@ POSTGRES_PORT=5433 npm run setup
 
 ### Testing a payment
 
-Sign in as `user@upsosh.test`, open any **paid** event from `/discover` (free ones skip checkout entirely), and book it. In the Razorpay test-mode checkout:
+Sign in as `user@upsosh.test`, open any **paid** event from `/discover`, and book it. In the Razorpay test checkout:
 
 | Field | Value |
 |---|---|
-| Card number | `5267 3181 8797 5449` (Mastercard) |
+| Card number | `5267 3181 8797 5449` (Mastercard — Razorpay's documented India-domestic test card) |
 | Expiry | any future date, e.g. `12/30` |
 | CVV | any 3 digits |
 | OTP | any 6 digits — test mode accepts anything |
 
-> Use this card, not the commonly-cited `4111 1111 1111 1111`. Razorpay's BIN lookup flags that number as an internationally-issued test card, and this project's test account has international cards disabled — it fails with *"International cards are not supported."* `5267 3181 8797 5449` is Razorpay's own documented India-domestic test Mastercard, and it's the exact card `frontend/tests/booking-flow.spec.ts` uses for the one real end-to-end payment test in this repo.
+> **Use this card, not `4111 1111 1111 1111`.** Razorpay's BIN lookup flags that number as an internationally-issued test card; this project's test account has international cards disabled. `5267 3181 8797 5449` is the exact card used in `frontend/tests/booking-flow.spec.ts`.
 
-Then check `/my-bookings` — the booking should read *confirmed* with a scannable QR ticket.
+After paying, check `/my-bookings` — the booking should show *confirmed* with a scannable QR ticket.
 
 ---
 
 ## Environment variables
 
-**`backend/.env` holds every secret. `frontend/.env` holds nothing secret** — Next.js inlines every `NEXT_PUBLIC_*` variable into the browser bundle at build time, so anything there is public by definition. Full annotated versions live in `backend/.env.example` and `frontend/.env.example`.
+`backend/.env` holds every secret. `frontend/.env` holds nothing secret — Next.js inlines every `NEXT_PUBLIC_*` variable into the browser bundle at build time, so anything there is public by definition.
 
-### Backend
+### Backend (`backend/.env`)
 
 | Variable | Required | Purpose | Where to get it |
 |---|---|---|---|
 | `DATABASE_URL` | **Yes** | Postgres connection string | Local Docker, or your host's provisioned database |
-| `JWT_SECRET` | **Yes** | Signs session cookies | Any random string locally; a real secret before deploying |
+| `JWT_SECRET` | **Yes** | Signs session JWTs | Any random string locally; a real secret before deploying |
 | `PORT` | No (default `4000`) | API port | — |
-| `FRONTEND_URL` | Yes | Added to the CORS allow-list (`src/index.ts`) | Your frontend's origin |
+| `FRONTEND_URL` | **Yes** | Added to the CORS allow-list | Your frontend's origin |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | For payments | Order creation + signature verification | [dashboard.razorpay.com](https://dashboard.razorpay.com) → Settings → API Keys |
-| `RAZORPAY_WEBHOOK_SECRET` | For webhooks | `POST /api/payments/webhook` fails closed (returns 500, verifies nothing) without this — it's not optional the way a missing feature key is | Razorpay dashboard → Settings → Webhooks → your webhook → Secret |
-| `GOOGLE_CLIENT_ID` | For Google sign-in | Verifies the ID token's audience | [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth client ID (Web application) |
+| `RAZORPAY_WEBHOOK_SECRET` | For webhooks | `POST /api/payments/webhook` fails closed without this | Razorpay dashboard → Settings → Webhooks → Secret |
+| `GOOGLE_CLIENT_ID` | For Google sign-in | Verifies ID token audience | [console.cloud.google.com](https://console.cloud.google.com) → OAuth client ID (Web application) |
 | `OPENROUTER_API_KEY` | For `/planner` | AI event planner | [openrouter.ai](https://openrouter.ai) |
 | `RESEND_API_KEY` | For email | Booking confirmations, password resets | [resend.com](https://resend.com) |
-| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | For uploads | Host verification documents, event images | [cloudinary.com](https://cloudinary.com) |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | For uploads | Event images, host avatars | [cloudinary.com](https://cloudinary.com) |
 
-### Frontend
+### Frontend (`frontend/.env`)
 
 | Variable | Required | Purpose | Notes |
 |---|---|---|---|
-| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | **Yes** | Opens the Razorpay checkout widget | **Flagging this explicitly: its absence used to make paid bookings silently skip payment and confirm for free.** That's fixed now — `lib/stores/booking.ts` throws *"Payments are not configured"* instead — but the failure mode changing from silent-and-dangerous to loud-and-safe doesn't make the variable optional. Leave it unset and nobody can complete a paid booking at all. |
-| `NEXT_PUBLIC_BACKEND_URL` | Yes | Origin the `next.config.js` rewrite proxies `/api/*` to | `http://localhost:4000` locally |
-| `NEXT_PUBLIC_API_URL` | No | Absolute API base for the handful of call sites that don't go through the rewrite proxy | Leave empty locally |
-| `NEXT_PUBLIC_FRONTEND_URL` | Yes | This app's own public origin | Used for absolute links and Playwright's `baseURL` |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | No | Renders Google's "Continue with Google" button | Must match backend's `GOOGLE_CLIENT_ID` exactly. Unset → the button just doesn't render, no broken UI |
-| `NEXT_PUBLIC_APPLE_CLIENT_ID` | No | — | Not implemented; unused by any component |
+| `NEXT_PUBLIC_BACKEND_URL` | **Yes** | Origin the rewrite proxy sends `/api/*` to | `http://localhost:4000` locally |
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | **Yes** | Opens the Razorpay checkout widget | Without this, paid bookings fail loudly (not silently) — nobody can complete a paid booking |
+| `NEXT_PUBLIC_FRONTEND_URL` | **Yes** | This app's own public origin | Used for absolute links and Playwright's `baseURL` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | No | Renders the "Continue with Google" button | Must match backend's `GOOGLE_CLIENT_ID`. Unset → button doesn't render, no broken UI |
+| `NEXT_PUBLIC_API_URL` | No | Absolute API base for non-rewrite call sites | Leave empty locally |
+| `NEXT_PUBLIC_APPLE_CLIENT_ID` | No | — | Not implemented; placeholder only |
 
 ---
 
@@ -180,66 +262,121 @@ Then check `/my-bookings` — the booking should read *confirmed* with a scannab
 upSosh/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma        User · Notification · Host · Event · Booking · HostApplication · Upload
+│   │   ├── schema.prisma        User · Host · Event · Booking · HostApplication · Upload · Notification
 │   │   └── migrations/          one directory per migration, applied in order by `prisma migrate deploy`
 │   ├── src/
-│   │   ├── routes/              auth · users · events · hosts · bookings · payments · notifications · ai · uploads
-│   │   ├── middleware/          auth.ts (requireAuth/requireRole/requireHostStatus) · validate.ts (zod)
-│   │   ├── lib/                 prisma client · email (Resend) · notify (in-app notifications) · schemas (zod)
-│   │   ├── scripts/seed.ts      the `npm run db:seed` seed data
-│   │   └── index.ts             app wiring — helmet, CORS allow-list, rate limiters, route mounts
-│   └── tests/                   4 Jest/Supertest integration suites, run against a real Postgres
+│   │   ├── routes/
+│   │   │   ├── auth.ts          signup · signin · signout · google · forgot-password · reset-password · refresh
+│   │   │   ├── users.ts         PATCH /me · PATCH /me/password · POST /me/avatar · DELETE /me · GET /:username
+│   │   │   ├── events.ts        list · get · create · update · delete · host events
+│   │   │   ├── hosts.ts         get host profile · host-apply · admin approval
+│   │   │   ├── bookings.ts      create · list mine · get · cancel (+ real Razorpay refund)
+│   │   │   ├── payments.ts      create-order · verify · webhook
+│   │   │   ├── notifications.ts list · mark-read · mark-all-read
+│   │   │   ├── ai.ts            POST /api/ai/plan — OpenRouter event planner
+│   │   │   └── uploads.ts       POST /api/uploads — Cloudinary image upload
+│   │   ├── middleware/
+│   │   │   ├── auth.ts          requireAuth · requireRole · requireHostStatus
+│   │   │   └── validate.ts      Zod body validation middleware
+│   │   ├── lib/
+│   │   │   ├── prisma.ts        singleton Prisma client
+│   │   │   ├── email.ts         Resend — sendBookingConfirmation · sendPasswordResetEmail
+│   │   │   ├── cloudinary.ts    upload helper + imageUpload multer middleware
+│   │   │   ├── notify.ts        in-app notification helper
+│   │   │   └── schemas.ts       Zod schemas shared across routes
+│   │   ├── scripts/seed.ts      `npm run db:seed` — 3 users, 3 hosts, 10 events
+│   │   └── index.ts             app wiring: helmet, CORS allow-list, rate limiters, route mounts, expired-booking sweep
+│   └── tests/
+│       ├── auth.test.ts         password hashing, generic error on wrong password
+│       ├── authorization.test.ts IDOR checks — bookings, payment orders, events, host approval
+│       ├── booking.test.ts      capacity, concurrency (N+1 last seat), refund-on-cancel
+│       └── payments.test.ts     client-controlled-amount regression, signature-replay regression
 ├── frontend/
 │   ├── app/                     Next.js App Router — one directory per route
-│   ├── components/              shared UI (BookingFlow, GlobalHeader, GoogleSignInButton, ...)
+│   │   ├── page.tsx             Homepage
+│   │   ├── discover/            Event discovery grid with filters
+│   │   ├── events/[slug]/       Event detail page — map embed, share bar, booking CTA
+│   │   ├── my-bookings/         Attendee booking list — QR ticket modal, cancel flow
+│   │   ├── profile/             Account settings — name, bio, avatar upload, city
+│   │   ├── settings/            Security settings — change password
+│   │   ├── planner/             AI event planner (OpenRouter)
+│   │   ├── host/dashboard/      Host event management and stats
+│   │   ├── host/events/new/     Create new event with image upload
+│   │   ├── become-a-host/       Host application form
+│   │   ├── forgot-password/     Request password reset email
+│   │   ├── reset-password/      Consume reset token, set new password
+│   │   └── (auth)/              signin · signup · onboarding
+│   ├── components/
+│   │   ├── ProtectedRoute.tsx   Auth gate — reads Zustand store; shows page immediately if user in store
+│   │   ├── IntroScreen.tsx      Premium intro animation shown once per browser session
+│   │   ├── Nav.tsx              Top navigation — adapts to auth state
+│   │   └── ...                  BookingFlow, GlobalHeader, GoogleSignInButton, skeletons, ...
 │   ├── lib/
-│   │   ├── stores/               Zustand: auth, booking, discover filters
-│   │   ├── api.ts                typed fetch wrapper for the `/api/*` routes
-│   │   └── motion.ts             the animation system's single source of truth
-│   └── tests/booking-flow.spec.ts   the one Playwright E2E test — a real signup-to-ticket run
-├── scripts/setup.mjs            `npm run setup` — env files, migrate, seed, in one command
-├── railway.toml                 backend deploy config (Nixpacks build + migrate-then-start)
-├── docker-compose.yml           local Postgres
-├── FIXPLAN.md                   phase-by-phase log of what was found and fixed, anchored to file:line
-└── SECURITY.md                  two real vulnerabilities found and fixed in the payment path
+│   │   ├── stores/
+│   │   │   ├── auth.ts          Zustand auth store with `hydrated` flag; persisted to localStorage
+│   │   │   ├── booking.ts       Booking flow state
+│   │   │   └── discover.ts      Discover page filters
+│   │   ├── api.ts               Typed fetch wrapper — always same-origin through the rewrite proxy
+│   │   └── motion.ts            Animation system constants
+│   └── tests/
+│       └── booking-flow.spec.ts  Playwright E2E: signup → discover → book → Razorpay checkout → QR ticket
+├── scripts/setup.mjs            `npm run setup` — env files + migrate + seed in one command
+├── docker-compose.yml           Local Postgres 16
+├── railway.toml                 Working alternative backend deploy target (Nixpacks)
+├── SECURITY.md                  Two real payment-path vulnerabilities, their exploits, and the regression tests
+└── FIXPLAN.md                   Phase-by-phase fix log anchored to file:line
 ```
 
 ---
 
 ## Payment flow
 
-The part of this codebase where getting the details wrong means someone pays the wrong amount, or pays once and gets confirmed twice, or doesn't pay at all and gets confirmed anyway. Full code in `backend/src/routes/payments.ts` and `backend/src/routes/bookings.ts`.
+The part of this codebase where getting the details wrong means someone pays the wrong amount, or doesn't pay and gets confirmed anyway, or pays once and gets confirmed twice. Full code in `backend/src/routes/payments.ts` and `backend/src/routes/bookings.ts`.
 
-1. **Booking creation — `POST /api/bookings`.** The client sends `eventId` and guest details, nothing about price. The server looks up the event, computes `ticketPrice + platformFee = totalAmount` itself, and creates a `Booking` row with `paymentStatus: 'unpaid'`. **The amount the client will eventually be charged is decided here, from `booking.totalAmount`, and nowhere in the flow does the client get another chance to influence it** — this is the exact thing that used to be a vulnerability (see `SECURITY.md` §1). A free event confirms and reserves its seat in this same step, because there's no later "payment succeeded" moment to reserve it at.
+### 1 — Booking creation (`POST /api/bookings`)
 
-2. **Order creation — `POST /api/payments/create-order`.** For a paid event, the frontend calls this with only a `bookingId`. The handler re-fetches the booking, confirms the requesting user owns it, and computes `amountInPaise = Math.round(booking.totalAmount * 100)` — read from the database row, never from the request body. It creates a Razorpay order for that exact amount and immediately writes `order.id` onto `booking.razorpayOrderId`, binding this specific order to this specific booking before any payment has happened.
+The client sends `eventId` and guest details — nothing about price. The server looks up the event, computes `ticketPrice + platformFee = totalAmount` itself, and creates a `Booking` row with `paymentStatus: 'unpaid'`. The amount the client will eventually be charged is decided here, from the database, before any payment has happened. A free event confirms and reserves its seat in this same step.
 
-3. **Checkout.** The frontend opens Razorpay's hosted checkout with the returned `orderId`, `amount`, and `key`. The user pays. Razorpay's SDK calls back into the frontend with `razorpay_order_id`, `razorpay_payment_id`, and `razorpay_signature`.
+### 2 — Order creation (`POST /api/payments/create-order`)
 
-4. **Verification — `POST /api/payments/verify`.** Three checks, in order, each one closing a real hole found in this exact code:
-   - **Signature.** `HMAC-SHA256(order_id + '|' + payment_id, RAZORPAY_KEY_SECRET)` must match `razorpay_signature`, compared with `crypto.timingSafeEqual` rather than `===` (a `!==` on a hex string short-circuits at the first differing byte, which is a timing oracle).
-   - **Binding.** `razorpay_order_id` must equal the `booking.razorpayOrderId` written in step 2. A valid signature only proves *some* real payment happened on the account — it says nothing about which booking it was for, without this check (see `SECURITY.md` §2).
-   - **State.** `paymentStatus` must currently be `'unpaid'`, enforced by a conditional `updateMany` (`WHERE paymentStatus = 'unpaid'`) rather than a plain `update` — the WHERE clause is what makes two concurrent verification requests for the same booking resolve to exactly one write, not a race.
+For a paid event, the frontend calls this with only a `bookingId`. The handler re-fetches the booking, confirms the requesting user owns it, and computes `amountInPaise = Math.round(booking.totalAmount * 100)` from the database row — never from the request body. It creates a Razorpay order for that exact amount and immediately writes `order.id` onto `booking.razorpayOrderId`, binding this specific order to this specific booking before payment.
 
-   Only after all three pass does the booking flip to `paymentStatus: 'paid'`, `status: 'confirmed'`, the event's `attendees` count increments, and a confirmation email + in-app notification fire.
+### 3 — Checkout
 
-5. **Webhook — `POST /api/payments/webhook`.** Razorpay also calls this server-to-server for `payment.captured`, `payment.failed`, and `refund.processed`, independent of whether the client's browser ever got back to `/verify`. It's mounted with `express.raw()` ahead of the global JSON parser specifically so the handler can verify Razorpay's signature against the *exact bytes received* — re-serializing a parsed object with `JSON.stringify` doesn't reliably reproduce the original bytes (whitespace, unicode escaping), which silently broke this check even with the correct secret. An unset `RAZORPAY_WEBHOOK_SECRET` fails every delivery closed (500, nothing verified) rather than the old behavior of skipping verification when the secret was missing.
+The frontend opens Razorpay's hosted checkout with the returned `orderId`, `amount`, and `key`. Razorpay's SDK calls back with `razorpay_order_id`, `razorpay_payment_id`, and `razorpay_signature`.
 
-6. **Recovery from a dropped connection.** If the network drops after Razorpay captures the payment but before the client's `/verify` call completes, the booking is stuck `unpaid` even though real money moved. The `payment.captured` webhook handler is exactly this recovery path: it runs the same `WHERE paymentStatus = 'unpaid'` conditional update against `razorpayOrderId`, so whichever of `/verify` or the webhook arrives first does the real work, and the second one is a guaranteed no-op against the same WHERE clause — never a double-write, and never a booking left stuck paid-for-but-unconfirmed.
+### 4 — Verification (`POST /api/payments/verify`)
+
+Three checks, in order:
+
+1. **Signature.** `HMAC-SHA256(order_id + '|' + payment_id, RAZORPAY_KEY_SECRET)` must match `razorpay_signature`, compared with `crypto.timingSafeEqual` (not `===`, which short-circuits on the first differing byte — a timing oracle).
+2. **Binding.** `razorpay_order_id` must equal `booking.razorpayOrderId` written in step 2. A valid signature only proves *some* real payment happened on the account — the binding check is what ties it to this specific booking.
+3. **State.** `paymentStatus` must currently be `'unpaid'`, enforced by a conditional `updateMany` (`WHERE paymentStatus = 'unpaid'`) — the WHERE clause is what makes two concurrent verification requests resolve to exactly one write, not a race.
+
+Only after all three pass does the booking flip to `status: 'confirmed'`, the event's `attendees` count increment, and a confirmation email + in-app notification fire.
+
+### 5 — Webhook (`POST /api/payments/webhook`)
+
+Razorpay calls this server-to-server for `payment.captured`, `payment.failed`, and `refund.processed`, independent of whether the client's browser completed `/verify`. Mounted with `express.raw()` ahead of the global JSON parser so the handler can verify Razorpay's signature against the *exact bytes received* — re-serializing a parsed object doesn't reliably reproduce the original bytes. An unset `RAZORPAY_WEBHOOK_SECRET` fails every delivery closed (returns 500, verifies nothing) rather than silently skipping verification.
+
+### 6 — Network-drop recovery
+
+If the network drops after Razorpay captures but before `/verify` completes, the booking stays `unpaid` even though real money moved. The `payment.captured` webhook handler is the recovery path: it runs the same `WHERE paymentStatus = 'unpaid'` conditional update against `razorpayOrderId`. Whichever of `/verify` or the webhook arrives first does the work; the second is a guaranteed no-op.
+
+Two real vulnerabilities in this flow (client-controlled amount, cross-booking signature replay) are fully narrated with their exploits and regression tests in **[SECURITY.md](./SECURITY.md)**.
 
 ---
 
 ## Security
 
-- **Passwords** are hashed with bcrypt at cost factor 12 (`backend/src/routes/auth.ts`). A Google-only account has no password at all (`User.password` is nullable) rather than a fake one.
-- **Sessions** are a JWT in an httpOnly cookie, never in `localStorage` or a JS-readable cookie — `lib/stores/auth.ts` on the frontend explicitly purges any credential material a previous version of this app left in `localStorage`, on every load.
-- **Password reset tokens** are generated with `crypto.randomBytes(32)`, sent to the user, and stored server-side as a SHA-256 hash with an expiry — a leaked database row alone isn't a usable reset token.
-- **Ownership checks.** Every `:id` endpoint that reads or mutates a specific resource re-checks that the authenticated user actually owns it — `booking.userId !== req.user!.id` before returning a booking, before creating a payment order against it, etc. Guarded by `backend/tests/authorization.test.ts`, which reproduces the exact IDOR shape (user A fetching/mutating user B's resource) for bookings, payment orders, event creation, and the admin host-approval endpoint.
-- **Route protection** is middleware, not a per-handler check scattered through the code — `requireAuth`, `requireRole`, `requireHostStatus` in `backend/src/middleware/auth.ts`.
-- **Rate limiting** is two-tiered (`backend/src/index.ts`): 100 requests / 15 minutes generally, 10 / 15 minutes on `/api/auth/*` specifically, so a credential-stuffing attempt against signin gets throttled far harder than normal browsing traffic.
+- **Passwords** are hashed with bcrypt at cost factor 12. A Google-only account has `User.password: null` — no fake password, no hash to crack.
+- **Sessions** are a JWT in an httpOnly cookie, never in `localStorage`. The auth store on the frontend explicitly purges any credential material a previous version of the app left in `localStorage`, on every load.
+- **Password reset tokens** are generated with `crypto.randomBytes(32)`, emailed to the user, and stored server-side as a SHA-256 hash with an expiry. A leaked database row alone isn't a usable reset token.
+- **Ownership checks.** Every `:id` endpoint that reads or mutates a resource re-checks that the authenticated user actually owns it — before returning a booking, before creating a payment order, before updating an event. Guarded by `backend/tests/authorization.test.ts`.
+- **Route protection** is middleware, not a per-handler check: `requireAuth`, `requireRole`, `requireHostStatus` in `backend/src/middleware/auth.ts`.
+- **Rate limiting** is two-tiered: 100 requests / 15 minutes generally, 10 / 15 minutes on `/api/auth/*` specifically — credential-stuffing attempts get throttled far harder than normal browsing traffic.
 - **CORS** is an explicit allow-list (`www.upsosh.app`, `upsosh.app`, `localhost:3000`, plus `FRONTEND_URL`), not a wildcard.
-
-Two real vulnerabilities were found and fixed in the payment path specifically — a client-controlled payment amount, and a cross-booking signature replay. Both are narrated in full, with the actual exploit and the regression test that now guards each one, in **[SECURITY.md](./SECURITY.md)**.
+- **Input validation** — every mutating route validates its request body through a Zod schema in `middleware/validate.ts` before the handler runs.
 
 ---
 
@@ -249,52 +386,69 @@ Two real vulnerabilities were found and fixed in the payment path specifically �
 # Backend — 16 Jest/Supertest integration tests, against a real Postgres
 cd backend && npm test
 
-# Frontend — one real Playwright E2E test (see "Testing a payment" above for the card)
+# Frontend — one real Playwright E2E test
 cd frontend && npm run test:e2e
 ```
 
-**Backend, what's covered** (`backend/tests/`): password hashing on signup and the generic-error-on-wrong-password behavior (`auth.test.ts`); IDOR checks across bookings, payment orders, event creation, and host approval (`authorization.test.ts`); booking capacity including a genuine concurrency test — N+1 simultaneous requests for the last seat, asserting exactly one succeeds — and refund-on-cancel (`booking.test.ts`); the client-controlled-amount and signature-replay regression tests described in `SECURITY.md` (`payments.test.ts`). All 16 run against a real database via Supertest driving the actual Express app — nothing here is mocked at the HTTP layer.
+**Backend (`backend/tests/`):**
 
-**Frontend, what's covered:** one test, `frontend/tests/booking-flow.spec.ts` — signup, browse to a paid event, book it, pay with a real Razorpay test-mode card including the 3-D Secure OTP step, land on the in-modal confirmation, and see the confirmed ticket in `/my-bookings`. It's slow (a real network round-trip through Razorpay's actual checkout) and needs real `RAZORPAY_TEST_KEY_ID`/`RAZORPAY_TEST_KEY_SECRET` credentials to run at all — without them it fails at the checkout step, which is expected, not a bug in the test.
+| File | What it covers |
+|---|---|
+| `auth.test.ts` | Password hashing on signup; generic error on wrong password (no email enumeration) |
+| `authorization.test.ts` | IDOR across bookings, payment orders, event creation, admin host-approval |
+| `booking.test.ts` | Capacity enforcement; concurrency test — N+1 simultaneous requests for the last seat, exactly one succeeds; refund-on-cancel |
+| `payments.test.ts` | Client-controlled-amount regression; signature-replay regression (both described in `SECURITY.md`) |
 
-**What's honestly not covered:** no frontend component/unit tests exist (`frontend/package.json`'s `test` script is `jest --passWithNoTests` — it passes because there's nothing to run, not because anything was verified). No test covers the AI planner, image uploads, or the admin host-approval UI beyond the one authorization check named above. No load/performance testing exists anywhere.
+All 16 run against a real database via Supertest driving the actual Express app. Nothing is mocked at the HTTP layer.
 
----
+**Frontend (`frontend/tests/booking-flow.spec.ts`):** one test — signup, browse to a paid event, book it, pay with a real Razorpay test-mode card including the 3-D Secure OTP step, land on the in-modal confirmation, and see the confirmed ticket in `/my-bookings`. Slow (real network through Razorpay's actual checkout), needs real `RAZORPAY_TEST_KEY_ID`/`RAZORPAY_TEST_KEY_SECRET` credentials. Also runs in CI (`.github/workflows/ci.yml`'s `e2e` job) — a real Razorpay test-mode payment on every push and PR.
 
-## Scope
-
-What's deliberately not built, and why — so a missing feature reads as a decision, not an oversight.
-
-**Host payouts.** Money flows in (Razorpay → the platform's account); nothing sends money back out to hosts. A real payout system needs KYC on every host (bank/UPI ownership verification — the RBI won't let a platform disburse to an unverified account), a settlement ledger (`platformFee` needs to be tracked separately from a host's net so payouts and platform revenue aren't reverse-engineered from raw `Booking` rows later), and its own failure/retry handling distinct from checkout. None of that exists; hosts are paid manually, outside the app.
-
-**Real-time features.** No WebSockets or SSE anywhere in the codebase. Attendee counts and the host/admin dashboards are poll/refetch-on-navigation, not push. A host watching their event's capacity fill up won't see it update live without refreshing.
-
-**Reviews and ratings.** No `Review` or `Rating` model in `schema.prisma`. Host ratings shown in the UI are seed/display data, not a real review system attendees can write to.
-
-**Single currency.** `currency: 'INR'` is hardcoded in `payments.ts`, and every price display uses `toLocaleString('en-IN')`. No multi-currency support.
-
-**Chargebacks and payment disputes.** Refunds exist (`PATCH /api/bookings/:id/cancel` triggers a real Razorpay refund on cancellation), but there's no flow for a payment dispute Razorpay itself flags, or for an attendee wanting a refund without cancelling. Cancellation is the only refund path.
-
-**Phone verification.** No SMS/OTP step anywhere. `guestPhone` is collected and required on every booking (`backend/src/lib/schemas.ts`) but never verified.
-
-**Full OAuth (Apple, GitHub, etc.).** Google sign-in exists (`POST /api/auth/google`, ID-token flow — see the environment variables table). Nothing else does. `NEXT_PUBLIC_APPLE_CLIENT_ID` is a placeholder variable with no component behind it yet.
+**What's honestly not covered:** no frontend component/unit tests. No test covers the AI planner, image uploads, or the admin host-approval UI beyond the one authorization check above. No load testing exists.
 
 ---
 
 ## Deployment
 
-**Backend → Render (currently live at `upsosh.onrender.com`).** There's no `render.yaml` in this repo — the build/start commands are set directly in Render's dashboard, not tracked here. Build: `npm ci && npm run build` inside `backend/`. Start: `npm run start`, which itself runs `prisma migrate deploy` before starting the server (`backend/package.json`) — that's deliberately in the npm script rather than a host-specific config file, so the schema can't drift silently on *any* host, Render included. Health check: `GET /health`. Set every "backend" variable from the table above in Render's environment settings.
+### Backend → Render
 
-`railway.toml` is also in this repo and is a working deploy target (Nixpacks build, same `npm run start`-driven migration step) — it's just not what's currently serving production traffic.
+Build: `npm ci && npm run build` (inside `backend/`).  
+Start: `npm run start` — this runs `prisma migrate deploy` before starting the server (`backend/package.json`), so the schema can't drift silently on any host.  
+Health check: `GET /health`.
 
-**Frontend → Vercel.** Root directory `frontend`, build `npm run build`, output `.next`. Set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_FRONTEND_URL`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, and (optionally) `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in the project's environment variables — these are inlined at build time, so changing one means a new deploy, not a restart.
+Set every backend variable from the table above in Render's environment settings. No `render.yaml` in this repo — build/start commands are set in Render's dashboard.
+
+`railway.toml` is also in this repo and is a working deploy target (Nixpacks build, same migration-on-start pattern) — not currently serving production.
+
+### Frontend → Vercel
+
+Root directory: `frontend`. Build: `npm run build`. Output: `.next`.
+
+Set `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `NEXT_PUBLIC_FRONTEND_URL`, and (optionally) `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in the project's environment variables. These are inlined at build time — changing one requires a new deploy, not just a restart.
+
+### Notes
+
+- The backend's `@types/*` packages are in `dependencies`, not `devDependencies`. Render doesn't install `devDependencies` in production; if TypeScript types are in `devDependencies`, `tsc` fails at build time with "Cannot find module '@types/...'".
+- Prisma generates its client at `postinstall` and again at `build`. Both are needed: `postinstall` covers `npm ci` on the host; `build` ensures the generated types match the schema at compile time.
+
+---
+
+## Scope — what's deliberately not built
+
+| Feature | Why not built |
+|---|---|
+| **Host payouts** | Money flows in; nothing sends it back out. A real payout system needs KYC on every host (RBI won't let a platform disburse to an unverified account), a settlement ledger separating `platformFee` from host net, and its own failure/retry handling. Hosts are paid manually for now. |
+| **Real-time updates** | No WebSockets or SSE. Attendee counts and dashboards are poll/refetch-on-navigation, not push. |
+| **Reviews and ratings** | No `Review` or `Rating` model in `schema.prisma`. Host ratings in the UI are display data, not a live system. |
+| **Multi-currency** | `currency: 'INR'` is hardcoded in `payments.ts`. Every price display uses `toLocaleString('en-IN')`. |
+| **Chargebacks / disputes** | Refunds exist on cancellation; there's no flow for a dispute Razorpay flags or a refund without cancelling. |
+| **Phone verification** | `guestPhone` is collected on every booking but never verified via SMS/OTP. |
+| **Apple sign-in** | Google sign-in exists. `NEXT_PUBLIC_APPLE_CLIENT_ID` is a placeholder with no component behind it. |
 
 ---
 
 ## Known limitations
 
-- `AUDIT.md`, referenced by `FIXPLAN.md` as the analysis the fix plan was built from, isn't present in this repository. `FIXPLAN.md` itself is the more useful document day-to-day — every task in it is anchored to a specific file and line, and each closed one has a written record of what actually changed.
 - No structured logging — the backend logs to stdout with bare `console.*` calls, no request IDs, no log levels.
-- No CI-enforced database migration check — a migration can be written and merged without CI ever applying it against a real Postgres instance to confirm it runs cleanly.
-- The AI planner depends on a single hardcoded OpenRouter model id (`backend/src/routes/ai.ts`); if that model is deprecated or renamed upstream, the planner fails until the id is updated in code.
-- Development history (`FIXPLAN.md`) is extensive and worth reading before assuming a gap is unintentional — many things that look like bugs on first read turn out to already be tracked, with the reasoning for the current state written down.
+- The AI planner uses a single hardcoded OpenRouter model ID (`backend/src/routes/ai.ts`); if the model is deprecated upstream, the planner fails until the ID is updated in code.
+- No CI-enforced database migration check — a migration can be merged without CI ever applying it against a real Postgres to confirm it runs cleanly.
+- `AUDIT.md`, referenced by `FIXPLAN.md` as the original analysis document, isn't in this repo. `FIXPLAN.md` itself is the more useful day-to-day document — every task is anchored to a specific file and line, and each closed one has a written record of what actually changed.
