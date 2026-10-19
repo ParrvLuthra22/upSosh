@@ -10,6 +10,7 @@
         "typecheck": "prisma generate && tsc --noEmit",
         "postinstall": "prisma generate",
         "seed": "prisma db seed",
+        "event-report": "tsx src/scripts/event-report.ts",
         "test": "jest --runInBand"
     },
     "keywords": [],
