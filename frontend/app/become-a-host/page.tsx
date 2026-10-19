@@ -87,32 +87,10 @@ function EarningsCalculator() {
   );
 }
 
-// ─── Count-up Stat ────────────────────────────────────────────────────────────
-
-function StatNum({ target, prefix = '', suffix = '' }: { target: number; prefix?: string; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
-  const [v, setV] = useState(0);
-  const reduced = useReducedMotion();
-  useEffect(() => {
-    if (!inView) return;
-    if (reduced) { setV(target); return; }
-    const dur = 1400;
-    const start = performance.now();
-    const tick = () => {
-      const p = Math.min((performance.now() - start) / dur, 1);
-      setV(Math.round((1 - Math.pow(1 - p, 3)) * target));
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [inView, target, reduced]);
-  return <span ref={ref}>{prefix}{v.toLocaleString('en-IN')}{suffix}</span>;
-}
-
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
 const FAQS = [
-  { q: 'How quickly will I get verified?', a: 'Most hosts are verified within 24 hours. We review your application and may request a quick video call.' },
+  { q: 'How quickly will I get verified?', a: 'Verification typically takes 24–48 hours. We review your application and may request a quick video call.' },
   { q: 'What types of events can I host?', a: "Run clubs, dinners, workshops, meetups, book clubs, and more. As long as it's a real-life gathering, it qualifies." },
   { q: 'How do payouts work?', a: 'Revenue from ticket sales is transferred to your linked bank account within 3-5 business days after your event.' },
   { q: 'What is the platform fee?', a: 'UpSosh charges an 8% platform fee on paid events. Free events are always free to host.' },
@@ -177,11 +155,12 @@ export default function BecomeAHostPage() {
     router.push('/onboarding/host-verification');
   }
 
+  // Qualitative only — no performance numbers while the platform is early-stage.
   const STATS = [
-    { value: 42, prefix: '₹', suffix: 'K', label: 'avg monthly revenue' },
-    { value: 48, suffix: '★', label: 'avg host rating' },
-    { value: 87, suffix: '%', label: 'repeat attendance' },
-    { value: 24, suffix: 'hr', label: 'verification time' },
+    { title: 'Free', label: 'to host' },
+    { title: 'UPI', label: 'native payments' },
+    { title: 'QR', label: 'ticket check-in' },
+    { title: 'AI', label: 'event planner' },
   ];
 
   return (
@@ -234,7 +213,7 @@ export default function BecomeAHostPage() {
           >
             <div className="w-80 h-64 bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-5">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">Host Dashboard</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">Host Dashboard · Sample</p>
                 <span className="w-2 h-2 rounded-full bg-lime" />
               </div>
               {['Revenue this month', 'Total attendees', 'Upcoming events'].map((l, i) => (
@@ -256,7 +235,7 @@ export default function BecomeAHostPage() {
           {STATS.map((s, i) => (
             <div key={i} className="flex flex-col items-center gap-2">
               <p className="font-display text-cream" style={{ fontSize: 'clamp(2rem,4vw,3.5rem)' }}>
-                <StatNum target={s.value} prefix={s.prefix ?? ''} suffix={s.suffix ?? ''} />
+                {s.title}
               </p>
               <p className="font-mono text-[11px] uppercase tracking-widest text-cream-dim">{s.label}</p>
             </div>

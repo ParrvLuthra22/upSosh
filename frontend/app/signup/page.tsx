@@ -212,16 +212,16 @@ export default function SignUpPage() {
               "Real events. Real people.<br />Worth showing up to."
             </blockquote>
             <p className="font-sans text-[13px] text-cream-dim mt-5">
-              — Across 40+ cities in India
+              — UPI-native, built for India
             </p>
           </div>
 
           {/* Stats strip */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { n: '2,400+', l: 'Hosts' },
-              { n: '18,000+', l: 'Attendees' },
-              { n: '6,200+', l: 'Events hosted' },
+              { n: 'Free', l: 'To host' },
+              { n: 'UPI', l: 'Payments' },
+              { n: 'QR', l: 'Tickets' },
             ].map(({ n, l }) => (
               <div key={l} className="bg-border backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4">
                 <p className="font-display text-[24px] text-cream leading-none">{n}</p>

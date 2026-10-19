@@ -178,21 +178,13 @@ export default function SignInPage() {
               "Walk in as a stranger,<br />leave as a regular."
             </blockquote>
             <p className="font-sans text-[13px] text-cream-dim mt-5">
-              — What 2,400+ hosts say about UpSosh
+              — UPI-native, built for India
             </p>
           </div>
           <div className="bg-border backdrop-blur-md border border-[rgba(244,241,234,0.10)] rounded-xl p-4 max-w-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-full bg-lime flex items-center justify-center flex-shrink-0">
-                <span className="font-display text-void text-[15px] font-bold">P</span>
-              </div>
-              <div>
-                <p className="font-sans text-[14px] font-medium text-cream">Priya Sharma</p>
-                <p className="font-sans text-[12px] text-cream-dim">Run club host · New Delhi</p>
-              </div>
-            </div>
+            <p className="font-sans text-[14px] font-medium text-cream mb-1">Free to host.</p>
             <p className="font-sans text-[13px] text-cream-dim leading-relaxed">
-              "Hosted my first event with 0 followers. 40 people showed up. UpSosh just works."
+              Pay only when you sell tickets. Payments by UPI, tickets by QR.
             </p>
           </div>
         </div>

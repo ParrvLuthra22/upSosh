@@ -3,7 +3,6 @@ import HeroSection from '@/components/sections/HeroSection';
 import HowItWorks from '@/components/sections/HowItWorks';
 import FeaturedEvents from '@/components/sections/FeaturedEvents';
 import AIPlanner from '@/components/sections/AIPlanner';
-import Testimonials from '@/components/sections/Testimonials';
 import { generateOrganizationSchema, safeJsonLd } from '@/lib/structuredData';
 
 // ─── Shared content arrays ────────────────────────────────────────────────────
@@ -57,9 +56,6 @@ export default function Home() {
 
       {/* 4 — AI Planner teaser */}
       <AIPlanner />
-
-      {/* 5 — Testimonials + stats */}
-      <Testimonials />
 
       {/* Marquee 3: above footer, speed 30 */}
       <Marquee items={SHOW_UP} speed={30} accent="cream" />

@@ -82,44 +82,6 @@ function WavyUnderline() {
   );
 }
 
-// ─── Social proof avatars ─────────────────────────────────────────────────────
-
-const AVATARS = [
-  { initials: 'PR', bg: 'var(--lime)', fg: 'var(--void)' },
-  { initials: 'AK', bg: 'var(--surface-2)', fg: 'var(--cream)' },
-  { initials: 'SN', bg: 'var(--coral)', fg: 'var(--cream)' },
-  { initials: 'RV', bg: '#34D399', fg: 'var(--void)' },
-  { initials: 'DM', bg: 'var(--surface-2)', fg: 'var(--cream)' },
-];
-
-function AvatarStack() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      {AVATARS.map(({ initials, bg, fg }, i) => (
-        <div
-          key={initials}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            backgroundColor: bg,
-            border: '2px solid var(--void)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            marginLeft: i === 0 ? 0 : -8,
-          }}
-        >
-          <span style={{ fontSize: 9, color: fg, fontWeight: 700, lineHeight: 1 }}>
-            {initials}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── CTA button — primary (Host an event) ────────────────────────────────────
 
 function PrimaryButton() {
@@ -229,11 +191,10 @@ export default function HeroSection() {
           <SecondaryButton />
         </FadeUp>
 
-        {/* 5 — Social proof */}
-        <FadeUp delay={0.65} className="mt-14 flex items-center gap-4">
-          <AvatarStack />
+        {/* 5 — Value line (no social-proof claims: the product is early-stage) */}
+        <FadeUp delay={0.65} className="mt-14">
           <p className="font-sans text-[13px] text-cream-dim">
-            Trusted by 2,400+ hosts across India
+            Free to host. Pay only when you sell tickets.
           </p>
         </FadeUp>
       </div>

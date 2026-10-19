@@ -43,11 +43,6 @@ const SPRING = { type: 'spring', stiffness: 340, damping: 30 } as const;
 interface ExtendedData {
   description: string;
   included: string[];
-  hostBio: string;
-  hostRating: number;
-  hostEvents: number;
-  hostPhoto: string;
-  attendees: Array<{ name: string; initials: string; bg: string; fg: string; shared: number }>;
 }
 
 // ─── Extended mock data ───────────────────────────────────────────────────────
@@ -60,22 +55,6 @@ const DEFAULT_EXTENDED: ExtendedData = {
     'Digital entry ticket sent instantly',
     'Access to the post-event community group',
     'Personalised pace matching for run events',
-  ],
-  hostBio:
-    'A passionate community builder who has been running curated events across India for the past 3 years. Known for creating spaces where strangers become friends.',
-  hostRating: 4.9,
-  hostEvents: 12,
-  hostPhoto:
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&q=80',
-  attendees: [
-    { name: 'Priya S.', initials: 'PS', bg: 'var(--lime)', fg: 'var(--void)', shared: 3 },
-    { name: 'Rahul K.', initials: 'RK', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 1 },
-    { name: 'Ananya M.', initials: 'AM', bg: 'var(--coral)', fg: 'var(--cream)', shared: 2 },
-    { name: 'Dev C.', initials: 'DC', bg: '#34D399', fg: 'var(--void)', shared: 0 },
-    { name: 'Shreya P.', initials: 'SP', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 1 },
-    { name: 'Vikram R.', initials: 'VR', bg: 'var(--lime)', fg: 'var(--void)', shared: 4 },
-    { name: 'Nisha T.', initials: 'NT', bg: 'var(--surface-2)', fg: 'var(--cream)', shared: 0 },
-    { name: 'Arjun B.', initials: 'AB', bg: 'var(--coral)', fg: 'var(--cream)', shared: 2 },
   ],
 };
 
@@ -98,8 +77,6 @@ const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedData>>> = {
       'Private dining room (no other guests)',
       'Curated guest list — vetted by the host',
     ],
-    hostEvents: 14,
-    hostRating: 5.0,
   },
 };
 
@@ -213,25 +190,15 @@ function HeroImage({ src, alt }: { src: string; alt: string }) {
 
 // ─── Host card ────────────────────────────────────────────────────────────────
 
-function HostCard({
-  event,
-  ext,
-}: {
-  event: MockEvent;
-  ext: ExtendedData;
-}) {
+function HostCard({ event }: { event: MockEvent }) {
   return (
     <FadeUp className="mt-10 bg-surface border border-border rounded-2xl p-6">
       <div className="flex items-start gap-5">
-        {/* Avatar */}
-        <div className="relative w-[60px] h-[60px] rounded-full overflow-hidden flex-shrink-0">
-          <Image
-            src={ext.hostPhoto}
-            alt={event.host.name}
-            fill
-            sizes="60px"
-            className="object-cover"
-          />
+        {/* Avatar — initials only; the API has no host photo */}
+        <div className="w-[60px] h-[60px] rounded-full flex-shrink-0 flex items-center justify-center bg-lime">
+          <span style={{ fontFamily: 'var(--font-fraunces, Georgia, serif)', fontSize: 20, fontWeight: 700, color: 'var(--void)' }}>
+            {event.host.initials}
+          </span>
         </div>
 
         {/* Info */}
@@ -253,10 +220,6 @@ function HostCard({
               </span>
             )}
           </div>
-
-          <p className="font-sans text-[13px] text-cream-dim mt-2">
-            {ext.hostEvents} events hosted · {ext.hostRating} rating
-          </p>
         </div>
 
         {/* View profile */}
@@ -267,41 +230,7 @@ function HostCard({
           View profile
         </Link>
       </div>
-
-      {/* Bio */}
-      <p className="font-sans text-[14px] text-cream-dim leading-relaxed mt-4 pt-4 border-t border-border">
-        {ext.hostBio}
-      </p>
     </FadeUp>
-  );
-}
-
-// ─── Attendee mini-card ────────────────────────────────────────────────────────
-
-function AttendeeCard({
-  name,
-  initials,
-  bg,
-  fg,
-  shared,
-}: ExtendedData['attendees'][0]) {
-  return (
-    <div className="bg-surface border border-border rounded-xl p-3 flex items-center gap-3">
-      <div
-        className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-        style={{ backgroundColor: bg }}
-      >
-        <span style={{ fontSize: 11, fontWeight: 700, color: fg, fontFamily: 'var(--font-fraunces, Georgia, serif)' }}>
-          {initials}
-        </span>
-      </div>
-      <div className="min-w-0">
-        <p className="font-sans text-[13px] text-cream leading-none truncate">{name}</p>
-        <p className="font-sans text-[11px] text-cream-dim mt-0.5">
-          {shared > 0 ? `${shared} shared event${shared > 1 ? 's' : ''}` : 'New member'}
-        </p>
-      </div>
-    </div>
   );
 }
 
@@ -697,7 +626,7 @@ export default function EventPageClient() {
             </FadeUp>
 
             {/* 3 — Host card */}
-            <HostCard event={event} ext={ext} />
+            <HostCard event={event} />
 
             {/* Divider */}
             <div className="border-t border-border my-16" />
@@ -786,19 +715,6 @@ export default function EventPageClient() {
               >
                 {event.going} attending
               </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {ext.attendees.map((a, i) => (
-                  <motion.div
-                    key={a.name}
-                    initial={{ opacity: 0, y: reduced ? 0 : 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-30px' }}
-                    transition={{ duration: reduced ? 0.1 : 0.45, ease: EASE, delay: reduced ? 0 : i * 0.06 }}
-                  >
-                    <AttendeeCard {...a} />
-                  </motion.div>
-                ))}
-              </div>
             </FadeUp>
           </div>
 
