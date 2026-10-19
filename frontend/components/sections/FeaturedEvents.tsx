@@ -1,165 +1,231 @@
 'use client';
 
-import { useRef } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import ImageReveal from '@/components/ui/ImageReveal';
-import { EASE_VERCEL, fadeInUp, useReducedMotion } from '@/lib/motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
+import { EventCard } from '@/components/EventCard';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { normaliseApiEvent, toCardProps } from '@/lib/eventAdapters';
+import { useReducedMotion } from '@/lib/motion';
+import type { MockEvent } from '@/lib/eventTypes';
 
-const EVENTS = [
-  {
-    title: 'Hyde Park Dawn Runners',
-    category: 'Run Club',
-    host: 'James K.',
-    date: 'Sat 23 Nov',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=1000&fit=crop&q=80',
-    span: 'row-span-2',
-  },
-  {
-    title: 'Soho Dinner Circle',
-    category: 'Dinner Club',
-    host: 'Amara D.',
-    date: 'Fri 22 Nov',
-    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=480&fit=crop&q=80',
-    span: '',
-  },
-  {
-    title: 'Creator Strategy Workshop',
-    category: 'Workshop',
-    host: 'Paulo M.',
-    date: 'Sun 24 Nov',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=480&fit=crop&q=80',
-    span: '',
-  },
-  {
-    title: 'East London Meetup',
-    category: 'Meetup',
-    host: 'Sia N.',
-    date: 'Thu 21 Nov',
-    image: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=600&h=480&fit=crop&q=80',
-    span: '',
-  },
-  {
-    title: 'Philosophy & Wine Night',
-    category: 'Book Circle',
-    host: 'Remi A.',
-    date: 'Wed 20 Nov',
-    image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=480&fit=crop&q=80',
-    span: '',
-  },
-  {
-    title: 'Shoreditch Speed Dating',
-    category: 'Social',
-    host: 'Layla T.',
-    date: 'Tue 19 Nov',
-    image: 'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&h=560&fit=crop&q=80',
-    span: 'col-span-2',
-  },
-];
+const EVENT_LIMIT = 6;
 
-function EventCard({ event, delay = 0 }: { event: typeof EVENTS[number]; delay?: number }) {
+// Shared by the real slides and the skeleton slides so the layout doesn't jump.
+const SLIDE = 'shrink-0 snap-start w-[78%] sm:w-[320px] lg:w-[340px]';
+
+const ACTION =
+  'inline-flex items-center justify-center rounded-full px-5 py-3 min-h-[44px] font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-2 focus-visible:ring-offset-void';
+const ACTION_PRIMARY = `${ACTION} bg-lime text-void hover:bg-lime/90`;
+const ACTION_SECONDARY = `${ACTION} border border-border text-cream hover:border-border-strong`;
+
+type Status = 'loading' | 'error' | 'ready';
+
+export default function FeaturedEvents() {
+  const [events, setEvents] = useState<MockEvent[]>([]);
+  const [status, setStatus] = useState<Status>('loading');
+  const trackRef = useRef<HTMLUListElement>(null);
   const reduced = useReducedMotion();
+
+  const load = useCallback(async (signal?: AbortSignal) => {
+    setStatus('loading');
+    try {
+      const res = await fetch(`/api/events?limit=${EVENT_LIMIT}&sort=date`, {
+        credentials: 'include',
+        signal,
+      });
+      if (!res.ok) throw new Error(`Failed to load events (${res.status})`);
+      const data = await res.json();
+      const raw: any[] = data.events ?? data.data ?? [];
+      setEvents(raw.map(normaliseApiEvent));
+      setStatus('ready');
+    } catch (err) {
+      if (signal?.aborted) return;
+      setStatus('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
+
+  function scrollByCard(direction: 1 | -1) {
+    const track = trackRef.current;
+    if (!track) return;
+    const slide = track.firstElementChild as HTMLElement | null;
+    const step = (slide?.offsetWidth ?? 320) + 20; // card width + gap-5
+    track.scrollBy({ left: direction * step, behavior: reduced ? 'auto' : 'smooth' });
+  }
+
+  const hasEvents = status === 'ready' && events.length > 0;
+
   return (
-    <motion.article
-      className={`group relative rounded-2xl overflow-hidden border border-border bg-surface ${event.span}`}
-      data-cursor="VIEW"
-      initial={{ opacity: 0, y: reduced ? 0 : 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-5% 0px' }}
-      transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : delay }}
+    <section
+      aria-labelledby="featured-events-heading"
+      className="bg-void border-t border-border py-24 md:py-32 px-6 md:px-16"
     >
-      <div className="relative overflow-hidden aspect-[4/5] md:h-full md:aspect-auto min-h-[280px]">
-        <ImageReveal direction="top" delay={delay + 0.1} className="relative w-full h-full">
-          <Image
-            src={event.image}
-            alt={event.title}
-            fill
-            sizes="(min-width: 768px) 33vw, 100vw"
-            className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-vercel"
-          />
-        </ImageReveal>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      {/* Heading */}
+      <div className="flex items-end justify-between gap-6 mb-12 md:mb-16">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cream-dim mb-5">
+            [ 02 — FEATURED ]
+          </p>
+          <h2
+            id="featured-events-heading"
+            className="display-lg text-cream leading-[1.0] tracking-tight"
+          >
+            Upcoming events.
+          </h2>
+        </div>
 
-        {/* Category tag */}
-        <span className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-[0.15em] bg-void/90 text-cream px-2.5 py-1.5 rounded-full">
-          {event.category}
-        </span>
-      </div>
-
-      {/* Card info */}
-      <div className="p-5 border-t border-border">
-        <h3 className="font-display text-xl text-cream leading-snug tracking-tight mb-3">
-          {event.title}
-        </h3>
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-cream-dim">{event.host}</span>
-          <span className="font-mono text-xs text-cream-faint">{event.date}</span>
+        <div className="flex items-center gap-4">
+          {hasEvents && (
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => scrollByCard(-1)}
+                aria-label="Previous events"
+                className="w-11 h-11 rounded-full border border-border text-cream flex items-center justify-center hover:border-border-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+              >
+                <IconArrowLeft size={18} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByCard(1)}
+                aria-label="Next events"
+                className="w-11 h-11 rounded-full border border-border text-cream flex items-center justify-center hover:border-border-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+              >
+                <IconArrowRight size={18} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+          <Link
+            href="/discover"
+            className="hidden md:block font-sans text-sm text-cream-dim hover:text-cream transition-colors"
+          >
+            See all events →
+          </Link>
         </div>
       </div>
-    </motion.article>
+
+      {status === 'loading' && <LoadingState />}
+
+      {status === 'error' && (
+        <StatePanel
+          title="We couldn't load events right now."
+          body="Something went wrong on our side. Check your connection and try again."
+        >
+          <button type="button" onClick={() => load()} className={ACTION_PRIMARY}>
+            Try again
+          </button>
+          <Link href="/discover" className={ACTION_SECONDARY}>
+            Browse events
+          </Link>
+        </StatePanel>
+      )}
+
+      {status === 'ready' && events.length === 0 && (
+        <StatePanel
+          title="No upcoming events yet."
+          body="New events land here as soon as hosts publish them. Be the first to put something on the calendar."
+        >
+          <Link href="/become-a-host" className={ACTION_PRIMARY}>
+            Host an event
+          </Link>
+          <Link href="/discover" className={ACTION_SECONDARY}>
+            Browse events
+          </Link>
+        </StatePanel>
+      )}
+
+      {hasEvents && (
+        // role=region + tabIndex lets keyboard users scroll the slider with the
+        // arrow keys; tabbing through the cards also scrolls each into view.
+        <div
+          role="region"
+          aria-label="Upcoming events"
+          tabIndex={0}
+          className="-mx-6 md:-mx-16 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+        >
+          <ul
+            ref={trackRef}
+            className="flex items-stretch gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain px-6 md:px-16 pb-4 scroll-px-6 md:scroll-px-16 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {events.map((ev) => (
+              <li key={ev.id} className={`${SLIDE} flex [&>div]:w-full [&>div]:h-full`}>
+                {/* Link to the slug (the API resolves slug or id); fall back to id. */}
+                <EventCard {...toCardProps(ev)} id={ev.slug ?? ev.id} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <Link
+        href="/discover"
+        className="md:hidden mt-6 inline-block font-sans text-sm text-cream-dim hover:text-cream transition-colors"
+      >
+        See all events →
+      </Link>
+    </section>
   );
 }
 
-export default function FeaturedEvents() {
-  const headingRef = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
-
+function LoadingState() {
   return (
-    <section className="bg-void border-t border-border py-24 md:py-32 px-6 md:px-16">
-      {/* Heading */}
-      <div ref={headingRef} className="flex items-end justify-between mb-12 md:mb-16">
-        <div>
-          <motion.p
-            className="font-mono text-xs uppercase tracking-[0.2em] text-cream-dim mb-5"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: reduced ? 0.1 : 0.5 }}
+    <div aria-busy="true">
+      <span role="status" className="sr-only">
+        Loading upcoming events
+      </span>
+      <div className="-mx-6 md:-mx-16 flex gap-5 overflow-hidden px-6 md:px-16 pb-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className={`${SLIDE} rounded-2xl border border-border bg-surface overflow-hidden`}
+            aria-hidden="true"
           >
-            [ 02 — FEATURED ]
-          </motion.p>
-          <motion.h2
-            className="display-lg text-cream leading-[1.0] tracking-tight"
-            initial={{ opacity: 0, y: reduced ? 0 : 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: reduced ? 0.1 : 0.7, ease: EASE_VERCEL, delay: reduced ? 0 : 0.1 }}
-          >
-            Happening now.
-          </motion.h2>
-        </div>
-        <motion.a
-          href="/discover"
-          className="hidden md:block font-sans text-sm text-cream-dim hover:text-cream transition-colors"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: reduced ? 0.1 : 0.5, delay: reduced ? 0 : 0.3 }}
-        >
-          See all events →
-        </motion.a>
+            <Skeleton className="aspect-[4/5] w-full rounded-none" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-6 w-6 rounded-full" circle />
+              <Skeleton className="h-6 w-4/5" />
+              <div className="flex justify-between pt-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-5 w-1/5" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+    </div>
+  );
+}
 
-      {/* Magazine grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[300px] md:auto-rows-[260px]">
-        {/* Card 1: tall, spans 2 rows */}
-        <div className="md:row-span-2">
-          <EventCard event={EVENTS[0]} delay={0} />
-        </div>
-
-        {/* Cards 2 & 3: normal */}
-        <EventCard event={EVENTS[1]} delay={0.05} />
-        <EventCard event={EVENTS[2]} delay={0.1} />
-
-        {/* Card 4 & 5: second row fills col 2 & 3 */}
-        <EventCard event={EVENTS[3]} delay={0.1} />
-        <EventCard event={EVENTS[4]} delay={0.15} />
-
-        {/* Card 6: full width */}
-        <div className="md:col-span-3 md:row-span-1 md:h-[220px]">
-          <EventCard event={EVENTS[5]} delay={0.2} />
-        </div>
+function StatePanel({
+  title,
+  body,
+  children,
+}: {
+  title: string;
+  body: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      role="status"
+      className="rounded-2xl border border-dashed border-border bg-surface/40 px-6 py-14 md:py-20 text-center"
+    >
+      <h3
+        className="text-[26px] md:text-[32px] text-cream leading-tight text-balance"
+        style={{ fontFamily: 'Fraunces, serif', fontWeight: 400 }}
+      >
+        {title}
+      </h3>
+      <p className="mt-3 mx-auto max-w-md font-sans text-sm text-cream-dim text-balance">{body}</p>
+      <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+        {children}
       </div>
-    </section>
+    </div>
   );
 }

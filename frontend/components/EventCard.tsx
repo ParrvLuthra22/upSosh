@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -73,6 +74,15 @@ export function EventCard({
   const initials = getInitials(host);
   const isFree = price === 'Free' || price === 0;
   const reduced = useReducedMotion();
+  // A blank/dead/unconfigured image URL must never leave an empty dark box.
+  const [imageFailed, setImageFailed] = useState(!imageUrl);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // onError can fire before React attaches the handler; catch that case here.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setImageFailed(true);
+  }, []);
 
   return (
     <motion.div
@@ -90,14 +100,28 @@ export function EventCard({
             positions its children, so without an explicit ratio this wrapper
             had zero height and the entire image + badges never rendered. */}
         <div className="relative aspect-[4/5] overflow-hidden rounded-t-2xl">
-          <Image
-            src={imageUrl}
-            alt={title}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-[350ms]"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)' }}
-          />
+          {imageFailed ? (
+            <div
+              role="img"
+              aria-label={title}
+              className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-surface-2 via-surface to-void"
+            >
+              <span className="font-mono text-[12px] uppercase tracking-[0.2em] text-cream-dim px-6 text-center">
+                {category}
+              </span>
+            </div>
+          ) : (
+            <Image
+              ref={imgRef}
+              src={imageUrl}
+              alt={title}
+              fill
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+              onError={() => setImageFailed(true)}
+              className="object-cover group-hover:scale-105 transition-transform duration-[350ms]"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)' }}
+            />
+          )}
 
           {/* Bottom gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-void/40 to-transparent pointer-events-none" />
