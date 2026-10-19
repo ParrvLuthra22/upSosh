@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { api, Event } from '@/lib/api';
+import { validateImageUrl } from '@/lib/imageHosts';
 
 interface HostEventFormProps {
     eventToEdit?: Event | null;
@@ -23,6 +24,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
     });
     const [menuItem, setMenuItem] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageUrlError, setImageUrlError] = useState<string | null>(null);
     const [imagePreview, setImagePreview] = useState('https://images.unsplash.com/photo-1492684223066-81342ee5ff30');
 
     
@@ -281,15 +283,24 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                                 type="url"
                                 placeholder="Or paste image URL"
                                 onChange={(e) => {
-                                    setFormData((prev) => ({ ...prev, image: e.target.value }));
-                                    setImagePreview(e.target.value);
+                                    const value = e.target.value;
+                                    const error = validateImageUrl(value);
+                                    setImageUrlError(error);
+                                    if (error || !value.trim()) return;
+                                    setFormData((prev) => ({ ...prev, image: value.trim() }));
+                                    setImagePreview(value.trim());
                                 }}
+                                aria-invalid={imageUrlError ? true : undefined}
                                 className="flex-1 p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
                             />
                         </div>
-                        <p className="text-xs text-cream-dim">
-                            Upload an image (max 5MB) or paste an image URL
-                        </p>
+                        {imageUrlError ? (
+                            <p role="alert" className="text-xs text-coral">{imageUrlError}</p>
+                        ) : (
+                            <p className="text-xs text-cream-dim">
+                                Upload an image (max 5MB) or paste a Cloudinary or Unsplash image URL
+                            </p>
+                        )}
                     </div>
                 </div>
 

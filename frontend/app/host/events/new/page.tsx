@@ -38,6 +38,7 @@ const DEFAULT: EventFormData = {
 };
 
 import { withAuth } from '@/components/ProtectedRoute';
+import { validateImageUrl } from '@/lib/imageHosts';
 function NewEventPage() {
   const { isAuth, user } = useAuth();
   const router = useRouter();
@@ -45,6 +46,10 @@ function NewEventPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  // The pasted-URL box is kept separate from form.image so an unsupported host
+  // can show an error without ever becoming the event's image.
+  const [imageUrlDraft, setImageUrlDraft] = useState('');
+  const [imageUrlError, setImageUrlError] = useState<string | null>(null);
 
   async function handleImageUpload(file: File) {
     setUploadingImage(true);
@@ -60,6 +65,8 @@ function NewEventPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');
       update('image', data.url);
+      setImageUrlDraft('');
+      setImageUrlError(null);
       toast.success('Image uploaded!');
     } catch (err: any) {
       toast.error(err.message ?? 'Image upload failed');
@@ -303,11 +310,24 @@ function NewEventPage() {
               <p className="font-mono text-[10px] text-cream-dim mb-2 text-center">or paste an image URL</p>
               <input
                 type="url"
-                value={form.image}
-                onChange={(e) => update('image', e.target.value)}
+                value={imageUrlDraft}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const error = validateImageUrl(value);
+                  setImageUrlDraft(value);
+                  setImageUrlError(error);
+                  if (!error) update('image', value.trim());
+                }}
                 placeholder="https://images.unsplash.com/..."
+                aria-invalid={imageUrlError ? true : undefined}
+                aria-describedby={imageUrlError ? 'image-url-error' : undefined}
                 className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors"
               />
+              {imageUrlError && (
+                <p id="image-url-error" role="alert" className="mt-2 font-sans text-xs text-coral">
+                  {imageUrlError}
+                </p>
+              )}
             </div>
 
             {/* Actions */}

@@ -143,7 +143,7 @@ export function EventCard({
           </div>
 
           {/* Category pill — top-right */}
-          <div className="absolute top-3 right-3 bg-cream/10 backdrop-blur-md text-cream font-mono text-[11px] uppercase tracking-wider rounded-full px-3 py-1">
+          <div className="absolute top-3 right-3 bg-void/80 backdrop-blur-md text-cream font-mono text-[11px] uppercase tracking-wider rounded-full px-3 py-1">
             {category}
           </div>
 

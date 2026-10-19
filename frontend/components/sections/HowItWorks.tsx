@@ -134,7 +134,7 @@ function ShowUpIllustration({ hovered }: { hovered: boolean }) {
         fill="var(--surface-2)"
         stroke="var(--border-strong)"
         strokeWidth="1.2"
-        animate={{ cx: hovered ? 31 : 35 }}
+        animate={{ x: hovered ? -4 : 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       />
       <motion.circle
@@ -151,7 +151,7 @@ function ShowUpIllustration({ hovered }: { hovered: boolean }) {
         fill="var(--surface-2)"
         stroke="var(--border-strong)"
         strokeWidth="1.2"
-        animate={{ cx: hovered ? 69 : 65 }}
+        animate={{ x: hovered ? 4 : 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       />
 
