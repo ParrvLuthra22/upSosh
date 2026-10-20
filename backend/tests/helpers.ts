@@ -95,6 +95,8 @@ interface CreateBookingOptions {
   paymentMethod?: 'razorpay' | 'upi' | 'free' | null;
   paymentId?: string | null;
   razorpayOrderId?: string | null;
+  guestCount?: number;
+  createdAt?: Date;
 }
 
 export async function createBooking(options: CreateBookingOptions) {
@@ -109,6 +111,8 @@ export async function createBooking(options: CreateBookingOptions) {
       guestName: 'Test Guest',
       guestEmail: 'guest@example.test',
       guestPhone: '9999999999',
+      guestCount: options.guestCount ?? 1,
+      ...(options.createdAt ? { createdAt: options.createdAt } : {}),
       ticketPrice,
       platformFee,
       totalAmount: options.totalAmount ?? ticketPrice + platformFee,
