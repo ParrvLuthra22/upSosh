@@ -66,6 +66,14 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
         const event = await tx.event.findUnique({ where: { id: eventId } });
         if (!event) throw new EventNotFoundError();
 
+        // A retry (payment dismissed, then "Pay" again) creates a fresh
+        // booking; without this the user's own abandoned one would still hold
+        // its seats and could block them from rebooking the last spots.
+        await tx.booking.updateMany({
+          where: { userId: req.user!.id, eventId, paymentStatus: 'unpaid', status: 'pending' },
+          data: { status: 'expired' },
+        });
+
         const held = await tx.booking.aggregate({
           where: {
             eventId,
