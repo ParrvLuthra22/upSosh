@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_GUESTS_PER_BOOKING } from './booking';
 
 // ─── auth.ts ──────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,15 @@ export const createBookingSchema = z.object({
   guestPhone: z.string().trim().min(1, 'guestName, guestEmail, and guestPhone are required'),
   notes: z.string().trim().optional(),
   paymentMethod: z.enum(['razorpay', 'upi', 'free']).optional(),
+  // Tickets in this booking. Capacity is checked against the event in the
+  // route; this only bounds the value itself. Any price/total the client
+  // sends is stripped here and never read.
+  guestCount: z
+    .number({ invalid_type_error: 'guestCount must be a whole number' })
+    .int('guestCount must be a whole number')
+    .min(1, 'guestCount must be at least 1')
+    .max(MAX_GUESTS_PER_BOOKING, `guestCount cannot exceed ${MAX_GUESTS_PER_BOOKING}`)
+    .default(1),
 });
 
 // ─── hosts.ts — POST /apply ───────────────────────────────────────────────────

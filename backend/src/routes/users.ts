@@ -80,16 +80,24 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
     const anonEmail = `deleted-${userId}@deleted.upsosh.app`;
     const unusablePassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
 
-    await prisma.$transaction([
-      ...activeBookings.map((b) =>
-        prisma.booking.update({ where: { id: b.id }, data: { status: 'cancelled' } })
-      ),
-      ...activeBookings
-        .filter((b) => b.eventId)
-        .map((b) =>
-          prisma.event.update({ where: { id: b.eventId! }, data: { attendees: { decrement: 1 } } })
-        ),
-      prisma.user.update({
+    await prisma.$transaction(async (tx) => {
+      for (const b of activeBookings) {
+        // Claim the booking first: if a concurrent cancel already moved it to
+        // 'cancelled', count is 0 and its seats are not released a second
+        // time. Only a paid booking ever held seats (an unpaid one's hold is
+        // derived and lapses by itself), and it held guestCount of them.
+        const { count } = await tx.booking.updateMany({
+          where: { id: b.id, status: { in: ['pending', 'confirmed'] } },
+          data: { status: 'cancelled' },
+        });
+        if (count > 0 && b.eventId && b.paymentStatus === 'paid') {
+          await tx.event.update({
+            where: { id: b.eventId },
+            data: { attendees: { decrement: b.guestCount } },
+          });
+        }
+      }
+      await tx.user.update({
         where: { id: userId },
         data: {
           email: anonEmail,
@@ -102,8 +110,8 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
           resetTokenExpiry: null,
           deletedAt: new Date(),
         },
-      }),
-    ]);
+      });
+    });
 
     res.clearCookie('token', {
       httpOnly: true,

@@ -175,30 +175,36 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     // also the seat reservation point for a paid booking (free events reserve
     // at creation instead — see POST /api/bookings) — an abandoned checkout
     // that never reaches here never held a seat.
-    const { count } = await prisma.booking.updateMany({
-      where: { id: bookingId, paymentStatus: 'unpaid' },
-      data: {
-        paymentStatus: 'paid',
-        paymentId: razorpay_payment_id,
-        status: 'confirmed',
-        paymentMethod: 'razorpay',
-        paidAt: new Date(),
-      },
+    //
+    // Money is already captured by Razorpay at this point, so the seat
+    // increment (by guestCount) is unconditional rather than capacity-gated
+    // like the free-event path — refusing to seat a customer who has already
+    // been charged would trade a rare last-seat race for a guaranteed billing
+    // dispute. It runs in the same transaction as the paid flip so a crash
+    // between the two can't leave a paid booking with no seats reserved.
+    const marked = await prisma.$transaction(async (tx) => {
+      const { count } = await tx.booking.updateMany({
+        where: { id: bookingId, paymentStatus: 'unpaid' },
+        data: {
+          paymentStatus: 'paid',
+          paymentId: razorpay_payment_id,
+          status: 'confirmed',
+          paymentMethod: 'razorpay',
+          paidAt: new Date(),
+        },
+      });
+      if (count === 0) return false;
+      if (booking.eventId) {
+        await tx.event.update({
+          where: { id: booking.eventId },
+          data: { attendees: { increment: booking.guestCount } },
+        });
+      }
+      return true;
     });
 
-    if (count === 0) {
+    if (!marked) {
       return res.status(409).json({ message: 'This booking is already paid' });
-    }
-
-    // Money is already captured by Razorpay at this point, so this increments
-    // unconditionally rather than being capacity-gated like the free-event
-    // path — refusing to seat a customer who has already been charged would
-    // trade a rare last-seat race for a guaranteed billing dispute.
-    if (booking.eventId) {
-      await prisma.event.update({
-        where: { id: booking.eventId },
-        data: { attendees: { increment: 1 } },
-      });
     }
 
     const updatedBooking = await prisma.booking.findUnique({
@@ -298,9 +304,22 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
           // the recovery path for when /verify never ran at all (e.g. the
           // network dropped after Razorpay captured the payment but before
           // the client could call /verify).
-          const { count } = await prisma.booking.updateMany({
-            where: { razorpayOrderId: orderId, paymentStatus: 'unpaid' },
-            data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay', paidAt: new Date() },
+          // Mark paid and reserve the seats (guestCount) in one transaction,
+          // same as POST /verify.
+          const count = await prisma.$transaction(async (tx) => {
+            const target = await tx.booking.findUnique({ where: { razorpayOrderId: orderId } });
+            if (!target) return 0;
+            const { count: marked } = await tx.booking.updateMany({
+              where: { razorpayOrderId: orderId, paymentStatus: 'unpaid' },
+              data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay', paidAt: new Date() },
+            });
+            if (marked > 0 && target.eventId) {
+              await tx.event.update({
+                where: { id: target.eventId },
+                data: { attendees: { increment: target.guestCount } },
+              });
+            }
+            return marked;
           });
           console.log(`[Webhook] payment.captured matched ${count} booking(s) for order ${orderId}`);
 
@@ -331,12 +350,6 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
                 "You're in!",
                 `Your spot for "${paidBooking.event?.title ?? 'the event'}" is confirmed.`,
               );
-            }
-            if (paidBooking?.eventId) {
-              await prisma.event.update({
-                where: { id: paidBooking.eventId },
-                data: { attendees: { increment: 1 } },
-              });
             }
           }
         }

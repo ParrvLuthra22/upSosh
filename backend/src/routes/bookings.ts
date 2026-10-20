@@ -8,62 +8,89 @@ import { createBookingSchema } from '../lib/schemas';
 import { sendBookingConfirmation } from '../lib/email';
 import { getRazorpayClient } from './payments';
 import { notify } from '../lib/notify';
+import { PLATFORM_FEE_FLAT, BOOKING_HOLD_MS } from '../lib/booking';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-class CapacityFullError extends Error {}
+class CapacityFullError extends Error {
+  constructor(public remaining: number) {
+    super('Event is at full capacity');
+  }
+}
+class EventNotFoundError extends Error {}
+class BookingStateChangedError extends Error {}
+class AlreadyCancelledError extends Error {}
 
 const router = Router();
 
 // POST /api/bookings — create booking (requireAuth)
 //
-// Free events are reserved (attendees incremented) here, at creation, since
+// Pricing is computed here, never taken from the request:
+//   ticketPrice = event.price * guestCount
+//   platformFee = PLATFORM_FEE_FLAT (once per booking, not per guest)
+//   totalAmount = ticketPrice + platformFee
+//
+// Capacity is checked and (for free events) reserved inside ONE transaction
+// that first locks the event row, so concurrent bookings for the last seats
+// are serialised and cannot oversell. "Taken" seats are attendees (paid and
+// free bookings) plus the guestCount of unpaid, pending bookings younger than
+// BOOKING_HOLD_MS — the same bookings the expiry sweep has not yet expired.
+//
+// Free events are reserved (attendees incremented by guestCount) here, since
 // there is no later "payment succeeded" moment to do it at — the booking is
-// confirmed+paid immediately. Paid events are NOT reserved here; that only
-// happens on payment success (POST /verify, or the webhook's
-// payment.captured) — see the atomic updateMany there. Reserving at creation
-// used to mean an abandoned checkout permanently held a seat forever.
+// confirmed+paid immediately. Paid events do NOT increment attendees here;
+// that only happens on payment success (POST /verify, or the webhook's
+// payment.captured). Until then they hold their seats only via the derived
+// pending count above, so an abandoned checkout frees them when it expires
+// and there is no counter to decrement.
 router.post('/', requireAuth, validateBody(createBookingSchema), async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
-    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod } = req.body as z.infer<typeof createBookingSchema>;
+    const { eventId, guestName, guestEmail, guestPhone, notes, paymentMethod, guestCount } =
+      req.body as z.infer<typeof createBookingSchema>;
 
-    let ticketPrice = 0;
-    let isFreeEvent = true;
-    let eventCapacity = 0;
-
-    if (eventId) {
-      const event = await prisma.event.findUnique({ where: { id: eventId } });
-      if (!event) return res.status(404).json({ message: 'Event not found' });
-      // Best-effort, non-binding check — gives an immediate "sold out" reply
-      // instead of making the user go through checkout first. The binding
-      // check is the atomic updateMany inside the transaction below (free
-      // events) or in /verify and the webhook (paid events); either can
-      // still reject even if this passed, if capacity filled in between.
-      if (event.attendees >= event.capacity) {
-        return res.status(400).json({ message: 'Event is at full capacity' });
-      }
-      ticketPrice = event.price;
-      isFreeEvent = event.isFree || event.price === 0;
-      eventCapacity = event.capacity;
-    }
-
-    const platformFee = 25;
-    const totalAmount = ticketPrice + platformFee;
     // Pre-generated so qrCode can be set in the same insert instead of an
     // insert-then-update round trip to learn the id Prisma would have
     // assigned.
     const bookingId = crypto.randomUUID();
 
     const booking = await prisma.$transaction(async (tx) => {
-      if (eventId && isFreeEvent) {
-        const { count } = await tx.event.updateMany({
-          where: { id: eventId, attendees: { lt: eventCapacity } },
-          data: { attendees: { increment: 1 } },
+      let ticketPrice = 0;
+      let isFreeEvent = true;
+
+      if (eventId) {
+        // Row lock: a concurrent booking for the same event waits here until
+        // this transaction commits, then sees its seats.
+        await tx.$queryRaw`SELECT id FROM "Event" WHERE id = ${eventId} FOR UPDATE`;
+        const event = await tx.event.findUnique({ where: { id: eventId } });
+        if (!event) throw new EventNotFoundError();
+
+        const held = await tx.booking.aggregate({
+          where: {
+            eventId,
+            paymentStatus: 'unpaid',
+            status: 'pending',
+            createdAt: { gte: new Date(Date.now() - BOOKING_HOLD_MS) },
+          },
+          _sum: { guestCount: true },
         });
-        if (count === 0) throw new CapacityFullError();
+        const remaining = event.capacity - event.attendees - (held._sum.guestCount ?? 0);
+        if (guestCount > remaining) throw new CapacityFullError(Math.max(remaining, 0));
+
+        ticketPrice = event.price * guestCount;
+        isFreeEvent = event.isFree || event.price === 0;
+
+        if (isFreeEvent) {
+          await tx.event.update({
+            where: { id: eventId },
+            data: { attendees: { increment: guestCount } },
+          });
+        }
       }
+
+      const platformFee = PLATFORM_FEE_FLAT;
+      const totalAmount = ticketPrice + platformFee;
 
       return tx.booking.create({
         data: {
@@ -74,6 +101,7 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
           guestEmail,
           guestPhone,
           notes: notes ?? null,
+          guestCount,
           ticketPrice,
           platformFee,
           totalAmount,
@@ -91,7 +119,7 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
     // paid events get this from /verify and the webhook on actual payment
     // success, not here, so an abandoned checkout no longer emails "Booking
     // confirmed" for money that was never charged.
-    if (isFreeEvent) {
+    if (booking.paymentStatus === 'paid') {
       const event = booking.event;
       sendBookingConfirmation({
         guestName: booking.guestName,
@@ -116,8 +144,14 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
 
     return res.status(201).json({ booking, message: 'Booking created successfully' });
   } catch (err: unknown) {
+    if (err instanceof EventNotFoundError) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
     if (err instanceof CapacityFullError) {
-      return res.status(400).json({ message: 'Event is at full capacity' });
+      const message = err.remaining === 0
+        ? 'Event is at full capacity'
+        : `Only ${err.remaining} spot${err.remaining === 1 ? '' : 's'} left for this event`;
+      return res.status(400).json({ message });
     }
     console.error('POST /bookings error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
@@ -202,21 +236,40 @@ router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response)
       refundId = refund.id;
     }
 
-    const [updatedBooking] = await prisma.$transaction([
-      prisma.booking.update({
-        where: { id },
+    // The conditional update is what makes the release happen once: of two
+    // concurrent cancels only one flips the booking out of its current state,
+    // so only one decrements. Pinning paymentStatus to the value read above
+    // also stops a payment landing between that read and this write from
+    // being cancelled as if it never held a seat.
+    const updatedBooking = await prisma.$transaction(async (tx) => {
+      const { count } = await tx.booking.updateMany({
+        where: { id, status: { not: 'cancelled' }, paymentStatus: booking.paymentStatus },
         data: {
           status: 'cancelled',
           ...(needsRefund ? { paymentStatus: 'refunded', refundId } : {}),
         },
-      }),
-      ...(booking.eventId && heldSeat
-        ? [prisma.event.update({ where: { id: booking.eventId }, data: { attendees: { decrement: 1 } } })]
-        : []),
-    ]);
+      });
+      if (count === 0) {
+        const current = await tx.booking.findUnique({ where: { id } });
+        throw current?.status === 'cancelled' ? new AlreadyCancelledError() : new BookingStateChangedError();
+      }
+      if (booking.eventId && heldSeat) {
+        await tx.event.update({
+          where: { id: booking.eventId },
+          data: { attendees: { decrement: booking.guestCount } },
+        });
+      }
+      return tx.booking.findUniqueOrThrow({ where: { id } });
+    });
 
     return res.json({ booking: updatedBooking, message: 'Booking cancelled successfully' });
   } catch (err: unknown) {
+    if (err instanceof AlreadyCancelledError) {
+      return res.status(400).json({ message: 'Booking is already cancelled' });
+    }
+    if (err instanceof BookingStateChangedError) {
+      return res.status(409).json({ message: 'This booking just changed — please refresh and try again' });
+    }
     console.error('PATCH /bookings/:id/cancel error:', errorMessage(err));
     return res.status(500).json({ message: 'Cancellation failed — please try again or contact support' });
   }

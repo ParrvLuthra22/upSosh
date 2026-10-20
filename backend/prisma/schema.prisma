@@ -183,6 +183,9 @@ model Booking {
   guestPhone    String        @default("")
   notes         String?
 
+  // Tickets in this booking. Seats reserved/released always use this, never 1.
+  guestCount    Int           @default(1)
+
   ticketPrice   Float         @default(0)
   platformFee   Float         @default(25)
   totalAmount   Float

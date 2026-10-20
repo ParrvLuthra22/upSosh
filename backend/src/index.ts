@@ -1,4 +1,5 @@
 import './lib/loadEnv';
+import { BOOKING_HOLD_MS } from './lib/booking';
 
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
@@ -205,14 +206,13 @@ if (process.env.NODE_ENV !== 'test') {
   // increments attendees on payment success), so there is nothing to release
   // here; this exists so an abandoned checkout doesn't sit in the DB looking
   // like a live pending payment forever.
-  const BOOKING_EXPIRY_MS = 15 * 60 * 1000;
   const expireStaleBookings = async (): Promise<void> => {
     try {
       const { count } = await prisma.booking.updateMany({
         where: {
           paymentStatus: 'unpaid',
           status: 'pending',
-          createdAt: { lt: new Date(Date.now() - BOOKING_EXPIRY_MS) },
+          createdAt: { lt: new Date(Date.now() - BOOKING_HOLD_MS) },
         },
         data: { status: 'expired' },
       });
