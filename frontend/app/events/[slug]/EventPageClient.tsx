@@ -34,6 +34,7 @@ import { type MockEvent } from '@/lib/eventTypes';
 import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useReducedMotion, useCountTransition } from '@/lib/motion';
+import { estimateBookingTotals, MAX_GUESTS_PER_BOOKING } from '@/lib/booking';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
@@ -310,11 +311,10 @@ function BookingCard({
   onBook: (guests: number) => void;
 }) {
   const [guests, setGuests] = useState(1);
-  const maxGuests = Math.min(event.spotsLeft, 10);
+  const maxGuests = Math.min(event.spotsLeft, MAX_GUESTS_PER_BOOKING);
   const unitPrice = numPrice(event.price);
-  const subtotal = unitPrice * guests;
-  const serviceFee = Math.round(subtotal * 0.1);
-  const total = subtotal + serviceFee;
+  const { ticketPrice: subtotal, platformFee: serviceFee, totalAmount: total } =
+    estimateBookingTotals(unitPrice, guests);
   const isFree = unitPrice === 0;
   const reduced = useReducedMotion();
   const subtotalDisplay = useCountTransition(subtotal);
@@ -394,11 +394,11 @@ function BookingCard({
       {!isFree && (
         <div className="bg-cream/5 rounded-xl p-4 mb-5 space-y-2">
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
-            <span>Subtotal ({guests} × ₹{unitPrice.toLocaleString('en-IN')})</span>
+            <span>Tickets ({guests} × ₹{unitPrice.toLocaleString('en-IN')})</span>
             <span className="font-mono tabular-nums">₹{subtotalDisplay.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
-            <span>Service fee (10%)</span>
+            <span>Platform fee</span>
             <span className="font-mono tabular-nums">₹{serviceFeeDisplay.toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between items-baseline border-t border-border pt-2 mt-2">

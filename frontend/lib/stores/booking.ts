@@ -12,6 +12,7 @@
 
 import { create } from 'zustand';
 import { unitPrice } from '@/lib/utils';
+import type { BookingTotals } from '@/lib/booking';
 
 /**
  * Requests authenticate with the backend's httpOnly `token` cookie, which every
@@ -71,6 +72,8 @@ interface BookingStore {
   guestDetails: GuestDetails;
   paymentMethod: PaymentMethod | null;
   bookingId: string | null;
+  /** What the server actually priced the booking at; null until it exists. */
+  bookingTotals: BookingTotals | null;
   isProcessing: boolean;
   errorMessage: string | null;
 
@@ -117,6 +120,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   guestDetails:  INITIAL_GUEST_DETAILS,
   paymentMethod: null,
   bookingId:     null,
+  bookingTotals: null,
   isProcessing:  false,
   errorMessage:  null,
 
@@ -133,6 +137,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       guestDetails:  INITIAL_GUEST_DETAILS,
       paymentMethod: null,
       bookingId:     null,
+      bookingTotals: null,
       isProcessing:  false,
       errorMessage:  null,
     }),
@@ -203,13 +208,22 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           guestName: guestDetails.name,
           guestEmail: guestDetails.email,
           guestPhone: guestDetails.phone,
+          // The server prices the booking from this and the event's price;
+          // no amount is sent.
+          guestCount,
         }),
       });
 
       let bookingData: {
         id?: string;
         bookingId?: string;
-        booking?: { id?: string };
+        booking?: {
+          id?: string;
+          guestCount?: number;
+          ticketPrice?: number;
+          platformFee?: number;
+          totalAmount?: number;
+        };
         error?: string;
         message?: string;
       };
@@ -228,6 +242,25 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       }
 
       set({ bookingId: returnedBookingId });
+
+      // From here on the UI shows what the server priced, not the estimate.
+      const created = bookingData.booking;
+      if (
+        created &&
+        typeof created.guestCount === 'number' &&
+        typeof created.ticketPrice === 'number' &&
+        typeof created.platformFee === 'number' &&
+        typeof created.totalAmount === 'number'
+      ) {
+        set({
+          bookingTotals: {
+            guestCount: created.guestCount,
+            ticketPrice: created.ticketPrice,
+            platformFee: created.platformFee,
+            totalAmount: created.totalAmount,
+          },
+        });
+      }
 
       // ── 2a. Instant payment → Razorpay ─────────────────────────────────────
       if (paymentMethod === 'instant') {

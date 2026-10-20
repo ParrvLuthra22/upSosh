@@ -42,6 +42,7 @@ import {
 import { getLenis } from '@/components/ui/SmoothScroll';
 import { Input } from '@/components/ui/input';
 import { cn, unitPrice, formatINR as fmtRupee } from '@/lib/utils';
+import { estimateBookingTotals } from '@/lib/booking';
 import { useReducedMotion, useFakeProgress } from '@/lib/motion';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -135,8 +136,7 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
   const img = event.imageUrl ?? event.image ?? '';
   const date = event.dateShort ?? (typeof event.date === 'string' ? event.date : '');
   const price = unitPrice(event.price);
-  const serviceFee = Math.round(price * guests * 0.1);
-  const total = price * guests + serviceFee;
+  const { ticketPrice, platformFee, totalAmount } = estimateBookingTotals(price, guests);
 
   return (
     <>
@@ -160,12 +160,12 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
       {price > 0 ? (
         <div className="mt-4 bg-cream/5 rounded-xl p-4 space-y-2.5">
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
-            <span>{guests} × {fmtRupee(price)}</span>
-            <span>{fmtRupee(price * guests)}</span>
+            <span>Tickets ({guests} × {fmtRupee(price)})</span>
+            <span>{fmtRupee(ticketPrice)}</span>
           </div>
           <div className="flex justify-between font-sans text-[13px] text-cream-dim">
-            <span>Service fee (10%)</span>
-            <span>{fmtRupee(serviceFee)}</span>
+            <span>Platform fee</span>
+            <span>{fmtRupee(platformFee)}</span>
           </div>
           <div className="flex justify-between items-baseline border-t border-border pt-2.5">
             <span className="font-sans text-[14px] text-cream font-medium">Total</span>
@@ -178,7 +178,7 @@ function EventMiniCard({ event, guests }: { event: BookingEventData; guests: num
                 lineHeight: 1,
               }}
             >
-              {fmtRupee(total)}
+              {fmtRupee(totalAmount)}
             </span>
           </div>
         </div>
@@ -284,6 +284,7 @@ function Step2Payment() {
   const {
     event,
     guestCount,
+    bookingTotals,
     paymentMethod,
     isProcessing,
     errorMessage,
@@ -297,7 +298,8 @@ function Step2Payment() {
 
   const price = unitPrice(event.price);
   const isFree = price === 0;
-  const total = price * guestCount + Math.round(price * guestCount * 0.1);
+  // Once the booking exists, the server's total is what Razorpay charges.
+  const total = (bookingTotals ?? estimateBookingTotals(price, guestCount)).totalAmount;
 
   const canSubmit = !isProcessing && terms && paymentMethod === 'instant';
 
@@ -428,15 +430,15 @@ function Step2Payment() {
 
 function Step3Confirmation() {
   useConfetti();
-  const { event, guestCount, close } = useBookingStore();
+  const { event, guestCount, bookingTotals, close } = useBookingStore();
   const reduced = useReducedMotion();
   if (!event) return null;
 
   const img = event.imageUrl ?? event.image ?? '';
   const date = event.dateShort ?? (typeof event.date === 'string' ? event.date : '');
   const price = unitPrice(event.price);
-  const serviceFee = Math.round(price * guestCount * 0.1);
-  const total = price * guestCount + serviceFee;
+  const { guestCount: paidGuests, totalAmount: total } =
+    bookingTotals ?? estimateBookingTotals(price, guestCount);
 
   async function handleShare() {
     const text = `I'm going to "${event!.title}" on UpSosh! 🎉`;
@@ -499,7 +501,7 @@ function Step3Confirmation() {
           </div>
           {price > 0 && (
             <p className="font-mono text-[11px] text-lime mt-1">
-              {guestCount} guest{guestCount > 1 ? 's' : ''} · {fmtRupee(total)} paid
+              {paidGuests} guest{paidGuests > 1 ? 's' : ''} · {fmtRupee(total)} paid
             </p>
           )}
         </div>
