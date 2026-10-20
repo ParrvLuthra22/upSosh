@@ -27,8 +27,15 @@ const RAZORPAY_TEST_CARD = {
   otp: '123456',
 };
 
-test('signup, book a paid event, pay with a real test card, see the ticket', async ({ page }) => {
-  const uniqueEmail = `pw-e2e-${Date.now()}@example.test`;
+// Seeded "Creator Meetup" price; the server charges price * guests + one flat
+// ₹25 platform fee (backend/src/lib/booking.ts).
+const TICKET_PRICE = 499;
+const PLATFORM_FEE = 25;
+
+for (const guests of [1, 3]) {
+test(`signup, book a paid event for ${guests} guest(s), pay with a real test card, see the ticket`, async ({ page }) => {
+  const expectedTotal = (TICKET_PRICE * guests + PLATFORM_FEE).toLocaleString('en-IN');
+  const uniqueEmail = `pw-e2e-${guests}-${Date.now()}@example.test`;
   const guestName = 'Playwright E2E';
 
   // ── 1. Sign up ────────────────────────────────────────────────────────────
@@ -56,6 +63,11 @@ test('signup, book a paid event, pay with a real test card, see the ticket', asy
   // the filter instead of the event card.
   await page.locator('a[href^="/events/"]', { hasText: 'Creator Meetup' }).first().click();
   await expect(page).toHaveURL(/\/events\//);
+
+  // Pick the guest count on the event page's booking card.
+  for (let i = 1; i < guests; i += 1) {
+    await page.getByRole('button', { name: 'Increase guests' }).click();
+  }
 
   // ── 4. Book now → guest details ──────────────────────────────────────────
   await page.getByRole('button', { name: 'Book now' }).first().click();
@@ -92,7 +104,10 @@ test('signup, book a paid event, pay with a real test card, see the ticket', asy
   // Same pattern as the signup checkbox, but here the toggle is a bare
   // <div onClick> with no button role at all.
   await dialog.locator('label', { hasText: 'I agree to the' }).locator('div').first().click();
-  await dialog.getByRole('button', { name: /^Pay ₹/ }).click();
+  // The button shows the same total the server will charge.
+  const payButton = dialog.getByRole('button', { name: new RegExp(`^Pay ₹${expectedTotal}$`) });
+  await expect(payButton).toBeVisible();
+  await payButton.click();
 
   // ── 6. Razorpay's real test-mode checkout (iframe) ───────────────────────
   // The checkout iframe has no `name` attribute — select by its src instead
@@ -110,6 +125,11 @@ test('signup, book a paid event, pay with a real test card, see the ticket', asy
   // intercepts pointer events") rather than erroring outright.
   const mobileInput = razorpayFrame.getByPlaceholder('Mobile number');
   await mobileInput.waitFor({ timeout: 15000 });
+  // Razorpay's own checkout shows the amount it is about to charge — it must
+  // equal the total on our screen.
+  // (Read from the checkout's own summary element; Razorpay keeps the plain
+  // amount there even while its styled copy is hidden.)
+  await expect(razorpayFrame.getByTestId('summary-amount-fallback')).toHaveText(`₹${expectedTotal}`);
   await mobileInput.fill('9625789901');
   await razorpayFrame.getByRole('button', { name: 'Continue' }).click();
 
@@ -146,6 +166,7 @@ test('signup, book a paid event, pay with a real test card, see the ticket', asy
   // ── 7. In-modal confirmation ──────────────────────────────────────────────
   await expect(page.getByText("You're in.")).toBeVisible({ timeout: 20000 });
   await expect(page.getByText('Your spot is confirmed.')).toBeVisible();
+  await expect(page.getByText(`${guests} guest${guests > 1 ? 's' : ''} · ₹${expectedTotal} paid`)).toBeVisible();
   await page.getByRole('button', { name: 'Done' }).click();
 
   // ── 8. See the ticket in /my-bookings ─────────────────────────────────────
@@ -154,3 +175,4 @@ test('signup, book a paid event, pay with a real test card, see the ticket', asy
   await expect(page.getByText('CONFIRMED')).toBeVisible();
   await expect(page.getByText(/paid/)).toBeVisible();
 });
+}
