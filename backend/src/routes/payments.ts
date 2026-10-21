@@ -24,6 +24,12 @@ function errorMessage(err: unknown): string {
 
 const router = Router();
 
+// The webhook has its own router so index.ts can mount it ahead of the general
+// rate limiter: Razorpay's deliveries (and its retries) must never be refused
+// because a client from the same address used up the shared limit. It is
+// authenticated by its HMAC signature, not by who is calling.
+export const webhookRouter = Router();
+
 export function getRazorpayClient(): Razorpay {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -257,7 +263,7 @@ interface RazorpayWebhookPayload {
 // Razorpay signs the exact bytes it sent, and re-serializing a parsed object
 // with JSON.stringify does not reliably reproduce them (whitespace, unicode
 // escaping), which silently broke this check even with the correct secret.
-router.post('/webhook', async (req: Request, res: Response): Promise<Response> => {
+webhookRouter.post('/webhook', async (req: Request, res: Response): Promise<Response> => {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers['x-razorpay-signature'];
