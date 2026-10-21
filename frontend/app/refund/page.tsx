@@ -10,9 +10,9 @@ export default function RefundPage() {
             content: (
                 <>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim">
-                        <li>All refunds are governed primarily by the Host's refund policy, as displayed on the event page.</li>
+                        <li>One refund rule applies to every event when you cancel your own booking (section 2). If a Host cancels an event, you always get everything back (section 3).</li>
                         <li>UpSosh acts only as a ticketing and discovery platform, not an event organizer.</li>
-                        <li>Users must review the Host's refund conditions before booking.</li>
+                        <li>Dates and times on this page are in Indian Standard Time (IST).</li>
                         <li>All refund amounts will be returned using the original mode of payment unless otherwise specified.</li>
                     </ul>
                 </>
@@ -24,25 +24,18 @@ export default function RefundPage() {
             content: (
                 <>
                     <p className="text-cream-dim mb-4">
-                        If a User cancels their booking:
-                    </p>
-                    <p className="text-cream-dim mb-3">
-                        ✔ Refund eligibility depends entirely on the Host's policy.
-                    </p>
-                    <p className="text-cream-dim mb-3">
-                        Hosts may choose one of the following for their event:
+                        If you cancel your own booking, the day of the event decides whether you get your money back. The event day is the calendar day of the event in India (IST).
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li><strong>No Refunds</strong></li>
-                        <li><strong>Partial Refunds</strong> (e.g., 50% refund up to 24 hours before)</li>
-                        <li><strong>Full Refunds</strong> (within a specific time frame)</li>
-                        <li><strong>Replacement/Reschedule Only</strong></li>
+                        <li><strong>Before the event day:</strong> full refund of the ticket price and the flat ₹25 service fee. You can cancel any time up to midnight (00:00 IST) at the start of the event day. For an event on 15 November, that is the moment 15 November begins.</li>
+                        <li><strong>On the event day or later:</strong> you can still cancel, which frees your spot, but no refund is given.</li>
+                        <li><strong>After the event has ended:</strong> no refund.</li>
                     </ul>
                     <p className="text-cream-dim mb-3">
-                        The Host's chosen policy will be clearly shown on the event page and during checkout.
+                        The cancel screen tells you, before you confirm, whether you will get a refund.
                     </p>
                     <p className="text-cream-dim">
-                        ⚠️ If the Host has selected "No Refund", UpSosh cannot override this rule.
+                        Free bookings have nothing to refund.
                     </p>
                 </>
             ),
@@ -111,14 +104,10 @@ export default function RefundPage() {
                         <li>Experiences technical delays</li>
                     </ul>
                     <p className="text-cream-dim mb-3">
-                        Refunds depend on:
+                        These are not covered by the automatic refund rules above. Contact support and we will look at your case with the Host, taking into account how much the event was disrupted.
                     </p>
-                    <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li>✅ The Host's refund rules</li>
-                        <li>✅ The extent of disruption</li>
-                    </ul>
                     <p className="text-cream-dim">
-                        UpSosh may mediate disputes but final decisions rest with the Host, unless the Host's actions violate UpSosh's guidelines.
+                        UpSosh may mediate disputes, but a refund is not guaranteed in these cases.
                     </p>
                 </>
             ),
@@ -135,7 +124,7 @@ export default function RefundPage() {
                         ❌ No refund will be provided
                     </p>
                     <p className="text-cream-dim">
-                        unless the Host's policy explicitly allows for it. This is standard across all ticketing platforms.
+                        This also applies if you cancel on or after the event day (section 2). This is standard across ticketing platforms.
                     </p>
                 </>
             ),
@@ -223,7 +212,7 @@ export default function RefundPage() {
                         Hosts must:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li>Clearly define their refund policy</li>
+                        <li>Honour the cancellation and refund rules on this page</li>
                         <li>Resolve user disputes honestly</li>
                         <li>Respond promptly to refund requests</li>
                         <li>Not impose hidden charges at the venue</li>
@@ -249,12 +238,11 @@ export default function RefundPage() {
                         UpSosh service fees:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li>May be non-refundable for user-initiated cancellations</li>
-                        <li>Are fully refundable for Host-initiated cancellations</li>
+                        <li>Are a flat ₹25 per booking, however many tickets it has</li>
+                        <li>Are refunded in full when you cancel before the event day</li>
+                        <li>Are not refunded when no refund is given (event day or later)</li>
+                        <li>Are fully refunded when a Host cancels the event</li>
                     </ul>
-                    <p className="text-cream-dim">
-                        This will be stated during checkout.
-                    </p>
                 </>
             ),
         },
@@ -333,7 +321,7 @@ export default function RefundPage() {
                         Refund & Cancellation Policy
                     </h1>
                     <p className="text-xl text-gray-600 mb-4">
-                        Last Updated: 24th November 2025
+                        Last Updated: 21st October 2026
                     </p>
                     <p className="text-lg text-gray-600">
                         This Refund & Cancellation Policy explains how refunds, cancellations, schedule changes, and ticket disputes are handled on UpSosh.
