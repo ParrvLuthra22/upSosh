@@ -79,25 +79,31 @@ export default function IdentityPage() {
   const [selfieUrl, setSelfieUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [uploadError, setUploadError] = useState('');
   const canContinue = idUrl !== '' && selfieUrl !== '';
 
+  // Identity documents go to the private upload endpoint. It returns a
+  // reference (not a link) that only an admin can turn into a short-lived
+  // view link. On failure this returns '' so "Continue" stays disabled; the old
+  // fallback submitted a local blob: URL that pointed at nothing.
   async function uploadFile(file: File): Promise<string> {
-    const objectUrl = URL.createObjectURL(file);
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: form });
+      const res = await fetch('/api/uploads/private', { method: 'POST', body: form, credentials: 'include' });
       if (res.ok) {
-        const { url } = await res.json();
-        return url;
+        const { ref } = await res.json();
+        return ref;
       }
     } catch {}
-    return objectUrl;
+    setUploadError('We could not upload that file. Please try again.');
+    return '';
   }
 
   async function handleIdFile(file: File) {
     const preview = URL.createObjectURL(file);
     setIdPreview(preview);
+    setUploadError('');
     const url = await uploadFile(file);
     setIdUrl(url);
   }
@@ -105,6 +111,7 @@ export default function IdentityPage() {
   async function handleSelfieFile(file: File) {
     const preview = URL.createObjectURL(file);
     setSelfiePreview(preview);
+    setUploadError('');
     const url = await uploadFile(file);
     setSelfieUrl(url);
   }
@@ -166,6 +173,10 @@ export default function IdentityPage() {
       </p>
 
       {/* Continue */}
+      {uploadError && (
+        <p role="alert" className="font-mono text-[12px] text-coral">{uploadError}</p>
+      )}
+
       <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/onboarding/step-5')}
