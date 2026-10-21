@@ -23,6 +23,43 @@ import '../lib/loadEnv';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
+// ─── Safety guard ─────────────────────────────────────────────────────────────
+// This script creates an admin account with a password that is public (it is in
+// this file). It must never run against a real database by accident — backend/.env
+// can point at one, and loadEnv() above reads it.
+function assertSafeToSeed(): void {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[Seed] Refusing to run: NODE_ENV=production. This script creates a known-password admin account.');
+    process.exit(1);
+  }
+
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    console.error('[Seed] Refusing to run: DATABASE_URL is not set.');
+    process.exit(1);
+  }
+
+  let host: string;
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    console.error('[Seed] Refusing to run: DATABASE_URL could not be parsed.');
+    process.exit(1);
+  }
+
+  const isLocal = host === 'localhost' || host === '127.0.0.1';
+  if (!isLocal && process.env.SEED_ALLOW_REMOTE !== 'true') {
+    // Host only — never print the credentials.
+    console.error(
+      `[Seed] Refusing to run: database host "${host}" is not localhost/127.0.0.1.\n` +
+      '       Seeding creates a known-password admin account. If you really mean it\n' +
+      '       (e.g. a disposable staging database), set SEED_ALLOW_REMOTE=true.',
+    );
+    process.exit(1);
+  }
+}
+assertSafeToSeed();
+
 // A dedicated client rather than lib/prisma — that one enables full query logging
 // when NODE_ENV=development, which buries the credentials this script prints.
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
