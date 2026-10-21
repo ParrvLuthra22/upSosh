@@ -80,7 +80,7 @@ describe('AUTH-2: production environment validation', () => {
     DATABASE_URL: 'postgresql://user:pw@db.example.test:5432/app',
     JWT_SECRET: 'k3J9x2Qm7Vb1Zp4Rt8Yw6Nc0Ha5Ld3Fe9Gs2Uo7',
     FRONTEND_URL: 'https://www.example.test',
-    RAZORPAY_KEY_ID: 'rzp_live_AbCdEf123456',
+    RAZORPAY_KEY_ID: 'rzp_live_example_not_real',
     RAZORPAY_KEY_SECRET: 'rzp-secret-value-123456',
     RAZORPAY_WEBHOOK_SECRET: 'whsec-value-abcdef-123456',
   };

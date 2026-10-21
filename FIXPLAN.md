@@ -687,3 +687,12 @@ Tests: `backend/tests/hardening.test.ts`, `email-escaping.test.ts`, `google-sign
 - [x] **Rate limiter order** — `/health` and the Razorpay webhook are served before the general rate limiter.
 - [ ] **AUTH-4 follow-up** — There is no email-verification flow. Once one exists, linking can be allowed for verified accounts. A Google sign-in whose Google id differs from the one already stored for that email is still accepted.
 
+## Release batch — 2026-10-21 (branch `release/hardening-batch`, from `main`)
+
+Merged `fix/refunds-and-cancel` (which carries `chore/leftovers` and `fix/payment-highs`), then `fix/hardening`.
+
+- [x] **Merge** — One real conflict, `backend/src/index.ts`: `/health` and the raw-body Razorpay webhook now sit above `generalLimiter`; the limiters come from `lib/rateLimit.ts` (strict limiter on sign-in/sign-up/password/Google routes only, `/me` has its own); `TRUST_PROXY_HOPS` is read at startup; `validateEnv` runs at boot in production only. The duplicate inline limiters from the hardening branch were dropped. `FIXPLAN.md` conflicted only by both sides adding sections; both kept.
+- [x] **Emails and notifications** — No new emails were added on the refund branches and there is still one booking-creation path (`eventId` required). Notifications are plain text rendered as text, so they are length-bounded rather than HTML-escaped (`createNotification` in `lib/notify.ts`); the host-cancellation notice now uses it.
+- [x] **Migrations** — No schema or migration differences from `main` (the guestCount migration is already there). Applied to an empty local database and to one with sample bookings (existing rows got `guestCount = 1`); no drift against `schema.prisma`.
+- [ ] **Follow-up** — `components/host/AIAssistant.tsx` renders model output with `dangerouslySetInnerHTML` (in the orphaned `/host` tree, P4-61); delete it or sanitise.
+
