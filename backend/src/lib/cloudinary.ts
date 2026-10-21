@@ -39,3 +39,59 @@ export function uploadBufferToCloudinary(
     stream.end(buffer);
   });
 }
+
+// ─── Private identity documents ───────────────────────────────────────────────
+//
+// Host ID photos and selfies are uploaded with type "authenticated": Cloudinary
+// refuses to serve them at any plain URL, so nothing public exists to leak. The
+// database keeps only a reference ("private:<public_id>.<format>"); an admin
+// reads a document through a signed, expiring download link (privateDocumentUrl).
+
+const PRIVATE_REF = /^private:(.+)\.([A-Za-z0-9]+)$/;
+
+export function isPrivateRef(value: string): boolean {
+  return PRIVATE_REF.test(value);
+}
+
+export async function uploadPrivateDocument(buffer: Buffer): Promise<{ ref: string }> {
+  const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'upsosh-private', type: 'authenticated', resource_type: 'image', unique_filename: true, use_filename: false },
+      (error?: UploadApiErrorResponse, res?: UploadApiResponse) => {
+        if (error || !res) reject(error ?? new Error('Cloudinary upload returned no result'));
+        else resolve(res);
+      },
+    );
+    stream.end(buffer);
+  });
+  return { ref: `private:${result.public_id}.${result.format}` };
+}
+
+/** A signed download link for a private document that stops working at `expiresAt` (Unix seconds). */
+export function privateDocumentUrl(ref: string, expiresAt: number): string {
+  const match = PRIVATE_REF.exec(ref);
+  if (!match) throw new Error('Not a private document reference');
+  return cloudinary.utils.private_download_url(match[1], match[2], {
+    type: 'authenticated',
+    resource_type: 'image',
+    expires_at: expiresAt,
+  });
+}
+
+/**
+ * Deletes a stored document: a private reference, or a legacy public
+ * Cloudinary URL saved before documents were private. Anything else (for
+ * example a browser blob: URL) has nothing stored, so there is nothing to do.
+ * "Not found" counts as deleted.
+ */
+export async function destroyDocument(refOrUrl: string): Promise<void> {
+  const priv = PRIVATE_REF.exec(refOrUrl);
+  if (priv) {
+    await cloudinary.uploader.destroy(priv[1], { type: 'authenticated', resource_type: 'image', invalidate: true });
+    return;
+  }
+  const legacy = /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?(.+)\.[A-Za-z0-9]+(?:\?.*)?$/.exec(refOrUrl);
+  if (legacy) {
+    await cloudinary.uploader.destroy(legacy[1], { type: 'upload', resource_type: 'image', invalidate: true });
+  }
+}
