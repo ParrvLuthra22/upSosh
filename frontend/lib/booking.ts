@@ -23,6 +23,8 @@ export interface BookingTotals {
 }
 
 export function estimateBookingTotals(unitPrice: number, guestCount: number): BookingTotals {
+  // A free event is never charged: no price, no fee (mirrors the server).
+  if (unitPrice === 0) return { guestCount, ticketPrice: 0, platformFee: 0, totalAmount: 0 };
   const ticketPrice = unitPrice * guestCount;
   return {
     guestCount,
@@ -31,3 +33,21 @@ export function estimateBookingTotals(unitPrice: number, guestCount: number): Bo
     totalAmount: ticketPrice + PLATFORM_FEE_FLAT,
   };
 }
+
+/**
+ * What a customer gets back for cancelling their own booking now. Mirrors
+ * userRefundDecision in backend/src/lib/refundPolicy.ts (keep in sync): a full
+ * refund until 00:00 India time on the event's calendar day, none from then on.
+ * The server decides; this only tells the customer before they confirm.
+ */
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export type CancelRefund = 'full' | 'event_day' | 'event_ended';
+
+export function cancelRefund(eventDate: Date, now: Date = new Date()): CancelRefund {
+  const cutoff = Math.floor((eventDate.getTime() + IST_OFFSET_MS) / DAY_MS) * DAY_MS - IST_OFFSET_MS;
+  if (now.getTime() < cutoff) return 'full';
+  return now.getTime() < cutoff + DAY_MS ? 'event_day' : 'event_ended';
+}
+

@@ -6,6 +6,8 @@ import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { createEventSchema, updateEventSchema, announceSchema, checkinSchema } from '../lib/schemas';
 import { sendEventAnnouncement } from '../lib/email';
+import { cancelEventBookings } from '../lib/refunds';
+import { getRazorpayClient } from './payments';
 
 const router = Router();
 
@@ -212,6 +214,8 @@ router.post('/', requireAuth, validateBody(createEventSchema), async (req: AuthR
     // which is what every authorization check actually reads.
     // Unifying Host and User is tracked as P4-39.
     const data = req.body as z.infer<typeof createEventSchema>;
+    // isSuperhost is a badge only an admin can grant, whatever the client sent.
+    if (user.role !== 'admin') data.isSuperhost = false;
     const slug = buildSlug(data.title);
 
     const event = await prisma.event.create({
@@ -240,6 +244,9 @@ router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: Aut
     }
 
     const { tags, ...rest } = req.body as z.infer<typeof updateEventSchema>;
+    // Only an admin can grant or clear the superhost badge; for anyone else
+    // the field is dropped so the stored value is left as it is.
+    if (user.role !== 'admin') delete rest.isSuperhost;
     const updateData: Prisma.EventUpdateInput = { ...rest };
     if (tags !== undefined) {
       updateData.tags = Array.isArray(tags) ? JSON.stringify(tags) : tags;
@@ -250,6 +257,14 @@ router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: Aut
       data: updateData,
       include: { host: true },
     });
+
+    // Cancelling through an edit refunds the attendees just like DELETE does.
+    // Failures are logged and left for a re-run; the response is unchanged.
+    if (event.status === 'cancelled') {
+      await cancelEventBookings(getRazorpayClient, id).catch((err: unknown) => {
+        console.error(`PUT /events/:id refunds for event ${id} failed: ${errorMessage(err)}`);
+      });
+    }
 
     return res.json(formatEvent(event));
   } catch (err: unknown) {
@@ -271,12 +286,20 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Prom
       return res.status(403).json({ message: 'You do not have permission to delete this event' });
     }
 
+    // Close the event first so nothing new can be booked or paid, then refund
+    // and release every booking. Running DELETE again resumes what is left.
     await prisma.event.update({
       where: { id },
       data: { status: 'cancelled' },
     });
+    const refunds = await cancelEventBookings(getRazorpayClient, id);
 
-    return res.json({ message: 'Event cancelled successfully' });
+    return res.json({
+      message: refunds.remaining === 0
+        ? 'Event cancelled successfully'
+        : 'Event cancelled, but some refunds are still outstanding — run the cancellation again to finish them',
+      refunds,
+    });
   } catch (err: unknown) {
     console.error('DELETE /events/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });

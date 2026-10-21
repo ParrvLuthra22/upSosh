@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { api, Event } from '@/lib/api';
+import { api, getApiUrl, Event } from '@/lib/api';
 import { validateImageUrl } from '@/lib/imageHosts';
+import { useAuth } from '@/store/authStore';
 
 interface HostEventFormProps {
     eventToEdit?: Event | null;
@@ -22,6 +23,8 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', 
         menu: [] as string[],
     });
+    const { user } = useAuth();
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [menuItem, setMenuItem] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imageUrlError, setImageUrlError] = useState<string | null>(null);
@@ -50,28 +53,41 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Same flow as app/host/events/new/page.tsx: POST the file to /api/uploads
+    // (multer + Cloudinary) and keep only the returned URL in the form, instead
+    // of embedding the image as a base64 data URL in the event payload.
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image size should be less than 5MB');
-                return;
-            }
+        e.target.value = '';
+        if (!file) return;
 
-            
-            if (!file.type.startsWith('image/')) {
-                alert('Please upload an image file');
-                return;
-            }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            return;
+        }
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file');
+            return;
+        }
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setFormData((prev) => ({ ...prev, image: base64String }));
-                setImagePreview(base64String);
-            };
-            reader.readAsDataURL(file);
+        setUploadingImage(true);
+        try {
+            const body = new FormData();
+            body.append('file', file);
+            const res = await fetch(`${getApiUrl()}/api/uploads`, {
+                method: 'POST',
+                credentials: 'include',
+                body,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Upload failed');
+            setFormData((prev) => ({ ...prev, image: data.url }));
+            setImagePreview(data.url);
+            setImageUrlError(null);
+        } catch (err: any) {
+            alert(err.message ?? 'Image upload failed');
+        } finally {
+            setUploadingImage(false);
         }
     };
 
@@ -105,18 +121,15 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 if (onEventSaved) onEventSaved();
             } else {
                 
-                const userData = localStorage.getItem('userData');
-                if (!userData) {
+                if (!user) {
                     throw new Error('Please log in to create events');
                 }
 
-                const user = JSON.parse(userData);
-
+                // The server sets ownership from the session; hostId and
+                // isSuperhost are not accepted from the client.
                 const eventData = {
                     ...formData,
-                    hostId: user.id,
                     tags: [formData.type, 'live', 'event'],
-                    isSuperhost: user.hostVerified || false,
                 };
 
                 console.log('Submitting event data:', eventData);
@@ -270,12 +283,13 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                         <div className="flex gap-4">
                             <label className="flex-1 cursor-pointer">
                                 <div className="w-full py-3 px-4 bg-surface-2 text-cream font-medium rounded-xl hover:bg-lime hover:text-white transition-all text-center">
-                                    📸 Upload Image
+                                    {uploadingImage ? 'Uploading…' : '📸 Upload Image'}
                                 </div>
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageUpload}
+                                    disabled={uploadingImage}
                                     className="hidden"
                                 />
                             </label>

@@ -61,6 +61,7 @@ interface CreateEventOptions {
   capacity?: number;
   attendees?: number;
   status?: EventStatus;
+  date?: Date;
 }
 
 export async function createEvent(options: CreateEventOptions) {
@@ -69,7 +70,7 @@ export async function createEvent(options: CreateEventOptions) {
       title: unique('Test Event'),
       type: 'Meetup',
       category: 'Meetup',
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      date: options.date ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       time: '18:00',
       venue: 'Test Venue',
       price: options.price ?? 0,

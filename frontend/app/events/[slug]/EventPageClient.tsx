@@ -59,30 +59,10 @@ const DEFAULT_EXTENDED: ExtendedData = {
   ],
 };
 
-const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedData>>> = {
-  'evt-001': {
-    description: `Lodhi Garden at dawn is something else. The light filters through the Mughal domes while the city is still waking up — and you're moving through it with a group of people who chose to be somewhere beautiful instead of in bed.\n\nThis run club is for all paces. We keep together as a group, no one gets left behind, and we finish at our favourite chai spot nearby.`,
-    included: [
-      'Warm-up led by the host',
-      'Group run with front and back pacers',
-      'Chai and snacks at the end',
-      'Digital run certificate',
-      'Access to the Delhi Runners WhatsApp group',
-    ],
-  },
-  'evt-004': {
-    description: `The Bombay Canteen is one of those rare spaces that earns its reputation quietly. We've reserved the private dining room for a gathering of 12 — founders, operators, and a few interesting wildcards.\n\nThis is not a networking dinner. There's no agenda, no pitches, no slide decks. Just good food, sharp conversation, and the kind of candour you only get at a small table.`,
-    included: [
-      '5-course curated menu by Chef Thomas Zacharias',
-      'Wine and cocktail pairings',
-      'Private dining room (no other guests)',
-      'Curated guest list — vetted by the host',
-    ],
-  },
-};
-
-function getExtended(id: string): ExtendedData {
-  return { ...DEFAULT_EXTENDED, ...(EXTENDED_OVERRIDES[id] ?? {}) };
+// Every event uses the same generic "what's included" copy; there are no
+// per-event overrides (the old ones described seeded demo events).
+function getExtended(_id: string): ExtendedData {
+  return DEFAULT_EXTENDED;
 }
 
 function apiEventToMock(raw: any): MockEvent {

@@ -278,6 +278,32 @@ function Step1Review() {
   );
 }
 
+/**
+ * What to tell the customer when a booking step fails. Only the wording
+ * depends on the HTTP status; whether a payment happened is the store's call.
+ *  - after payment: the money may have left their account, so say so plainly
+ *    (a 409 carries the server's own "refunded" wording, which we keep)
+ *  - 400: the request was refused, usually with a specific reason
+ *  - 409: the booking changed under them
+ *  - 502: our payment provider failed before they paid
+ */
+function bookingErrorText(message: string, status: number | null, afterPayment: boolean): string {
+  if (afterPayment && status !== 409) {
+    return 'Your payment was received but we could not confirm your booking. If you were charged you will be refunded automatically.';
+  }
+  if (status === 400) return message || 'Please check your details and try again.';
+  if (status === 409) return message || 'This booking changed while you were paying. Please try again.';
+  if (status === 502) {
+    return 'Our payment provider could not be reached. You have not been charged. Please try again in a moment.';
+  }
+  return message;
+}
+
+/** The cases where the customer may need a person to look at their payment. */
+function showContactLink(status: number | null, afterPayment: boolean): boolean {
+  return afterPayment || status === 502;
+}
+
 // ─── Step 2 — Payment ─────────────────────────────────────────────────────────
 
 function Step2Payment() {
@@ -288,6 +314,8 @@ function Step2Payment() {
     paymentMethod,
     isProcessing,
     errorMessage,
+    errorStatus,
+    errorAfterPayment,
     setPaymentMethod,
     back,
     submit,
@@ -382,7 +410,13 @@ function Step2Payment() {
               exit={{ opacity: 0 }}
               className="font-mono text-[12px] text-coral mt-4"
             >
-              {errorMessage}
+              {bookingErrorText(errorMessage, errorStatus, errorAfterPayment)}
+              {showContactLink(errorStatus, errorAfterPayment) && (
+                <>
+                  {' '}
+                  <a href="/contact" className="underline">Contact us</a>
+                </>
+              )}
             </motion.p>
           )}
         </AnimatePresence>

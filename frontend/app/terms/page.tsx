@@ -234,7 +234,7 @@ export default function TermsPage() {
                     <h3 className="text-xl font-bold text-green-600 mb-4">6.2 Refunds & FMC</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Host-cancelled events → Users get 100% full refund (FMC does not apply).</li>
-                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> User-cancelled events → Refund amount depends on Host Refund Policy.</li>
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> If you cancel your own booking, the same refund rule applies to every event (see section 8).</li>
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> No retroactive FMC changes are allowed.</li>
                     </ul>
                   </div>
@@ -291,31 +291,26 @@ export default function TermsPage() {
               <section className="glass-card" id="cancellations">
                 <h2 className="text-3xl font-bold text-cream mb-6">8. Cancellations, Refunds & Rescheduling</h2>
                 
-                <p className="mb-4">Refund rules follow the Host's refund policy, except when:</p>
+                <p className="mb-4">The same refund rules apply to every event. The full wording is on the Refund &amp; Cancellation Policy page. In short:</p>
                 <ul className="space-y-2 mb-6">
-                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> The event is illegal</li>
-                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> The venue is unsafe</li>
-                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> The event violates platform policies</li>
-                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> Fraud or misconduct occurs</li>
-                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> Authorities intervene</li>
+                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> If a Host cancels the event, you get a full refund.</li>
+                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> If you cancel before the event day starts (00:00 India time on the day of the event), you get a full refund of the ticket price and the flat service fee.</li>
+                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> If you cancel on the event day or later, your booking is cancelled but there is no refund. There is also no refund once the event has ended.</li>
+                  <li className="flex items-start"><span className="mr-3 font-bold">•</span> For anything else, such as a rescheduled or disrupted event or a safety concern, contact us. We will look at it with the Host, but we cannot promise an outcome.</li>
                 </ul>
-
-                <div className="bg-coral/10 border-l-4 border-coral/30 p-4 rounded mb-6">
-                  <p className="font-semibold">upSosh may override the Host refund policy in such cases.</p>
-                </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-emerald/10 p-4 rounded-lg border-2 border-emerald/30">
                     <h4 className="font-bold mb-2">Host Cancels</h4>
-                    <p className="text-sm">Full refund to User</p>
+                    <p className="text-sm">Full refund</p>
                   </div>
                   <div className="bg-coral/10 p-4 rounded-lg border-2 border-coral/30">
-                    <h4 className="font-bold mb-2">User Cancels</h4>
-                    <p className="text-sm">Follow Host's stated policy</p>
+                    <h4 className="font-bold mb-2">You Cancel</h4>
+                    <p className="text-sm">Full refund before the event day; no refund from the event day on</p>
                   </div>
                   <div className="bg-lime/10 p-4 rounded-lg border-2 border-lime/30">
-                    <h4 className="font-bold mb-2">Reschedule</h4>
-                    <p className="text-sm">User may accept or request refund</p>
+                    <h4 className="font-bold mb-2">Reschedule or other issues</h4>
+                    <p className="text-sm">Contact us; no outcome is promised</p>
                   </div>
                 </div>
               </section>
