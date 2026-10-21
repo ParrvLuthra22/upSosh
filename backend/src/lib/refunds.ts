@@ -209,3 +209,86 @@ export async function applyRefundProcessed(
     return recorded.count > 0 ? ('recorded' as const) : ('ignored' as const);
   });
 }
+
+export interface CancelEventSummary {
+  processed: number;
+  refunded: number;
+  failed: number;
+  /** Bookings still to do: refund failed, being retried elsewhere, or not reached before the time budget ran out. */
+  remaining: number;
+}
+
+/**
+ * Cancels every live booking on an event and refunds the paid ones, one
+ * booking at a time through cancelBooking (so each is claimed, its seats
+ * released once, and the refund requested outside any transaction). Safe to
+ * run again: a booking already settled is no longer selected, and one left
+ * 'cancelled' with its payment still held is picked up and only refunded.
+ *
+ * Failures are logged by cancelBooking with the booking id only. Attendees
+ * get an in-app notification once their booking is closed out (not while a
+ * refund is still owed — the re-run notifies when it goes through).
+ */
+export async function cancelEventBookings(
+  getRazorpay: () => Razorpay,
+  eventId: string,
+  options: { budgetMs?: number } = {},
+): Promise<CancelEventSummary> {
+  const deadline = Date.now() + (options.budgetMs ?? 20_000);
+
+  const [event, bookings] = await Promise.all([
+    prisma.event.findUnique({ where: { id: eventId }, select: { title: true } }),
+    prisma.booking.findMany({
+      where: {
+        eventId,
+        OR: [
+          { status: { in: ['pending', 'confirmed'] } },
+          { status: 'cancelled', paymentStatus: 'paid', paymentMethod: 'razorpay', paymentId: { not: null } },
+        ],
+      },
+      select: { id: true, userId: true },
+      orderBy: { createdAt: 'asc' },
+    }),
+  ]);
+  const title = event?.title ?? 'your event';
+
+  const summary: CancelEventSummary = { processed: 0, refunded: 0, failed: 0, remaining: 0 };
+  for (const [i, b] of bookings.entries()) {
+    if (Date.now() >= deadline) {
+      summary.remaining += bookings.length - i;
+      break;
+    }
+    let result: CancelOutcome;
+    try {
+      result = await cancelBooking(getRazorpay, b.id);
+    } catch (err: unknown) {
+      console.error(`[Refunds] Cancelling booking ${b.id} failed: ${describeRazorpayError(err)}`);
+      summary.failed += 1;
+      summary.remaining += 1;
+      continue;
+    }
+
+    if (result.outcome === 'in_progress') {
+      summary.remaining += 1;
+      continue;
+    }
+    if (result.outcome !== 'cancelled') continue;
+    if (result.refund === 'failed') {
+      summary.failed += 1;
+      summary.remaining += 1;
+      continue;
+    }
+
+    summary.processed += 1;
+    if (result.refund === 'done') summary.refunded += 1;
+    const body = result.refund === 'done'
+      ? `"${title}" was cancelled by the host. Your payment has been refunded in full and should reach you in 2–5 business days.`
+      : `"${title}" was cancelled by the host. Your booking has been cancelled.`;
+    try {
+      await prisma.notification.create({ data: { userId: b.userId, type: 'booking', title: 'Event cancelled', body } });
+    } catch {
+      console.error(`[Notifications] create failed for booking ${b.id}`);
+    }
+  }
+  return summary;
+}

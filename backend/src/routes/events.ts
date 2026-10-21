@@ -6,6 +6,8 @@ import { requireAuth, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { createEventSchema, updateEventSchema, announceSchema, checkinSchema } from '../lib/schemas';
 import { sendEventAnnouncement } from '../lib/email';
+import { cancelEventBookings } from '../lib/refunds';
+import { getRazorpayClient } from './payments';
 
 const router = Router();
 
@@ -251,6 +253,14 @@ router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: Aut
       include: { host: true },
     });
 
+    // Cancelling through an edit refunds the attendees just like DELETE does.
+    // Failures are logged and left for a re-run; the response is unchanged.
+    if (event.status === 'cancelled') {
+      await cancelEventBookings(getRazorpayClient, id).catch((err: unknown) => {
+        console.error(`PUT /events/:id refunds for event ${id} failed: ${errorMessage(err)}`);
+      });
+    }
+
     return res.json(formatEvent(event));
   } catch (err: unknown) {
     console.error('PUT /events/:id error:', errorMessage(err));
@@ -271,12 +281,20 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Prom
       return res.status(403).json({ message: 'You do not have permission to delete this event' });
     }
 
+    // Close the event first so nothing new can be booked or paid, then refund
+    // and release every booking. Running DELETE again resumes what is left.
     await prisma.event.update({
       where: { id },
       data: { status: 'cancelled' },
     });
+    const refunds = await cancelEventBookings(getRazorpayClient, id);
 
-    return res.json({ message: 'Event cancelled successfully' });
+    return res.json({
+      message: refunds.remaining === 0
+        ? 'Event cancelled successfully'
+        : 'Event cancelled, but some refunds are still outstanding — run the cancellation again to finish them',
+      refunds,
+    });
   } catch (err: unknown) {
     console.error('DELETE /events/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });

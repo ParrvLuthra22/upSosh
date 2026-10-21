@@ -8,6 +8,8 @@ import { validateBody } from '../middleware/validate';
 import { updateProfileSchema } from '../lib/schemas';
 import { sanitizeUser } from '../lib/sanitizeUser';
 import { imageUpload, isCloudinaryConfigured, uploadBufferToCloudinary } from '../lib/cloudinary';
+import { cancelBooking } from '../lib/refunds';
+import { getRazorpayClient } from './payments';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -73,30 +75,35 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
   try {
     const userId = req.user!.id;
 
+    // Refund and release every live booking first, one at a time and outside
+    // any transaction. If one refund cannot be completed the account is left
+    // as it is, so signing in and deleting again picks up what is left.
     const activeBookings = await prisma.booking.findMany({
-      where: { userId, status: { in: ['pending', 'confirmed'] } },
+      where: {
+        userId,
+        OR: [
+          { status: { in: ['pending', 'confirmed'] } },
+          { status: 'cancelled', paymentStatus: 'paid', paymentMethod: 'razorpay', paymentId: { not: null } },
+        ],
+      },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
     });
+    let unfinished = 0;
+    for (const b of activeBookings) {
+      const result = await cancelBooking(getRazorpayClient, b.id);
+      if (result.outcome === 'in_progress' || (result.outcome === 'cancelled' && result.refund === 'failed')) unfinished += 1;
+    }
+    if (unfinished > 0) {
+      return res.status(502).json({
+        message: 'We could not refund all of your bookings yet, so your account has not been deleted. Please try again in a few minutes or contact support.',
+      });
+    }
 
     const anonEmail = `deleted-${userId}@deleted.upsosh.app`;
     const unusablePassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
 
     await prisma.$transaction(async (tx) => {
-      for (const b of activeBookings) {
-        // Claim the booking first: if a concurrent cancel already moved it to
-        // 'cancelled', count is 0 and its seats are not released a second
-        // time. Only a paid booking ever held seats (an unpaid one's hold is
-        // derived and lapses by itself), and it held guestCount of them.
-        const { count } = await tx.booking.updateMany({
-          where: { id: b.id, status: { in: ['pending', 'confirmed'] } },
-          data: { status: 'cancelled' },
-        });
-        if (count > 0 && b.eventId && b.paymentStatus === 'paid') {
-          await tx.event.update({
-            where: { id: b.eventId },
-            data: { attendees: { decrement: b.guestCount } },
-          });
-        }
-      }
       await tx.user.update({
         where: { id: userId },
         data: {
