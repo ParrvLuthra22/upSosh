@@ -253,3 +253,59 @@ describe('refund.processed from the Razorpay dashboard', () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe('A payment for an event cancelled after the booking was made', () => {
+  async function pendingOnLiveEvent() {
+    const { user: host } = await createUser({ role: 'host', hostStatus: 'verified' });
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, capacity: 10, attendees: 0 });
+    const orderId = `order_${crypto.randomBytes(4).toString('hex')}`;
+    const booking = await createBooking({
+      userId: user.id, eventId: event.id, guestCount: 2, ticketPrice: 1000,
+      status: 'pending', paymentStatus: 'unpaid', razorpayOrderId: orderId,
+    });
+    return { user, event, booking, orderId };
+  }
+  const cancelEvent = (eventId: string) => prisma.event.update({ where: { id: eventId }, data: { status: 'cancelled' } });
+
+  it('/verify refunds it instead of confirming', async () => {
+    const { user, event, booking, orderId } = await pendingOnLiveEvent();
+    await cancelEvent(event.id);
+    const sig = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!).update(`${orderId}|pay_late1`).digest('hex');
+
+    const res = await request(app).post('/api/payments/verify').set(authHeader(user.id))
+      .send({ bookingId: booking.id, razorpay_order_id: orderId, razorpay_payment_id: 'pay_late1', razorpay_signature: sig });
+
+    expect(res.status).toBe(409);
+    expect(res.body.refunded).toBe(true);
+    expect(res.body.message).toMatch(/cancelled/i);
+    expect(paymentsRefund).toHaveBeenCalledTimes(1);
+    expect(await bookingOf(booking.id)).toMatchObject({ paymentStatus: 'refunded', paymentId: 'pay_late1' });
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('the webhook refunds it instead of confirming, and a repeat delivery refunds nothing more', async () => {
+    const { event, booking, orderId } = await pendingOnLiveEvent();
+    await cancelEvent(event.id);
+    const hook = { event: 'payment.captured', payload: { payment: { entity: { id: 'pay_late2', order_id: orderId } } } };
+
+    expect((await signedWebhook(hook)).status).toBe(200);
+    expect((await signedWebhook(hook)).status).toBe(200);
+
+    expect(paymentsRefund).toHaveBeenCalledTimes(1);
+    expect(await bookingOf(booking.id)).toMatchObject({ paymentStatus: 'refunded', paymentId: 'pay_late2' });
+    expect((await bookingOf(booking.id)).status).not.toBe('confirmed');
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('a draft or past event is not treated as cancelled', async () => {
+    const { event, booking, orderId } = await pendingOnLiveEvent();
+    await prisma.event.update({ where: { id: event.id }, data: { status: 'full' } });
+    const hook = { event: 'payment.captured', payload: { payment: { entity: { id: 'pay_ok3', order_id: orderId } } } };
+
+    await signedWebhook(hook);
+
+    expect(paymentsRefund).not.toHaveBeenCalled();
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'confirmed', paymentStatus: 'paid' });
+  });
+});

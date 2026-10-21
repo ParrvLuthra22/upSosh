@@ -6,7 +6,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendBookingConfirmation } from '../lib/email';
 import { notify } from '../lib/notify';
 import { eventClosedReason } from '../lib/booking';
-import { confirmPaidBooking, refundRejectedPayment } from '../lib/confirmPayment';
+import { confirmPaidBooking, refundRejectedPayment, rejectionMessages } from '../lib/confirmPayment';
 import { applyRefundProcessed } from '../lib/refunds';
 
 function errorMessage(err: unknown): string {
@@ -232,14 +232,10 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
         booking.userId,
         'booking',
         'Payment refunded',
-        result.reason === 'cancelled'
-          ? 'Your booking had been cancelled, so your payment was refunded.'
-          : 'The event filled up before your payment completed, so your payment was refunded.',
+        rejectionMessages(result.reason).notification,
       );
       return res.status(409).json({
-        message: result.reason === 'cancelled'
-          ? 'This booking was cancelled, so your payment has been refunded.'
-          : 'This event filled up before your payment completed, so your payment has been refunded.',
+        message: rejectionMessages(result.reason).response,
         refunded: true,
       });
     }
@@ -351,9 +347,7 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
               result.booking.userId,
               'booking',
               'Payment refunded',
-              result.reason === 'cancelled'
-                ? 'Your booking had been cancelled, so your payment was refunded.'
-                : 'The event filled up before your payment completed, so your payment was refunded.',
+              rejectionMessages(result.reason).notification,
             );
           }
 

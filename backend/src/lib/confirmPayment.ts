@@ -10,14 +10,16 @@ import { issueRefund } from './refunds';
  *  - confirmed:       booking is now paid + confirmed and its seats are reserved
  *  - already_settled: it was already paid or refunded (a repeat delivery)
  *  - not_found:       no booking for that order/id
- *  - rejected:        the payment cannot be honoured (booking cancelled, or the
- *                     seats are gone); the caller must refund it
+ *  - rejected:        the payment cannot be honoured (booking or event cancelled,
+ *                     or the seats are gone); the caller must refund it
  */
+export type RejectReason = 'cancelled' | 'no_capacity' | 'event_cancelled';
+
 export type ConfirmOutcome =
   | { outcome: 'confirmed' }
   | { outcome: 'already_settled' }
   | { outcome: 'not_found' }
-  | { outcome: 'rejected'; reason: 'cancelled' | 'no_capacity'; booking: Booking };
+  | { outcome: 'rejected'; reason: RejectReason; booking: Booking };
 
 /**
  * Apply a captured payment to a booking. Shared by POST /verify and the
@@ -27,7 +29,8 @@ export type ConfirmOutcome =
  * POST /api/bookings takes), so seat checks here and in booking creation are
  * serialised and attendees cannot pass capacity whatever order they arrive in.
  *
- *  - cancelled booking                         -> rejected
+ *  - cancelled booking, or the event was
+ *    cancelled after the booking was made      -> rejected
  *  - hold still live (unpaid, pending, young)  -> confirmed: its seats were
  *                                                 counted when it was created
  *  - hold lapsed (expired / failed / old)      -> confirmed only if its seats
@@ -52,7 +55,7 @@ export async function confirmPaidBooking(
       return { outcome: 'already_settled' as const };
     }
 
-    const reject = async (reason: 'cancelled' | 'no_capacity') => {
+    const reject = async (reason: RejectReason) => {
       // Keep the payment id so the refund (and any retry of it) can be made.
       await tx.booking.updateMany({
         where: { id: booking.id, paymentStatus: { in: ['unpaid', 'failed'] } },
@@ -65,6 +68,7 @@ export async function confirmPaidBooking(
 
     if (booking.eventId) {
       const event = await tx.event.findUnique({ where: { id: booking.eventId } });
+      if (event?.status === 'cancelled') return reject('event_cancelled');
       if (event) {
         const holdIsLive =
           booking.status === 'pending' &&
@@ -140,4 +144,25 @@ export async function refundRejectedPayment(
       ...(booking.status === 'cancelled' ? {} : { status: 'refunded' as const }),
     },
   });
+}
+
+/** Customer-facing wording for a payment that was refunded instead of confirmed. */
+export function rejectionMessages(reason: RejectReason): { notification: string; response: string } {
+  switch (reason) {
+    case 'cancelled':
+      return {
+        notification: 'Your booking had been cancelled, so your payment was refunded.',
+        response: 'This booking was cancelled, so your payment has been refunded.',
+      };
+    case 'event_cancelled':
+      return {
+        notification: 'The event was cancelled before your payment completed, so your payment was refunded.',
+        response: 'This event was cancelled before your payment completed, so your payment has been refunded.',
+      };
+    case 'no_capacity':
+      return {
+        notification: 'The event filled up before your payment completed, so your payment was refunded.',
+        response: 'This event filled up before your payment completed, so your payment has been refunded.',
+      };
+  }
 }
