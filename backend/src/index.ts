@@ -1,11 +1,12 @@
 import './lib/loadEnv';
 import { BOOKING_HOLD_MS } from './lib/booking';
 
-import express, { Request, Response, NextFunction, RequestHandler } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import { generalLimiter, authLimiter, meLimiter, STRICT_AUTH_PATHS } from './lib/rateLimit';
+import { parseTrustProxyHops } from './lib/proxy';
 
 // Express's error handler receives whatever was passed to next(err) — thrown
 // by app code, or by a library (body-parser's JSON errors carry `status`,
@@ -49,7 +50,9 @@ if (process.env.NODE_ENV !== 'test') {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.set('trust proxy', 1);
+// Reverse-proxy hops in front of this process (see lib/proxy.ts). Default 1.
+// Set TRUST_PROXY_HOPS to match the real hosting chain.
+app.set('trust proxy', parseTrustProxyHops(process.env.TRUST_PROXY_HOPS));
 
 // This API never serves HTML itself (every route returns JSON), so this CSP
 // is defense-in-depth rather than the policy that actually governs the
@@ -71,27 +74,7 @@ app.use(helmet({
     },
 }));
 
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many requests, please try again later.' },
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many authentication attempts, please try again later.' },
-});
-
-// express-rate-limit's RequestHandler type resolves against a duplicate,
-// mismatched copy of @types/express-serve-static-core pulled in
-// transitively via @types/cookie-parser's `@types/express: "*"` peer
-// dependency — a workspace-level dependency conflict, not an untyped value.
-app.use(generalLimiter as unknown as RequestHandler);
+app.use(generalLimiter);
 
 const allowedOrigins = [
   'https://www.upsosh.app',
@@ -148,7 +131,11 @@ app.get('/health', async (req: Request, res: Response) => {
 });
 
 // Routes
-app.use('/api/auth', authLimiter as unknown as RequestHandler, authRoutes);
+// Strict limiter only on the routes that guess credentials or send email;
+// /me has its own generous limit; everything else falls under the general one.
+app.post(STRICT_AUTH_PATHS, authLimiter);
+app.use('/api/auth/me', meLimiter);
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/hosts', hostRoutes);

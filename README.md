@@ -235,6 +235,7 @@ After paying, check `/my-bookings` — the booking should show *confirmed* with 
 | `DATABASE_URL` | **Yes** | Postgres connection string | Local Docker, or your host's provisioned database |
 | `JWT_SECRET` | **Yes** | Signs session JWTs | Any random string locally; a real secret before deploying |
 | `PORT` | No (default `4000`) | API port | — |
+| `TRUST_PROXY_HOPS` | No (default `1`) | Number of reverse proxies in front of the API; decides which `X-Forwarded-For` entry is the client IP, which the rate limiters key on | Must match the real chain (e.g. Vercel rewrite → Render). Too low: all users share one limit. Too high: a client can forge its address. Check with two networks: `curl -si <site>/api/events \| grep -i ratelimit-remaining` from each; if the counter is shared, raise it by one and re-test |
 | `FRONTEND_URL` | **Yes** | Added to the CORS allow-list | Your frontend's origin |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | For payments | Order creation + signature verification | [dashboard.razorpay.com](https://dashboard.razorpay.com) → Settings → API Keys |
 | `RAZORPAY_WEBHOOK_SECRET` | For webhooks | `POST /api/payments/webhook` fails closed without this | Razorpay dashboard → Settings → Webhooks → Secret |
