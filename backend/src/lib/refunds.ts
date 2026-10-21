@@ -150,3 +150,62 @@ export async function cancelBooking(
   const done = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } });
   return { outcome: 'cancelled', refund: 'done', booking: done };
 }
+
+export type RefundProcessedOutcome = 'released' | 'recorded' | 'ignored';
+
+/**
+ * A refund Razorpay reports as processed (refund.processed webhook). This
+ * covers refunds started outside our code, e.g. from the Razorpay dashboard,
+ * and is also called for the ones our own code started.
+ *
+ * Seats are released only by whoever flips the booking out of a non-cancelled
+ * state (conditional update, event row locked), so a refund our cancel flow
+ * already accounted for — booking already 'cancelled' — only has its payment
+ * status recorded, and a duplicate delivery finds nothing left to do. A refund
+ * for less than the amount paid is a goodwill adjustment, not a cancellation,
+ * and is ignored.
+ */
+export async function applyRefundProcessed(
+  paymentId: string,
+  refundId: string | undefined,
+  refundAmountPaise?: number,
+): Promise<RefundProcessedOutcome> {
+  return prisma.$transaction(async (tx) => {
+    const first = await tx.booking.findFirst({ where: { paymentId } });
+    if (!first) return 'ignored' as const;
+
+    if (first.eventId) {
+      await tx.$queryRaw`SELECT id FROM "Event" WHERE id = ${first.eventId} FOR UPDATE`;
+    }
+    const booking = await tx.booking.findUniqueOrThrow({ where: { id: first.id } });
+
+    if (booking.paymentStatus !== 'paid') return 'ignored' as const;
+    if (refundAmountPaise !== undefined && refundAmountPaise < Math.round(booking.totalAmount * 100)) {
+      return 'ignored' as const;
+    }
+
+    const data = { paymentStatus: 'refunded' as const, ...(refundId ? { refundId } : {}) };
+
+    // Still live: this refund is what ends the booking, so it releases the seats.
+    const live = await tx.booking.updateMany({
+      where: { id: booking.id, paymentStatus: 'paid', status: { notIn: ['cancelled', 'refunded'] } },
+      data: { ...data, status: 'cancelled' },
+    });
+    if (live.count > 0) {
+      if (booking.eventId) {
+        await tx.event.update({
+          where: { id: booking.eventId },
+          data: { attendees: { decrement: booking.guestCount } },
+        });
+      }
+      return 'released' as const;
+    }
+
+    // Already cancelled (seats already released): just record the refund.
+    const recorded = await tx.booking.updateMany({
+      where: { id: booking.id, paymentStatus: 'paid' },
+      data,
+    });
+    return recorded.count > 0 ? ('recorded' as const) : ('ignored' as const);
+  });
+}

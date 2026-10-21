@@ -180,3 +180,76 @@ describe('Cancel: the booking is claimed before any refund', () => {
     expect(paymentsRefund).not.toHaveBeenCalled();
   });
 });
+
+describe('refund.processed from the Razorpay dashboard', () => {
+  const refundHook = (paymentId: string, refundId: string, amountPaise?: number) =>
+    signedWebhook({
+      event: 'refund.processed',
+      payload: { refund: { entity: { id: refundId, payment_id: paymentId, ...(amountPaise === undefined ? {} : { amount: amountPaise }) } } },
+    });
+
+  it('a full refund made in the dashboard cancels the booking and releases its seats exactly once', async () => {
+    const { event, booking, paymentId } = await paidBooking({ guestCount: 3 });
+    await prisma.event.update({ where: { id: event.id }, data: { attendees: { increment: 4 } } });
+
+    const res = await refundHook(paymentId, 'rfnd_dash', Math.round(booking.totalAmount * 100));
+
+    expect(res.status).toBe(200);
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'cancelled', paymentStatus: 'refunded', refundId: 'rfnd_dash' });
+    expect(await attendeesOf(event.id)).toBe(4);
+  });
+
+  it('a duplicate delivery releases nothing more', async () => {
+    const { event, booking, paymentId } = await paidBooking({ guestCount: 2 });
+    await prisma.event.update({ where: { id: event.id }, data: { attendees: { increment: 5 } } });
+
+    await refundHook(paymentId, 'rfnd_dash', Math.round(booking.totalAmount * 100));
+    await refundHook(paymentId, 'rfnd_dash', Math.round(booking.totalAmount * 100));
+    await Promise.all([1, 2, 3].map(() => refundHook(paymentId, 'rfnd_dash', Math.round(booking.totalAmount * 100))));
+
+    expect(await attendeesOf(event.id)).toBe(5);
+  });
+
+  it('a refund our own cancel started does not release seats a second time', async () => {
+    const { user, event, booking, paymentId } = await paidBooking({ guestCount: 2 });
+    await prisma.event.update({ where: { id: event.id }, data: { attendees: { increment: 5 } } });
+
+    // Razorpay reports the refund our cancel asked for, before and after our own write.
+    paymentsRefund.mockImplementation(async () => {
+      await refundHook(paymentId, 'rfnd_own', Math.round(booking.totalAmount * 100));
+      return { id: 'rfnd_own' };
+    });
+    const res = await cancel(user.id, booking.id);
+    await refundHook(paymentId, 'rfnd_own', Math.round(booking.totalAmount * 100));
+
+    expect(res.status).toBe(200);
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'cancelled', paymentStatus: 'refunded' });
+    expect(await attendeesOf(event.id)).toBe(5);
+  });
+
+  it('closes out a cancel whose refund was made but never recorded, without releasing seats again', async () => {
+    const { event, booking, paymentId } = await paidBooking({ guestCount: 2 });
+    await prisma.event.update({ where: { id: event.id }, data: { attendees: { increment: 3 } } });
+    await prisma.event.update({ where: { id: event.id }, data: { attendees: { decrement: 2 } } }); // already released
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: 'cancelled' } });
+
+    await refundHook(paymentId, 'rfnd_late', Math.round(booking.totalAmount * 100));
+
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'cancelled', paymentStatus: 'refunded', refundId: 'rfnd_late' });
+    expect(await attendeesOf(event.id)).toBe(3);
+  });
+
+  it('a partial refund leaves the booking and its seats alone', async () => {
+    const { event, booking, paymentId } = await paidBooking({ guestCount: 2 });
+
+    await refundHook(paymentId, 'rfnd_part', 5000);
+
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'confirmed', paymentStatus: 'paid' });
+    expect(await attendeesOf(event.id)).toBe(2);
+  });
+
+  it('an unknown payment is acknowledged and ignored', async () => {
+    const res = await refundHook('pay_unknown', 'rfnd_x', 1000);
+    expect(res.status).toBe(200);
+  });
+});

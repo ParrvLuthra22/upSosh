@@ -7,6 +7,7 @@ import { sendBookingConfirmation } from '../lib/email';
 import { notify } from '../lib/notify';
 import { eventClosedReason } from '../lib/booking';
 import { confirmPaidBooking, refundRejectedPayment } from '../lib/confirmPayment';
+import { applyRefundProcessed } from '../lib/refunds';
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -284,7 +285,7 @@ interface RazorpayWebhookPayload {
   event: string;
   payload?: {
     payment?: { entity?: { id?: string; order_id?: string } };
-    refund?: { entity?: { id?: string; payment_id?: string } };
+    refund?: { entity?: { id?: string; payment_id?: string; amount?: number } };
   };
 }
 
@@ -401,15 +402,13 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
         break;
       }
       case 'refund.processed': {
-        const refundId = event.payload?.refund?.entity?.id;
-        const paymentId = event.payload?.refund?.entity?.payment_id;
-        console.log('[Webhook] Refund processed:', refundId, 'for payment', paymentId);
+        const refund = event.payload?.refund?.entity;
+        const paymentId = refund?.payment_id;
+        console.log('[Webhook] Refund processed:', refund?.id, 'for payment', paymentId);
 
         if (paymentId) {
-          await prisma.booking.updateMany({
-            where: { paymentId, paymentStatus: 'paid' },
-            data: { paymentStatus: 'refunded', refundId },
-          });
+          const outcome = await applyRefundProcessed(paymentId, refund?.id, refund?.amount);
+          console.log(`[Webhook] refund.processed for payment ${paymentId}: ${outcome}`);
         }
         break;
       }
