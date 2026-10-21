@@ -68,24 +68,13 @@ export default function RefundPage() {
             content: (
                 <>
                     <p className="text-cream-dim mb-4">
-                        If the Host changes:
+                        If a Host changes the date, time, venue or content of an event, there is no automatic refund just because of the change.
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li>Event date</li>
-                        <li>Event time</li>
-                        <li>Venue</li>
-                        <li>Major part of event content</li>
+                        <li>If you cancel before the event day starts, you get a full refund (section 2).</li>
+                        <li>If the Host cancels the event instead, you get a full refund (section 3).</li>
+                        <li>In any other case, contact us. We will look at it with the Host, but we cannot promise an outcome.</li>
                     </ul>
-                    <p className="text-cream-dim mb-3">
-                        Users will be notified and given the choice to:
-                    </p>
-                    <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
-                        <li>Accept the updated event, OR</li>
-                        <li>Request a full refund (irrespective of Host policy)</li>
-                    </ul>
-                    <p className="text-cream-dim">
-                        This ensures fairness and meets Consumer Protection norms.
-                    </p>
                 </>
             ),
         },
@@ -135,7 +124,7 @@ export default function RefundPage() {
             content: (
                 <>
                     <p className="text-cream-dim mb-4">
-                        Refunds apply differently when events are impacted by:
+                        Events can be affected by things nobody controls, such as:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-cream-dim mb-4">
                         <li>Weather conditions</li>
@@ -146,15 +135,11 @@ export default function RefundPage() {
                         <li>National emergencies</li>
                     </ul>
                     <p className="text-cream-dim mb-3">
-                        ✅ If the event is fully cancelled → Users receive 100% refund.
+                        If the Host cancels the event, you get a full refund (section 3).
                     </p>
                     <p className="text-cream-dim mb-3">
-                        ✅ If the event is rescheduled → Users may choose:
+                        If the event is rescheduled or only partly happens, there is no automatic refund. You can cancel before the event day starts for a full refund (section 2). Otherwise contact us and we will look at it with the Host, without promising an outcome.
                     </p>
-                    <ul className="list-disc pl-6 space-y-2 text-cream-dim">
-                        <li>Refund</li>
-                        <li>Attend new date</li>
-                    </ul>
                 </>
             ),
         },
