@@ -8,7 +8,7 @@ import { createBookingSchema } from '../lib/schemas';
 import { sendBookingConfirmation } from '../lib/email';
 import { getRazorpayClient } from './payments';
 import { notify } from '../lib/notify';
-import { PLATFORM_FEE_FLAT, BOOKING_HOLD_MS } from '../lib/booking';
+import { PLATFORM_FEE_FLAT, BOOKING_HOLD_MS, eventClosedReason } from '../lib/booking';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -20,6 +20,7 @@ class CapacityFullError extends Error {
   }
 }
 class EventNotFoundError extends Error {}
+class EventClosedError extends Error {}
 class BookingStateChangedError extends Error {}
 class AlreadyCancelledError extends Error {}
 
@@ -67,6 +68,11 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
         await tx.$queryRaw`SELECT id FROM "Event" WHERE id = ${eventId} FOR UPDATE`;
         const event = await tx.event.findUnique({ where: { id: eventId } });
         if (!event) throw new EventNotFoundError();
+
+        // Applies to free events too: nothing is booked on an event that is
+        // cancelled, not published, or already over.
+        const closedReason = eventClosedReason(event);
+        if (closedReason) throw new EventClosedError(closedReason);
 
         // A retry (payment dismissed, then "Pay" again) creates a fresh
         // booking; without this the user's own abandoned one would still hold
@@ -157,6 +163,9 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
   } catch (err: unknown) {
     if (err instanceof EventNotFoundError) {
       return res.status(404).json({ message: 'Event not found' });
+    }
+    if (err instanceof EventClosedError) {
+      return res.status(400).json({ message: err.message });
     }
     if (err instanceof CapacityFullError) {
       const message = err.remaining === 0

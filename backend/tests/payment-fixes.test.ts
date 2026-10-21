@@ -449,3 +449,67 @@ describe('PAY-3: a payment is only confirmed if the booking is live and seats re
     expect(after.attendees + (holds._sum.guestCount ?? 0)).toBeLessThanOrEqual(after.capacity);
   });
 });
+
+describe('PAY-4: events that are not open cannot be booked or paid for', () => {
+  const past = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const body = (eventId: string) => ({
+    eventId, guestName: 'G', guestEmail: 'g@example.test', guestPhone: '1',
+  });
+  const book = (userId: string, eventId: string) =>
+    request(app).post('/api/bookings').set(authHeader(userId)).send(body(eventId));
+
+  const closed: Array<[string, { status?: 'draft' | 'cancelled' | 'past'; date?: Date }]> = [
+    ['cancelled', { status: 'cancelled' }],
+    ['draft', { status: 'draft' }],
+    ['marked past', { status: 'past' }],
+    ['dated in the past', { date: past() }],
+  ];
+
+  it.each(closed)('refuses a booking for a paid event that is %s', async (_label, opts) => {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, ...opts });
+
+    const res = await book(user.id, event.id);
+
+    expect(res.status).toBe(400);
+    expect(typeof res.body.message).toBe('string');
+    expect(await prisma.booking.count({ where: { eventId: event.id } })).toBe(0);
+  });
+
+  it.each(closed)('refuses a booking for a free event that is %s', async (_label, opts) => {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 0, isFree: true, ...opts });
+
+    const res = await book(user.id, event.id);
+
+    expect(res.status).toBe(400);
+    expect(await prisma.booking.count({ where: { eventId: event.id } })).toBe(0);
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('still books live events, including free ones', async () => {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const paid = await createEvent({ userId: host.id, price: 500 });
+    const free = await createEvent({ userId: host.id, price: 0, isFree: true });
+
+    expect((await book(user.id, paid.id)).status).toBe(201);
+    expect((await book(user.id, free.id)).status).toBe(201);
+  });
+
+  it.each(closed)('create-order refuses a booking whose event is %s', async (_label, opts) => {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500 });
+    const booking = await createBooking({ userId: user.id, eventId: event.id });
+    await prisma.event.update({ where: { id: event.id }, data: opts });
+
+    const res = await request(app).post('/api/payments/create-order').set(authHeader(user.id)).send({ bookingId: booking.id });
+
+    expect(res.status).toBe(409);
+    expect(ordersCreate).not.toHaveBeenCalled();
+    expect((await bookingOf(booking.id)).razorpayOrderId).toBeNull();
+  });
+});

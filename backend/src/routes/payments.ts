@@ -5,6 +5,7 @@ import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendBookingConfirmation } from '../lib/email';
 import { notify } from '../lib/notify';
+import { eventClosedReason } from '../lib/booking';
 import { confirmPaidBooking, refundRejectedPayment } from '../lib/confirmPayment';
 
 function errorMessage(err: unknown): string {
@@ -80,6 +81,13 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
     }
     if (booking.status === 'cancelled' || booking.status === 'refunded') {
       return res.status(409).json({ message: 'This booking was cancelled and can no longer be paid' });
+    }
+
+    // No new payment for an event that is cancelled, unpublished or over.
+    if (booking.eventId) {
+      const event = await prisma.event.findUnique({ where: { id: booking.eventId } });
+      const closedReason = event ? eventClosedReason(event) : null;
+      if (closedReason) return res.status(409).json({ message: closedReason });
     }
 
     // totalAmount = ticketPrice + platformFee, computed server-side in
