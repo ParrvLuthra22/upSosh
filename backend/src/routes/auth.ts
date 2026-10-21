@@ -197,10 +197,17 @@ router.post('/google', async (req: Request, res: Response): Promise<Response> =>
       if (user.deletedAt) {
         return res.status(401).json({ message: 'This account no longer exists' });
       }
-      // First time this existing (password-based) account signs in with
-      // Google — link it rather than creating a second account for the
-      // same address.
+      // An existing password account is never linked to a Google identity
+      // here. Signup does not verify the email, so whoever created that
+      // account may not own the address; linking would hand it to the Google
+      // user while the original password kept working. The owner signs in
+      // with their password instead.
       if (!user.googleId) {
+        if (user.password) {
+          return res.status(409).json({
+            message: 'An account with this email already exists. Sign in with your email and password instead.',
+          });
+        }
         user = await prisma.user.update({ where: { id: user.id }, data: { googleId } });
       }
     } else {

@@ -1,5 +1,15 @@
 import './lib/loadEnv';
 import { BOOKING_HOLD_MS } from './lib/booking';
+import { assertProductionEnv } from './lib/validateEnv';
+
+// Refuse to start in production with a missing or placeholder secret. The
+// message names the variable, never its value.
+try {
+  assertProductionEnv();
+} catch (err: unknown) {
+  console.error(`[Fatal] ${err instanceof Error ? err.message : String(err)}`);
+  process.exit(1);
+}
 
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
@@ -27,7 +37,7 @@ import userRoutes from './routes/users';
 import eventRoutes from './routes/events';
 import hostRoutes from './routes/hosts';
 import bookingRoutes from './routes/bookings';
-import paymentRoutes from './routes/payments';
+import paymentRoutes, { webhookRouter } from './routes/payments';
 import aiRoutes from './routes/ai';
 import uploadRoutes from './routes/uploads';
 import notificationRoutes from './routes/notifications';
@@ -74,6 +84,34 @@ app.use(helmet({
     },
 }));
 
+// Mounted BEFORE the general rate limiter on purpose: the Render health check
+// and Razorpay's webhook deliveries come from shared addresses and must never
+// be answered with a 429, whatever else those addresses have been doing.
+// Health check
+app.get('/health', async (req: Request, res: Response) => {
+  let dbStatus = 'connected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    dbStatus = 'error';
+  }
+
+  res.status(dbStatus === 'connected' ? 200 : 503).json({
+    status: dbStatus === 'connected' ? 'ok' : 'degraded',
+    db: dbStatus,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Razorpay signs the RAW request bytes. Mounted here, before the global
+// express.json() below, so this one route gets an unparsed Buffer as
+// req.body instead of a re-serialized (and therefore un-verifiable) object —
+// body-parser sets req._body once a parser has run, which is what makes
+// express.json() below skip re-parsing this route instead of erroring on a
+// Buffer.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.use('/api/payments', webhookRouter);
+
 app.use(generalLimiter);
 
 const allowedOrigins = [
@@ -99,36 +137,12 @@ app.use(
 
 console.log('[CORS] Allowed origins:', allowedOrigins);
 
-// Razorpay signs the RAW request bytes. Mounted here, before the global
-// express.json() below, so this one route gets an unparsed Buffer as
-// req.body instead of a re-serialized (and therefore un-verifiable) object —
-// body-parser sets req._body once a parser has run, which is what makes
-// express.json() below skip re-parsing this route instead of erroring on a
-// Buffer.
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
-
 // File uploads go through multer (routes/uploads.ts) with its own size caps —
 // nothing on the JSON/urlencoded path legitimately needs more than a few KB
 // of text, so 10mb here was just unused attack surface for body-based DoS.
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ limit: '100kb', extended: true }));
 app.use(cookieParser());
-
-// Health check
-app.get('/health', async (req: Request, res: Response) => {
-  let dbStatus = 'connected';
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    dbStatus = 'error';
-  }
-
-  res.status(dbStatus === 'connected' ? 200 : 503).json({
-    status: dbStatus === 'connected' ? 'ok' : 'degraded',
-    db: dbStatus,
-    timestamp: new Date().toISOString(),
-  });
-});
 
 // Routes
 // Strict limiter only on the routes that guess credentials or send email;

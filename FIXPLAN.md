@@ -675,3 +675,15 @@ Tests are in `backend/tests/refunds.test.ts` and `backend/tests/cancel-cascade.t
 - [ ] **REF-D (needs a decision)** — The refund page describes per-event host refund policies, but the data model has no refund-policy field, so a user's own cancellation currently refunds the full amount at any time. Options: (a) add a refund-policy field to events (schema change); (b) one platform-wide rule; (c) full refund until the event starts, none after; (d) keep behaviour and reword the page.
 - [ ] **Follow-up** — Deleting an account does not cancel events the user hosts.
 - [ ] **Follow-up** — `/verify` has no automatic retry if the confirm step fails after payment; the webhook is the recovery path.
+
+## Hardening — 2026-10-21 (branch `fix/hardening`, from `main`)
+
+Tests: `backend/tests/hardening.test.ts`, `email-escaping.test.ts`, `google-signin.test.ts`, `rate-limit-exempt.test.ts`, all against a local Postgres only.
+
+- [x] **AZ-1** — Only an admin can set `isSuperhost` on event create or update; for anyone else the field is ignored and the stored value is left alone.
+- [x] **AZ-2** — Every user-supplied value in booking-confirmation and announcement emails is HTML-escaped, and subjects cannot contain line breaks. `eventId` is now required when creating a booking.
+- [x] **AUTH-2** — With `NODE_ENV=production` the API exits at boot unless `DATABASE_URL`, `JWT_SECRET` (32+ characters, not a placeholder), `FRONTEND_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` are set and real. Messages name the variable, never the value. Development and tests are unchanged.
+- [x] **AUTH-4** — Google sign-in no longer links onto an existing password account. The user gets a 409 "An account with this email already exists. Sign in with your email and password instead."
+- [x] **Rate limiter order** — `/health` and the Razorpay webhook are served before the general rate limiter.
+- [ ] **AUTH-4 follow-up** — There is no email-verification flow. Once one exists, linking can be allowed for verified accounts. A Google sign-in whose Google id differs from the one already stored for that email is still accepted.
+

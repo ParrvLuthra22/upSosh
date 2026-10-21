@@ -94,7 +94,9 @@ export const updateEventSchema = z.object({
 // ─── bookings.ts ──────────────────────────────────────────────────────────────
 
 export const createBookingSchema = z.object({
-  eventId: z.string().trim().min(1).optional(),
+  // Required: a booking with no event was priced as a bare platform fee and
+  // is not a real booking.
+  eventId: z.string().trim().min(1, 'eventId is required'),
   guestName: z.string().trim().min(1, 'guestName, guestEmail, and guestPhone are required'),
   guestEmail: z.string().trim().toLowerCase().email('guestEmail must be a valid email'),
   guestPhone: z.string().trim().min(1, 'guestName, guestEmail, and guestPhone are required'),
