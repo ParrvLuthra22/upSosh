@@ -1,6 +1,7 @@
 import Razorpay from 'razorpay';
 import { Booking } from '@prisma/client';
 import prisma from './prisma';
+import { createNotification } from './notify';
 
 /**
  * Cancelling a booking and returning the money, in two separate steps so that
@@ -250,7 +251,8 @@ export async function cancelEventBookings(
       orderBy: { createdAt: 'asc' },
     }),
   ]);
-  const title = event?.title ?? 'your event';
+  const rawTitle = event?.title ?? 'your event';
+  const title = rawTitle.length > 80 ? `${rawTitle.slice(0, 79)}…` : rawTitle;
 
   const summary: CancelEventSummary = { processed: 0, refunded: 0, failed: 0, remaining: 0 };
   for (const [i, b] of bookings.entries()) {
@@ -284,11 +286,7 @@ export async function cancelEventBookings(
     const body = result.refund === 'done'
       ? `"${title}" was cancelled by the host. Your payment has been refunded in full and should reach you in 2–5 business days.`
       : `"${title}" was cancelled by the host. Your booking has been cancelled.`;
-    try {
-      await prisma.notification.create({ data: { userId: b.userId, type: 'booking', title: 'Event cancelled', body } });
-    } catch {
-      console.error(`[Notifications] create failed for booking ${b.id}`);
-    }
+    await createNotification(b.userId, 'booking', 'Event cancelled', body);
   }
   return summary;
 }
