@@ -659,5 +659,19 @@ Follow-up to a backend review. Each item has tests in `backend/tests/payment-fix
 - [x] **PAY-D** — 2026-10-21 — Booking creation (free and paid) and `create-order` refuse events that are cancelled, unpublished, or already past.
 - [x] **AUTH-A** — 2026-10-21 — The strict auth limiter now covers only sign in, login, sign up, forgot-password, reset-password and Google sign-in; `GET /api/auth/me` has its own larger limit. The proxy hop count is configurable with `TRUST_PROXY_HOPS` (default unchanged at 1).
 - [ ] **AUTH-A follow-up** — Set `TRUST_PROXY_HOPS` on the host to the value that matches the real proxy chain. Not verifiable from this repo; test with two networks and compare `RateLimit-Remaining`.
-- [ ] **PAY-C follow-up** — A payment for a booking whose event was cancelled *after* the booking was made is still confirmed; decide whether that should refund instead.
+- [x] **PAY-C follow-up** — Done on `fix/refunds-and-cancel` (see REF-E below): such a payment is now refunded.
 - [ ] **PAY-C follow-up** — No reconciliation job yet (see P4-15) for captured payments whose webhook never arrived.
+
+## Refunds and cancellation — 2026-10-21 (branch `fix/refunds-and-cancel`)
+
+Tests are in `backend/tests/refunds.test.ts` and `backend/tests/cancel-cascade.test.ts`, run against a local Postgres only. Razorpay is mocked in every test; no refund has been exercised against the real gateway.
+
+- [x] **REF-A** — 2026-10-21 — Cancelling a booking claims it with a conditional update (event row locked) before any refund, so double or concurrent cancels refund and release seats once. One shared refund helper is used everywhere. If the refund fails the booking stays `cancelled` + `paymentStatus='paid'` with its payment id ("cancelled, money still held"), the user gets a 502, and cancelling again retries only the refund. Find those rows with `docs/stuck-payments.sql`.
+- [x] **REF-B** — 2026-10-21 — A `refund.processed` webhook (e.g. a refund made in the Razorpay dashboard) cancels a still-live booking and releases its seats once; refunds our own code started, duplicate deliveries and partial refunds release nothing more.
+- [x] **REF-C** — 2026-10-21 — Host event cancellation (`DELETE`, or `PUT` with `status: cancelled`) and account deletion refund and release every live booking one at a time, outside any transaction, and are safe to re-run. Account deletion does not anonymise until every refund has gone through. Attendees are notified in-app.
+- [x] **REF-E** — 2026-10-21 — A payment for a booking whose event was cancelled after booking is refunded, not confirmed (`/verify` and webhook).
+- [x] **REF-F** — 2026-10-21 — `docs/stuck-payments.sql` (read-only; not run) lists money taken without a ticket and unfinished refunds.
+- [x] **REF-G** — 2026-10-21 — The booking modal shows clear messages for 400, 409 and 502 responses, with a contact link when a payment may need a person.
+- [ ] **REF-D (needs a decision)** — The refund page describes per-event host refund policies, but the data model has no refund-policy field, so a user's own cancellation currently refunds the full amount at any time. Options: (a) add a refund-policy field to events (schema change); (b) one platform-wide rule; (c) full refund until the event starts, none after; (d) keep behaviour and reword the page.
+- [ ] **Follow-up** — Deleting an account does not cancel events the user hosts.
+- [ ] **Follow-up** — `/verify` has no automatic retry if the confirm step fails after payment; the webhook is the recovery path.
