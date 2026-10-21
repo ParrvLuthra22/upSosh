@@ -31,6 +31,8 @@ const router = Router();
 //   ticketPrice = event.price * guestCount
 //   platformFee = PLATFORM_FEE_FLAT (once per booking, not per guest)
 //   totalAmount = ticketPrice + platformFee
+// A free booking (free event, or no event) is never charged: all three are 0,
+// so it cannot show up as revenue.
 //
 // Capacity is checked and (for free events) reserved inside ONE transaction
 // that first locks the event row, so concurrent bookings for the last seats
@@ -86,8 +88,9 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
         const remaining = event.capacity - event.attendees - (held._sum.guestCount ?? 0);
         if (guestCount > remaining) throw new CapacityFullError(Math.max(remaining, 0));
 
-        ticketPrice = event.price * guestCount;
         isFreeEvent = event.isFree || event.price === 0;
+        // A free booking is never charged, so it records no price and no fee.
+        ticketPrice = isFreeEvent ? 0 : event.price * guestCount;
 
         if (isFreeEvent) {
           await tx.event.update({
@@ -97,7 +100,7 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
         }
       }
 
-      const platformFee = PLATFORM_FEE_FLAT;
+      const platformFee = isFreeEvent ? 0 : PLATFORM_FEE_FLAT;
       const totalAmount = ticketPrice + platformFee;
 
       return tx.booking.create({
