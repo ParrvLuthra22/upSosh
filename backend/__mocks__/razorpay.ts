@@ -7,9 +7,11 @@
 // 500000?") and control what they resolve to.
 
 export const ordersCreate = jest.fn();
+export const ordersFetch = jest.fn();
 export const paymentsRefund = jest.fn();
+export const paymentsFetch = jest.fn();
 
 export default class MockRazorpay {
-  orders = { create: ordersCreate };
-  payments = { refund: paymentsRefund };
+  orders = { create: ordersCreate, fetch: ordersFetch };
+  payments = { refund: paymentsRefund, fetch: paymentsFetch };
 }

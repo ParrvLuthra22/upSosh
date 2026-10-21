@@ -76,6 +76,9 @@ interface BookingStore {
   bookingTotals: BookingTotals | null;
   isProcessing: boolean;
   errorMessage: string | null;
+  /** HTTP status of the failed step, and whether it failed after the customer had paid; for choosing the message to show. */
+  errorStatus: number | null;
+  errorAfterPayment: boolean;
 
   // ── Actions ──
   /** Open the booking modal for a given event */
@@ -123,6 +126,8 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   bookingTotals: null,
   isProcessing:  false,
   errorMessage:  null,
+  errorStatus:   null,
+  errorAfterPayment: false,
 
   // ── Open ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +145,8 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       bookingTotals: null,
       isProcessing:  false,
       errorMessage:  null,
+      errorStatus:   null,
+      errorAfterPayment: false,
     }),
 
   // ── Close ─────────────────────────────────────────────────────────────────
@@ -150,6 +157,8 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       // keep event data briefly so exit animation looks good
       isProcessing: false,
       errorMessage: null,
+      errorStatus: null,
+      errorAfterPayment: false,
     }),
 
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -176,7 +185,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   setPaymentMethod: (method)  => set({ paymentMethod: method }),
   setBookingId:     (id)      => set({ bookingId: id }),
   setProcessing:    (v)       => set({ isProcessing: v }),
-  setError:         (msg)     => set({ errorMessage: msg }),
+  setError:         (msg)     => set({ errorMessage: msg, errorStatus: null, errorAfterPayment: false }),
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
@@ -184,7 +193,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
     const { event, eventId, guestCount, guestDetails, paymentMethod } = get();
     if (!event || !eventId) return;
 
-    set({ isProcessing: true, errorMessage: null });
+    set({ isProcessing: true, errorMessage: null, errorStatus: null, errorAfterPayment: false });
 
     try {
       // ── 1. Create the booking record ───────────────────────────────────────
@@ -231,8 +240,9 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       catch { bookingData = {}; }
 
       if (!bookingRes.ok) {
-        throw new Error(
+        throw stepError(
           bookingData.message ?? bookingData.error ?? `Booking failed (${bookingRes.status})`,
+          bookingRes.status,
         );
       }
 
@@ -291,7 +301,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
           if (!orderRes.ok) {
             const err = await orderRes.json().catch(() => ({}));
-            throw new Error((err as { message?: string }).message ?? 'Could not create payment order');
+            throw stepError((err as { message?: string }).message ?? 'Could not create payment order', orderRes.status);
           }
 
           const orderData = await orderRes.json();
@@ -349,7 +359,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
           if (!verifyRes.ok) {
             const err = await verifyRes.json().catch(() => ({}));
-            throw new Error((err as { message?: string }).message ?? 'Payment verification failed');
+            throw stepError((err as { message?: string }).message ?? 'Payment verification failed', verifyRes.status, true);
           }
         }
       }
@@ -360,10 +370,17 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong';
-      set({ isProcessing: false, errorMessage: msg });
+      const { status, afterPayment } = err as Partial<StepError>;
+      set({ isProcessing: false, errorMessage: msg, errorStatus: status ?? null, errorAfterPayment: afterPayment ?? false });
     }
   },
 }));
+
+/** An Error that remembers which HTTP status ended a step, and whether the customer had already paid. */
+type StepError = Error & { status: number; afterPayment: boolean };
+function stepError(message: string, status: number, afterPayment = false): StepError {
+  return Object.assign(new Error(message), { status, afterPayment });
+}
 
 // ─── Razorpay script loader ────────────────────────────────────────────────────
 

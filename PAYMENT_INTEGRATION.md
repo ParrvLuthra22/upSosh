@@ -41,17 +41,17 @@
    Key Secret: xxxxxxxxxxxxxxxxxxxx
    ```
 
-### 2. Add Keys to Railway
+### 2. Add Keys to Render
 
-1. Go to Railway Dashboard: https://railway.app/
+1. Go to the Render Dashboard: https://dashboard.render.com/
 2. Open your backend project
-3. Go to Variables tab
+3. Open the service's Environment tab
 4. Add two new variables:
    ```
    RAZORPAY_KEY_ID = rzp_test_xxxxxxxxxxxx
    RAZORPAY_KEY_SECRET = your_secret_key_here
    ```
-5. Click "Deploy" or wait for auto-deploy
+5. Save; Render redeploys the service
 
 ### 3. Test the Payment
 
@@ -144,7 +144,7 @@ When ready to accept real payments:
 
 2. **Switch to Live Keys:**
    - Generate Live API keys (starts with `rzp_live_`)
-   - Update Railway environment variables
+   - Update the Render environment variables
    - Redeploy backend
 
 3. **Set Up Webhooks (Recommended):**
@@ -179,7 +179,7 @@ When ready to accept real payments:
 - Solution: Check backend logs, ensure RAZORPAY_KEY_SECRET is correct
 
 **Issue: Razorpay modal doesn't open**
-- Solution: Check console for errors, ensure keys are added to Railway
+- Solution: Check console for errors, ensure keys are added to Render
 
 **Issue: "Not authenticated" error**
 - Solution: User must be logged in to make payments

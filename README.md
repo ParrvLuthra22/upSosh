@@ -70,7 +70,7 @@ Everything consequential — session validity, payment amount, resource ownershi
 | Images | Cloudinary | Upload + transform + CDN in one service, so the backend doesn't need its own image pipeline |
 | AI planner | OpenRouter (`google/gemini-2.0-flash-001`) | One API surface for LLM calls without coupling to a single provider's SDK |
 | Testing | Jest + Supertest (backend), Playwright (E2E) | Supertest drives the actual Express app against a real Postgres — no mocked HTTP layer |
-| Hosting | Render (backend), Vercel (frontend) | Render for a long-running Node process; Vercel as the reference host for Next.js. `railway.toml` exists as a working alternative |
+| Hosting | Render (backend), Vercel (frontend) | Render for a long-running Node process; Vercel as the reference host for Next.js |
 
 ---
 
@@ -235,6 +235,7 @@ After paying, check `/my-bookings` — the booking should show *confirmed* with 
 | `DATABASE_URL` | **Yes** | Postgres connection string | Local Docker, or your host's provisioned database |
 | `JWT_SECRET` | **Yes** | Signs session JWTs | Any random string locally; a real secret before deploying |
 | `PORT` | No (default `4000`) | API port | — |
+| `TRUST_PROXY_HOPS` | No (default `1`) | Number of reverse proxies in front of the API; decides which `X-Forwarded-For` entry is the client IP, which the rate limiters key on | Must match the real chain (e.g. Vercel rewrite → Render). Too low: all users share one limit. Too high: a client can forge its address. Check with two networks: `curl -si <site>/api/events \| grep -i ratelimit-remaining` from each; if the counter is shared, raise it by one and re-test |
 | `FRONTEND_URL` | **Yes** | Added to the CORS allow-list | Your frontend's origin |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | For payments | Order creation + signature verification | [dashboard.razorpay.com](https://dashboard.razorpay.com) → Settings → API Keys |
 | `RAZORPAY_WEBHOOK_SECRET` | For webhooks | `POST /api/payments/webhook` fails closed without this | Razorpay dashboard → Settings → Webhooks → Secret |
@@ -322,7 +323,7 @@ upSosh/
 │       └── booking-flow.spec.ts  Playwright E2E: signup → discover → book → Razorpay checkout → QR ticket
 ├── scripts/setup.mjs            `npm run setup` — env files + migrate + seed in one command
 ├── docker-compose.yml           Local Postgres 16
-├── railway.toml                 Working alternative backend deploy target (Nixpacks)
+├── railway.toml                 Legacy Railway config — the backend runs on Render now; Render does not read this file
 ├── SECURITY.md                  Two real payment-path vulnerabilities, their exploits, and the regression tests
 └── FIXPLAN.md                   Phase-by-phase fix log anchored to file:line
 ```
@@ -411,13 +412,31 @@ All 16 run against a real database via Supertest driving the actual Express app.
 
 ### Backend → Render
 
-Build: `npm ci && npm run build` (inside `backend/`).  
-Start: `npm run start` — this runs `prisma migrate deploy` before starting the server (`backend/package.json`), so the schema can't drift silently on any host.  
-Health check: `GET /health`.
+The backend is a single Render **Web Service** (Node). Its settings live in Render's dashboard — there is no `render.yaml` in this repo.
 
-Set every backend variable from the table above in Render's environment settings. No `render.yaml` in this repo — build/start commands are set in Render's dashboard.
+| Setting | Value |
+|---|---|
+| Root / working dir | repo root (commands `cd` into `backend/`) |
+| Build command | `cd backend && npm ci && npm run build` |
+| **Start command** | `cd backend && npm run start` |
+| **Health check path** | `/health` |
 
-`railway.toml` is also in this repo and is a working deploy target (Nixpacks build, same migration-on-start pattern) — not currently serving production.
+`npm run start` runs `prisma migrate deploy` before starting the server (`backend/package.json`), so every deploy applies pending migrations to the service's database. Read [Releasing](#releasing) before merging a migration.
+
+**Environment variables to set on the Render service** (full table under [Environment variables](#backend-backendenv)):
+
+| Variable | Notes |
+|---|---|
+| `NODE_ENV` | Must be exactly `production`. It turns on `Secure; SameSite=None` cookies and hides stack traces. |
+| `DATABASE_URL` | The production Postgres connection string. |
+| `JWT_SECRET` | Long random string (32+ chars). Never the example value. |
+| `FRONTEND_URL` | The Vercel site's origin, e.g. `https://www.upsosh.app` (CORS allow-list). |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Live keys (`rzp_live_…`) only when you are ready for real money. |
+| **`RAZORPAY_WEBHOOK_SECRET`** | **Required.** Razorpay dashboard → Settings → Webhooks → your webhook → Secret. Without it `POST /api/payments/webhook` returns 500 and verifies nothing, so a payment whose browser never reached `/verify` is never confirmed. Webhook URL: `https://<your-service>.onrender.com/api/payments/webhook`, events `payment.captured`, `payment.failed`, `refund.processed`. |
+| `RESEND_API_KEY` | Without it, confirmation and reset emails are silently skipped. |
+| `GOOGLE_CLIENT_ID`, `OPENROUTER_API_KEY`, `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Optional; the matching feature returns 503 or hides itself when unset. |
+
+`railway.toml` is left in the repo from the earlier Railway deployment. Render does not read it.
 
 ### Frontend → Vercel
 
@@ -429,6 +448,16 @@ Set `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `NEXT_PUBLIC_FRONT
 
 - The backend's `@types/*` packages are in `dependencies`, not `devDependencies`. Render doesn't install `devDependencies` in production; if TypeScript types are in `devDependencies`, `tsc` fails at build time with "Cannot find module '@types/...'".
 - Prisma generates its client at `postinstall` and again at `build`. Both are needed: `postinstall` covers `npm ci` on the host; `build` ensures the generated types match the schema at compile time.
+
+---
+
+## Releasing
+
+- **Everything goes through a pull request** into `main` (use the PR template). CI must be green. Merging to `main` deploys; there is no separate release step.
+- **Never run `prisma migrate`, `npm run seed`, or `make-admin.js` against the production database from a laptop.** `backend/.env` can point at a real database; always pass an explicit local `DATABASE_URL` for local runs. Production migrations run on Render at deploy time via `npm run start`. The seed script refuses non-local databases and production unless you override it on purpose.
+- **Take a database backup before merging any migration** (a provider snapshot, or `pg_dump`), and write down how you would roll back: migrations here are forward-only, so rollback means restoring the backup or shipping a follow-up migration.
+- Prefer additive migrations (new nullable column, or a column with a default). Be careful with drops, type changes, and enum casts: they can fail on existing rows and a failed migration stops the service from starting.
+- After a deploy, check the Render logs for the migration, `GET /health`, and one real booking in test mode.
 
 ---
 

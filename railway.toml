@@ -1,3 +1,6 @@
+# LEGACY: the backend now runs on Render, which does not read this file.
+# Kept for reference only; nothing below has been changed.
+
 # Railway deployment — single source of truth for how the backend is built and run.
 # (backend/nixpacks.toml was deleted: it conflicted with this file on node version,
 #  install command, and the `cd backend` prefix.)

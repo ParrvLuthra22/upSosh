@@ -23,6 +23,8 @@ export interface BookingTotals {
 }
 
 export function estimateBookingTotals(unitPrice: number, guestCount: number): BookingTotals {
+  // A free event is never charged: no price, no fee (mirrors the server).
+  if (unitPrice === 0) return { guestCount, ticketPrice: 0, platformFee: 0, totalAmount: 0 };
   const ticketPrice = unitPrice * guestCount;
   return {
     guestCount,

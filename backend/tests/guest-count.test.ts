@@ -126,12 +126,40 @@ describe('POST /api/bookings — pricing', () => {
     expect(res.body.booking).toMatchObject({
       guestCount: 3,
       ticketPrice: 0,
-      totalAmount: PLATFORM_FEE_FLAT, // unchanged pre-existing behaviour: the flat fee is recorded
+      platformFee: 0,
+      totalAmount: 0,
       status: 'confirmed',
       paymentStatus: 'paid',
       paymentMethod: 'free',
     });
     expect(await attendeesOf(event.id)).toBe(4);
+  });
+
+  it('free event flagged isFree with a leftover price still records ticketPrice 0, fee 0, total 0', async () => {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, isFree: true, price: 300, capacity: 10 });
+
+    const res = await book(user.id, event.id, { guestCount: 2 });
+
+    expect(res.status).toBe(201);
+    expect(res.body.booking).toMatchObject({ ticketPrice: 0, platformFee: 0, totalAmount: 0, paymentStatus: 'paid' });
+  });
+
+  it('free bookings do not count as host revenue; paid ones do', async () => {
+    const { user: host } = await createUser({ role: 'host', hostStatus: 'verified' });
+    const { user } = await createUser();
+    const freeEvent = await createEvent({ userId: host.id, isFree: true, price: 0, capacity: 10 });
+    const paidEvent = await createEvent({ userId: host.id, price: 200, capacity: 10 });
+
+    await book(user.id, freeEvent.id, { guestCount: 3 });
+    let stats = await request(app).get('/api/events/host/stats').set(authHeader(host.id));
+    expect(stats.body.totalRevenue).toBe(0);
+
+    const paid = await book(user.id, paidEvent.id);
+    await prisma.booking.update({ where: { id: paid.body.booking.id }, data: { paymentStatus: 'paid', status: 'confirmed' } });
+    stats = await request(app).get('/api/events/host/stats').set(authHeader(host.id));
+    expect(stats.body.totalRevenue).toBe(200 + PLATFORM_FEE_FLAT);
   });
 
   it('paid event: creating the booking does not move attendees (seats are taken on payment)', async () => {
