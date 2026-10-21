@@ -5,6 +5,7 @@ jest.mock('razorpay');
 import app from '../src/index';
 import prisma from '../src/lib/prisma';
 import { resetDb, createUser, createEvent, createBooking, authHeader } from './helpers';
+import { BOOKING_HOLD_MS } from '../src/lib/booking';
 import { ordersCreate, ordersFetch, paymentsRefund, paymentsFetch } from '../__mocks__/razorpay';
 
 beforeEach(async () => {
@@ -13,6 +14,7 @@ beforeEach(async () => {
   ordersFetch.mockReset();
   paymentsRefund.mockReset();
   paymentsFetch.mockReset();
+  paymentsRefund.mockResolvedValue({ id: 'rfnd_default' });
 });
 
 afterAll(async () => {
@@ -215,5 +217,235 @@ describe('PAY-2: create-order reuses an open order instead of replacing it', () 
     await hook('payment.captured', orderId, 'pay_single');
     expect(await bookingOf(booking.id)).toMatchObject({ paymentStatus: 'paid', status: 'confirmed' });
     expect(await attendeesOf(event.id)).toBe(1);
+  });
+});
+
+describe('PAY-3: a payment is only confirmed if the booking is live and seats remain', () => {
+  const longAgo = () => new Date(Date.now() - BOOKING_HOLD_MS - 60_000);
+
+  async function scenario(opts: {
+    capacity?: number; attendees?: number; guestCount?: number;
+    status?: 'pending' | 'cancelled' | 'expired'; paymentStatus?: 'unpaid' | 'failed';
+    createdAt?: Date;
+  } = {}) {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, capacity: opts.capacity ?? 10, attendees: opts.attendees ?? 0 });
+    const orderId = `order_${crypto.randomBytes(4).toString('hex')}`;
+    const guestCount = opts.guestCount ?? 1;
+    const booking = await createBooking({
+      userId: user.id, eventId: event.id, razorpayOrderId: orderId, guestCount,
+      ticketPrice: 500 * guestCount,
+      status: opts.status ?? 'expired', paymentStatus: opts.paymentStatus ?? 'unpaid',
+      createdAt: opts.createdAt ?? longAgo(),
+    });
+    return { host, user, event, booking, orderId };
+  }
+
+  it('cancelled booking: not confirmed, refunded once, seats untouched', async () => {
+    const { event, booking, orderId } = await scenario({ status: 'cancelled', guestCount: 2 });
+
+    const res = await hook('payment.captured', orderId, 'pay_c1');
+
+    expect(res.status).toBe(200);
+    const stored = await bookingOf(booking.id);
+    expect(stored).toMatchObject({ status: 'cancelled', paymentStatus: 'refunded', refundId: 'rfnd_default', paymentId: 'pay_c1' });
+    expect(paymentsRefund).toHaveBeenCalledTimes(1);
+    expect(paymentsRefund).toHaveBeenCalledWith('pay_c1', { amount: Math.round(booking.totalAmount * 100) });
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('/verify on a cancelled booking is refused and refunded', async () => {
+    const { user, event, booking, orderId } = await scenario({ status: 'cancelled' });
+
+    const res = await verify(user.id, booking.id, orderId, 'pay_c2');
+
+    expect(res.status).toBe(409);
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('refunded');
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('expired hold with seats still available: confirmed', async () => {
+    const { user, event, booking, orderId } = await scenario({ capacity: 5, attendees: 2, guestCount: 2 });
+
+    const res = await verify(user.id, booking.id, orderId, 'pay_e1');
+
+    expect(res.status).toBe(200);
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'confirmed', paymentStatus: 'paid' });
+    expect(await attendeesOf(event.id)).toBe(4);
+    expect(paymentsRefund).not.toHaveBeenCalled();
+  });
+
+  it('failed-then-retried payment on an expired hold with seats available: confirmed', async () => {
+    const { event, booking, orderId } = await scenario({ capacity: 5, paymentStatus: 'failed' });
+
+    await hook('payment.captured', orderId, 'pay_e2');
+
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'confirmed', paymentStatus: 'paid' });
+    expect(await attendeesOf(event.id)).toBe(1);
+  });
+
+  it('expired hold and the event is now full: not confirmed, refunded, attendees never exceed capacity', async () => {
+    const { event, booking, orderId } = await scenario({ capacity: 3, attendees: 3 });
+
+    const res = await hook('payment.captured', orderId, 'pay_f1');
+
+    expect(res.status).toBe(200);
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'refunded', paymentStatus: 'refunded' });
+    expect(await attendeesOf(event.id)).toBe(3);
+    expect(paymentsRefund).toHaveBeenCalledTimes(1);
+  });
+
+  it('expired hold needing more seats than remain: not confirmed, refunded', async () => {
+    const { user, event, booking, orderId } = await scenario({ capacity: 5, attendees: 3, guestCount: 3 });
+
+    const res = await verify(user.id, booking.id, orderId, 'pay_f2');
+
+    expect(res.status).toBe(409);
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('refunded');
+    expect(await attendeesOf(event.id)).toBe(3);
+  });
+
+  it("another customer's live hold is respected when the payer's own hold has lapsed", async () => {
+    const { host, event, booking, orderId } = await scenario({ capacity: 2, attendees: 1 });
+    const { user: other } = await createUser();
+    await createBooking({ userId: other.id, eventId: event.id, status: 'pending', paymentStatus: 'unpaid' });
+    void host;
+
+    await hook('payment.captured', orderId, 'pay_h1');
+
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('refunded');
+    expect(await attendeesOf(event.id)).toBe(1);
+  });
+
+  it('a live hold is always honoured: it was counted when the booking was made', async () => {
+    const { event, booking, orderId } = await scenario({ capacity: 2, guestCount: 2, status: 'pending', createdAt: new Date() });
+
+    await hook('payment.captured', orderId, 'pay_live');
+
+    expect(await bookingOf(booking.id)).toMatchObject({ status: 'confirmed', paymentStatus: 'paid' });
+    expect(await attendeesOf(event.id)).toBe(2);
+    expect(paymentsRefund).not.toHaveBeenCalled();
+  });
+
+  it('refund is idempotent: a repeated delivery does not refund twice', async () => {
+    const { booking, orderId } = await scenario({ status: 'cancelled' });
+
+    await hook('payment.captured', orderId, 'pay_i1');
+    await hook('payment.captured', orderId, 'pay_i1');
+
+    expect(paymentsRefund).toHaveBeenCalledTimes(1);
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('refunded');
+  });
+
+  it("treats Razorpay's 'already refunded' answer as success", async () => {
+    const { booking, orderId } = await scenario({ status: 'cancelled' });
+    paymentsRefund.mockRejectedValue({ statusCode: 400, error: { description: 'The payment has been fully refunded already' } });
+
+    const res = await hook('payment.captured', orderId, 'pay_i2');
+
+    expect(res.status).toBe(200);
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('refunded');
+  });
+
+  it('refund failure: booking stays unconfirmed (payment id kept), webhook asks for a retry, retry completes the refund', async () => {
+    const { event, booking, orderId } = await scenario({ capacity: 1, attendees: 1 });
+    paymentsRefund.mockRejectedValueOnce({ statusCode: 502, error: { description: 'gateway down' } });
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const first = await hook('payment.captured', orderId, 'pay_r1');
+
+    expect(first.status).toBe(500);
+    let stored = await bookingOf(booking.id);
+    expect(stored).toMatchObject({ status: 'expired', paymentStatus: 'unpaid', paymentId: 'pay_r1' });
+    expect(await attendeesOf(event.id)).toBe(1);
+    expect(errors.mock.calls.flat().join(' ')).toContain(booking.id);
+    expect(errors.mock.calls.flat().join(' ')).not.toContain(process.env.RAZORPAY_KEY_SECRET!);
+    errors.mockRestore();
+
+    const retry = await hook('payment.captured', orderId, 'pay_r1');
+    expect(retry.status).toBe(200);
+    stored = await bookingOf(booking.id);
+    expect(stored.paymentStatus).toBe('refunded');
+    expect(await attendeesOf(event.id)).toBe(1);
+  });
+
+  it('/verify reports a refund failure without confirming the booking', async () => {
+    const { user, event, booking, orderId } = await scenario({ status: 'cancelled' });
+    paymentsRefund.mockRejectedValue({ statusCode: 502, error: { description: 'gateway down' } });
+    const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await verify(user.id, booking.id, orderId, 'pay_r2');
+
+    errors.mockRestore();
+    expect(res.status).toBe(502);
+    expect((await bookingOf(booking.id)).paymentStatus).toBe('unpaid');
+    expect(await attendeesOf(event.id)).toBe(0);
+  });
+
+  it('create-order refuses a cancelled booking', async () => {
+    const { user, booking } = await scenario({ status: 'cancelled', paymentStatus: 'unpaid' });
+    const res = await request(app).post('/api/payments/create-order').set(authHeader(user.id)).send({ bookingId: booking.id });
+    expect(res.status).toBe(409);
+    expect(ordersCreate).not.toHaveBeenCalled();
+  });
+
+  it('concurrency: many late payments for the last seats — attendees never exceeds capacity, the rest are refunded', async () => {
+    const { user: host } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, capacity: 3, attendees: 0 });
+    const rows = [];
+    for (let i = 0; i < 8; i++) {
+      const { user } = await createUser();
+      const orderId = `order_c_${i}_${crypto.randomBytes(3).toString('hex')}`;
+      const booking = await createBooking({
+        userId: user.id, eventId: event.id, razorpayOrderId: orderId, status: 'expired', createdAt: longAgo(),
+      });
+      rows.push({ user, booking, orderId });
+    }
+
+    // Half arrive as webhooks, half through /verify, all at once.
+    const responses = await Promise.all(rows.map((r, i) =>
+      i % 2 === 0 ? hook('payment.captured', r.orderId, `pay_c_${i}`) : verify(r.user.id, r.booking.id, r.orderId, `pay_c_${i}`)));
+
+    expect(responses.every((r) => [200, 409].includes(r.status))).toBe(true);
+    const stored = await prisma.booking.findMany({ where: { eventId: event.id } });
+    const confirmed = stored.filter((b) => b.paymentStatus === 'paid');
+    const refunded = stored.filter((b) => b.paymentStatus === 'refunded');
+    expect(await attendeesOf(event.id)).toBe(3);
+    expect(confirmed).toHaveLength(3);
+    expect(refunded).toHaveLength(5);
+    expect(paymentsRefund).toHaveBeenCalledTimes(5);
+  });
+
+  it('concurrency: late payments racing new bookings for the same event never push attendees past capacity', async () => {
+    const { user: host } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, capacity: 4, attendees: 0 });
+    const late = [];
+    for (let i = 0; i < 4; i++) {
+      const { user } = await createUser();
+      const orderId = `order_m_${i}_${crypto.randomBytes(3).toString('hex')}`;
+      const booking = await createBooking({
+        userId: user.id, eventId: event.id, razorpayOrderId: orderId, guestCount: 2, ticketPrice: 1000,
+        status: 'expired', createdAt: longAgo(),
+      });
+      late.push({ orderId });
+    }
+    const buyers = await Promise.all([1, 2, 3, 4].map(() => createUser()));
+
+    await Promise.all([
+      ...late.map((l, i) => hook('payment.captured', l.orderId, `pay_m_${i}`)),
+      ...buyers.map(({ user }) => request(app).post('/api/bookings').set(authHeader(user.id)).send({
+        eventId: event.id, guestName: 'G', guestEmail: 'g@example.test', guestPhone: '1', guestCount: 2,
+      })),
+    ]);
+
+    const after = await prisma.event.findUniqueOrThrow({ where: { id: event.id } });
+    const holds = await prisma.booking.aggregate({
+      where: { eventId: event.id, paymentStatus: 'unpaid', status: 'pending', createdAt: { gte: new Date(Date.now() - BOOKING_HOLD_MS) } },
+      _sum: { guestCount: true },
+    });
+    expect(after.attendees).toBeLessThanOrEqual(after.capacity);
+    // Whoever won each race, paid seats plus live holds still fit the event.
+    expect(after.attendees + (holds._sum.guestCount ?? 0)).toBeLessThanOrEqual(after.capacity);
   });
 });

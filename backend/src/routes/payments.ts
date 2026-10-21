@@ -5,6 +5,7 @@ import prisma from '../lib/prisma';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { sendBookingConfirmation } from '../lib/email';
 import { notify } from '../lib/notify';
+import { confirmPaidBooking, refundRejectedPayment } from '../lib/confirmPayment';
 
 function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
@@ -76,6 +77,9 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
 
     if (booking.paymentStatus === 'paid') {
       return res.status(409).json({ message: 'This booking is already paid' });
+    }
+    if (booking.status === 'cancelled' || booking.status === 'refunded') {
+      return res.status(409).json({ message: 'This booking was cancelled and can no longer be paid' });
     }
 
     // totalAmount = ticketPrice + platformFee, computed server-side in
@@ -199,44 +203,38 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
       return res.status(409).json({ message: `Cannot pay a booking in state "${booking.paymentStatus}"` });
     }
 
-    // Conditional update — the WHERE clause is the last line of defence against
-    // two concurrent verifications both marking the same booking paid. This is
-    // also the seat reservation point for a paid booking (free events reserve
-    // at creation instead — see POST /api/bookings) — an abandoned checkout
-    // that never reaches here never held a seat.
-    //
-    // Money is already captured by Razorpay at this point, so the seat
-    // increment (by guestCount) is unconditional rather than capacity-gated
-    // like the free-event path — refusing to seat a customer who has already
-    // been charged would trade a rare last-seat race for a guaranteed billing
-    // dispute. It runs in the same transaction as the paid flip so a crash
-    // between the two can't leave a paid booking with no seats reserved.
-    const marked = await prisma.$transaction(async (tx) => {
-      const { count } = await tx.booking.updateMany({
-        where: { id: bookingId, paymentStatus: { in: ['unpaid', 'failed'] }, status: { not: 'cancelled' } },
-        data: {
-          paymentStatus: 'paid',
-          paymentId: razorpay_payment_id,
-          status: 'confirmed',
-          paymentMethod: 'razorpay',
-          paidAt: new Date(),
-        },
-      });
-      if (count === 0) return false;
-      if (booking.eventId) {
-        await tx.event.update({
-          where: { id: booking.eventId },
-          data: { attendees: { increment: booking.guestCount } },
+    // Seat reservation for a paid booking happens here (free events reserve at
+    // creation). confirmPaidBooking locks the event row and re-checks the
+    // booking and the seats, so a payment that arrives after the booking was
+    // cancelled, or after its seats went elsewhere, is refunded instead of
+    // being seated over capacity.
+    const result = await confirmPaidBooking({ id: bookingId }, razorpay_payment_id);
+
+    if (result.outcome === 'rejected') {
+      try {
+        await refundRejectedPayment(getRazorpayClient(), result.booking, razorpay_payment_id);
+      } catch {
+        return res.status(502).json({
+          message: 'We could not confirm this booking, and the automatic refund did not complete. ' +
+            `Please contact support and quote payment ${razorpay_payment_id}.`,
         });
       }
-      return true;
-    });
-
-    if (!marked) {
-      const current = await prisma.booking.findUnique({ where: { id: bookingId } });
-      if (current?.status === 'cancelled' && current.paymentStatus !== 'paid') {
-        return res.status(409).json({ message: 'This booking was cancelled and cannot be confirmed' });
-      }
+      notify(
+        booking.userId,
+        'booking',
+        'Payment refunded',
+        result.reason === 'cancelled'
+          ? 'Your booking had been cancelled, so your payment was refunded.'
+          : 'The event filled up before your payment completed, so your payment was refunded.',
+      );
+      return res.status(409).json({
+        message: result.reason === 'cancelled'
+          ? 'This booking was cancelled, so your payment has been refunded.'
+          : 'This event filled up before your payment completed, so your payment has been refunded.',
+        refunded: true,
+      });
+    }
+    if (result.outcome !== 'confirmed') {
       return res.status(409).json({ message: 'This booking is already paid' });
     }
 
@@ -328,35 +326,29 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
 
         if (orderId) {
           // Bound to the order id persisted at order-creation time (not the
-          // Prisma cuid — a Razorpay order id never equals one, so this
-          // updateMany matched zero rows before razorpayOrderId existed).
-          // The paymentStatus: 'unpaid' guard is what makes a duplicate
-          // delivery of the same event a no-op instead of a double-write —
-          // it also means this is a no-op on the (usual) path where
-          // POST /verify already marked the booking paid; this webhook is
-          // the recovery path for when /verify never ran at all (e.g. the
-          // network dropped after Razorpay captured the payment but before
-          // the client could call /verify).
-          // Mark paid and reserve the seats (guestCount) in one transaction,
-          // same as POST /verify.
-          const count = await prisma.$transaction(async (tx) => {
-            const target = await tx.booking.findUnique({ where: { razorpayOrderId: orderId } });
-            if (!target) return 0;
-            const { count: marked } = await tx.booking.updateMany({
-              where: { razorpayOrderId: orderId, paymentStatus: { in: ['unpaid', 'failed'] }, status: { not: 'cancelled' } },
-              data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay', paidAt: new Date() },
-            });
-            if (marked > 0 && target.eventId) {
-              await tx.event.update({
-                where: { id: target.eventId },
-                data: { attendees: { increment: target.guestCount } },
-              });
-            }
-            return marked;
-          });
-          console.log(`[Webhook] payment.captured matched ${count} booking(s) for order ${orderId}`);
+          // Prisma cuid). confirmPaidBooking is idempotent — a duplicate
+          // delivery, or one that arrives after POST /verify already confirmed
+          // the booking, is a no-op — so this is the recovery path for when
+          // /verify never ran (e.g. the network dropped after Razorpay captured
+          // the payment). It applies the same cancelled / seats-left rules as
+          // /verify; a payment it cannot honour is refunded.
+          const result = await confirmPaidBooking({ razorpayOrderId: orderId }, paymentId ?? '');
+          console.log(`[Webhook] payment.captured for order ${orderId}: ${result.outcome}`);
 
-          if (count > 0) {
+          if (result.outcome === 'rejected') {
+            // Throws on refund failure -> 500 below, so Razorpay redelivers.
+            await refundRejectedPayment(getRazorpayClient(), result.booking, paymentId ?? '');
+            notify(
+              result.booking.userId,
+              'booking',
+              'Payment refunded',
+              result.reason === 'cancelled'
+                ? 'Your booking had been cancelled, so your payment was refunded.'
+                : 'The event filled up before your payment completed, so your payment was refunded.',
+            );
+          }
+
+          if (result.outcome === 'confirmed') {
             const paidBooking = await prisma.booking.findUnique({ where: { razorpayOrderId: orderId }, include: { event: true } });
             if (paidBooking) {
               // This booking never got a confirmation email from POST /verify,
