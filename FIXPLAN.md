@@ -672,7 +672,7 @@ Tests are in `backend/tests/refunds.test.ts` and `backend/tests/cancel-cascade.t
 - [x] **REF-E** — 2026-10-21 — A payment for a booking whose event was cancelled after booking is refunded, not confirmed (`/verify` and webhook).
 - [x] **REF-F** — 2026-10-21 — `docs/stuck-payments.sql` (read-only; not run) lists money taken without a ticket and unfinished refunds.
 - [x] **REF-G** — 2026-10-21 — The booking modal shows clear messages for 400, 409 and 502 responses, with a contact link when a payment may need a person.
-- [ ] **REF-D (needs a decision)** — The refund page describes per-event host refund policies, but the data model has no refund-policy field, so a user's own cancellation currently refunds the full amount at any time. Options: (a) add a refund-policy field to events (schema change); (b) one platform-wide rule; (c) full refund until the event starts, none after; (d) keep behaviour and reword the page.
+- [x] **REF-D** — Decided 2026-10-21 and done on `fix/refund-policy` (see below).
 - [ ] **Follow-up** — Deleting an account does not cancel events the user hosts.
 - [ ] **Follow-up** — `/verify` has no automatic retry if the confirm step fails after payment; the webhook is the recovery path.
 
@@ -695,4 +695,14 @@ Merged `fix/refunds-and-cancel` (which carries `chore/leftovers` and `fix/paymen
 - [x] **Emails and notifications** — No new emails were added on the refund branches and there is still one booking-creation path (`eventId` required). Notifications are plain text rendered as text, so they are length-bounded rather than HTML-escaped (`createNotification` in `lib/notify.ts`); the host-cancellation notice now uses it.
 - [x] **Migrations** — No schema or migration differences from `main` (the guestCount migration is already there). Applied to an empty local database and to one with sample bookings (existing rows got `guestCount = 1`); no drift against `schema.prisma`.
 - [ ] **Follow-up** — `components/host/AIAssistant.tsx` renders model output with `dangerouslySetInnerHTML` (in the orphaned `/host` tree, P4-61); delete it or sanitise.
+
+## Refund policy — 2026-10-21 (branch `fix/refund-policy`)
+
+Owner's decision: a customer cancelling their own booking gets a full refund (ticket plus the flat ₹25 fee) until 00:00 India time on the event's calendar day; from then on cancelling is allowed but nothing is refunded; host cancellation and payments for an event cancelled after booking are always refunded in full. No schema change.
+
+- [x] **Cutoff** — `lib/refundPolicy.ts` (`IST_OFFSET_MS`, `refundCutoff`, `userRefundDecision`), used by `cancelBooking` when the booking is claimed. Only the date's IST calendar day is used: host-created events store the chosen day at 00:00 UTC and the clock time as free text in `Event.time`, which is not parsed; seed events carry a real time of day in `date`. After the cutoff the seats are still released (they track headcount, not money) and no refund is requested. A booking cancelled without a refund is marked `refundId = 'no-refund:after-cutoff'` so it is not mistaken for a failed refund; `docs/stuck-payments.sql` excludes it (and lists it in query 6). A refund that failed before the cutoff is still honoured when retried later. Host cancellation passes `policy: 'full'`.
+- [x] **Frontend** — `/refund` states this policy; the cancel confirmation in My bookings shows whether a refund will be given before the second tap (`cancelRefund` in `lib/booking.ts`, mirroring the server).
+- [x] **Account deletion** — returns 409 while the user hosts an upcoming (live or full) event with paid bookings; cancel the event first.
+- [ ] **Follow-up** — `/terms` still says refunds follow the Host's refund policy (lines about user-cancelled events and overriding it) and now disagrees with `/refund`. `/refund` sections 4 (rescheduling) and 7 (force majeure) promise refunds that are not implemented.
+- [ ] **Follow-up** — Whether a cancellation just before or after the cutoff is judged on the server clock is the only authority; the confirmation text uses the browser clock and can differ by a moment.
 
