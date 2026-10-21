@@ -2,6 +2,7 @@ import Razorpay from 'razorpay';
 import { Booking } from '@prisma/client';
 import prisma from './prisma';
 import { createNotification } from './notify';
+import { NO_REFUND_MARKER, userRefundDecision, RefundDecision } from './refundPolicy';
 
 /**
  * Cancelling a booking and returning the money, in two separate steps so that
@@ -56,22 +57,34 @@ export async function issueRefund(razorpay: Razorpay, bookingId: string, payment
 }
 
 /** Money was actually taken through Razorpay and is still with us. */
-export function refundIsDue(b: Pick<Booking, 'paymentStatus' | 'paymentMethod' | 'paymentId' | 'totalAmount'>): boolean {
-  return b.paymentStatus === 'paid' && b.paymentMethod === 'razorpay' && !!b.paymentId && b.totalAmount > 0;
+export function refundIsDue(b: Pick<Booking, 'paymentStatus' | 'paymentMethod' | 'paymentId' | 'totalAmount' | 'refundId'>): boolean {
+  return b.paymentStatus === 'paid' && b.refundId !== NO_REFUND_MARKER && b.paymentMethod === 'razorpay' && !!b.paymentId && b.totalAmount > 0;
 }
 
 export type CancelOutcome =
   | { outcome: 'not_found' }
   | { outcome: 'nothing_to_do' }
   | { outcome: 'in_progress' }
-  | { outcome: 'cancelled'; refund: 'none' | 'done' | 'failed'; booking: Booking };
+  | { outcome: 'cancelled'; refund: 'none' | 'done' | 'failed'; booking: Booking; withheld?: Exclude<RefundDecision, 'full'> };
 
 export async function cancelBooking(
   getRazorpay: () => Razorpay,
   bookingId: string,
-  options: { refund?: boolean } = {},
+  options: {
+    refund?: boolean;
+    /**
+     * 'user' (default): the customer's own cancellation, subject to the
+     * refund cutoff in lib/refundPolicy.ts. 'full': always refund in full
+     * (host cancelled the event). The cutoff is decided once, when the booking
+     * is claimed; a refund that failed earlier is still honoured on retry.
+     */
+    policy?: 'user' | 'full';
+    now?: Date;
+  } = {},
 ): Promise<CancelOutcome> {
   const refundWanted = options.refund !== false;
+  const applyCutoff = (options.policy ?? 'user') === 'user';
+  const now = options.now ?? new Date();
 
   // ── 1. Claim ─────────────────────────────────────────────────────────────
   const claim = await prisma.$transaction(async (tx) => {
@@ -100,16 +113,33 @@ export async function cancelBooking(
         data: { attendees: { decrement: booking.guestCount } },
       });
     }
-    return { kind: 'claimed' as const, booking: { ...booking, status: 'cancelled' as const } };
+
+    // Past the refund cutoff the money stays: mark the row so it is not taken
+    // for a refund that failed (see NO_REFUND_MARKER).
+    let withheld: Exclude<RefundDecision, 'full'> | undefined;
+    if (applyCutoff && booking.eventId && refundIsDue(booking)) {
+      const event = await tx.event.findUnique({ where: { id: booking.eventId }, select: { date: true } });
+      const decision = event ? userRefundDecision(event.date, now) : 'full';
+      if (decision !== 'full') {
+        withheld = decision;
+        await tx.booking.update({ where: { id: bookingId }, data: { refundId: NO_REFUND_MARKER } });
+      }
+    }
+    return {
+      kind: 'claimed' as const,
+      booking: { ...booking, status: 'cancelled' as const, ...(withheld ? { refundId: NO_REFUND_MARKER } : {}) },
+      withheld,
+    };
   });
 
   if (claim.kind === 'not_found') return { outcome: 'not_found' };
   if (claim.kind === 'settled') return { outcome: 'nothing_to_do' };
 
   const booking = claim.booking;
+  const withheld = claim.kind === 'claimed' ? claim.withheld : undefined;
   if (!refundIsDue(booking)) {
     return claim.kind === 'claimed'
-      ? { outcome: 'cancelled', refund: 'none', booking }
+      ? { outcome: 'cancelled', refund: 'none', booking, ...(withheld ? { withheld } : {}) }
       : { outcome: 'nothing_to_do' };
   }
   if (!refundWanted) {
@@ -262,7 +292,7 @@ export async function cancelEventBookings(
     }
     let result: CancelOutcome;
     try {
-      result = await cancelBooking(getRazorpay, b.id);
+      result = await cancelBooking(getRazorpay, b.id, { policy: 'full' });
     } catch (err: unknown) {
       console.error(`[Refunds] Cancelling booking ${b.id} failed: ${describeRazorpayError(err)}`);
       summary.failed += 1;

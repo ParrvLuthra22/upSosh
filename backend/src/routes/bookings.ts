@@ -248,7 +248,20 @@ router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response)
         booking: result.booking,
       });
     }
-    return res.json({ booking: result.booking, message: 'Booking cancelled successfully' });
+    if (result.withheld) {
+      return res.json({
+        booking: result.booking,
+        refunded: false,
+        message: result.withheld === 'event_day'
+          ? 'Booking cancelled. The event is today, so no refund is due under our refund policy.'
+          : 'Booking cancelled. The event has already taken place, so no refund is due under our refund policy.',
+      });
+    }
+    return res.json({
+      booking: result.booking,
+      refunded: result.refund === 'done',
+      message: result.refund === 'done' ? 'Booking cancelled and refunded' : 'Booking cancelled successfully',
+    });
   } catch (err: unknown) {
     console.error('PATCH /bookings/:id/cancel error:', errorMessage(err));
     return res.status(500).json({ message: 'Cancellation failed — please try again or contact support' });
