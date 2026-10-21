@@ -9,6 +9,7 @@ import { sendBookingConfirmation } from '../lib/email';
 import { getRazorpayClient } from './payments';
 import { notify } from '../lib/notify';
 import { PLATFORM_FEE_FLAT, BOOKING_HOLD_MS, eventClosedReason } from '../lib/booking';
+import { cancelBooking } from '../lib/refunds';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -21,8 +22,6 @@ class CapacityFullError extends Error {
 }
 class EventNotFoundError extends Error {}
 class EventClosedError extends Error {}
-class BookingStateChangedError extends Error {}
-class AlreadyCancelledError extends Error {}
 
 const router = Router();
 
@@ -218,13 +217,12 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response): Promise
   }
 });
 
-// PATCH /api/bookings/:id/cancel — cancel booking (requireAuth, must own)
+// PATCH /api/bookings/:id/cancel — cancel booking (requireAuth, must own or admin)
 //
-// A seat was only ever actually consumed if paymentStatus reached 'paid' —
-// free events reach it at creation, paid events only on payment success (see
-// POST / above) — so that's also the only case attendees needs decrementing.
-// A still-unpaid booking never held a seat, so cancelling it is a no-op on
-// capacity.
+// cancelBooking (lib/refunds.ts) claims the booking first and refunds after, so
+// a double or concurrent cancel releases seats and refunds at most once. If
+// the refund itself fails the booking stays cancelled with its payment still
+// held; cancelling again retries only the refund.
 router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
@@ -237,59 +235,21 @@ router.patch('/:id/cancel', requireAuth, async (req: AuthRequest, res: Response)
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    if (booking.status === 'cancelled') {
-      return res.status(400).json({ message: 'Booking is already cancelled' });
+    const result = await cancelBooking(getRazorpayClient, id);
+
+    if (result.outcome === 'not_found') return res.status(404).json({ message: 'Booking not found' });
+    if (result.outcome === 'nothing_to_do') return res.status(400).json({ message: 'Booking is already cancelled' });
+    if (result.outcome === 'in_progress') {
+      return res.status(409).json({ message: 'This booking is already being cancelled — please check again in a minute' });
     }
-
-    const heldSeat = booking.paymentStatus === 'paid';
-    const needsRefund = booking.paymentStatus === 'paid' && booking.paymentMethod === 'razorpay' && !!booking.paymentId;
-
-    // Issue the refund BEFORE writing anything — if Razorpay rejects it (already
-    // refunded, invalid payment, network error), the booking stays exactly as
-    // it was rather than showing 'cancelled' with no money actually returned.
-    let refundId: string | null = null;
-    if (needsRefund) {
-      const razorpay = getRazorpayClient();
-      const refund = await razorpay.payments.refund(booking.paymentId!, {
-        amount: Math.round(booking.totalAmount * 100),
+    if (result.refund === 'failed') {
+      return res.status(502).json({
+        message: 'Your booking is cancelled, but the refund did not complete. Please try cancelling again in a few minutes, or contact support.',
+        booking: result.booking,
       });
-      refundId = refund.id;
     }
-
-    // The conditional update is what makes the release happen once: of two
-    // concurrent cancels only one flips the booking out of its current state,
-    // so only one decrements. Pinning paymentStatus to the value read above
-    // also stops a payment landing between that read and this write from
-    // being cancelled as if it never held a seat.
-    const updatedBooking = await prisma.$transaction(async (tx) => {
-      const { count } = await tx.booking.updateMany({
-        where: { id, status: { not: 'cancelled' }, paymentStatus: booking.paymentStatus },
-        data: {
-          status: 'cancelled',
-          ...(needsRefund ? { paymentStatus: 'refunded', refundId } : {}),
-        },
-      });
-      if (count === 0) {
-        const current = await tx.booking.findUnique({ where: { id } });
-        throw current?.status === 'cancelled' ? new AlreadyCancelledError() : new BookingStateChangedError();
-      }
-      if (booking.eventId && heldSeat) {
-        await tx.event.update({
-          where: { id: booking.eventId },
-          data: { attendees: { decrement: booking.guestCount } },
-        });
-      }
-      return tx.booking.findUniqueOrThrow({ where: { id } });
-    });
-
-    return res.json({ booking: updatedBooking, message: 'Booking cancelled successfully' });
+    return res.json({ booking: result.booking, message: 'Booking cancelled successfully' });
   } catch (err: unknown) {
-    if (err instanceof AlreadyCancelledError) {
-      return res.status(400).json({ message: 'Booking is already cancelled' });
-    }
-    if (err instanceof BookingStateChangedError) {
-      return res.status(409).json({ message: 'This booking just changed — please refresh and try again' });
-    }
     console.error('PATCH /bookings/:id/cancel error:', errorMessage(err));
     return res.status(500).json({ message: 'Cancellation failed — please try again or contact support' });
   }

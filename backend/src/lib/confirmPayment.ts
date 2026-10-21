@@ -2,6 +2,7 @@ import Razorpay from 'razorpay';
 import { Booking, Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { BOOKING_HOLD_MS } from './booking';
+import { issueRefund } from './refunds';
 
 /**
  * What happened when a captured payment was applied to a booking.
@@ -109,20 +110,6 @@ export async function confirmPaidBooking(
   });
 }
 
-function describeRazorpayError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (err && typeof err === 'object' && 'error' in err) {
-    const inner = (err as { error?: { description?: unknown } }).error;
-    if (inner && typeof inner === 'object' && 'description' in inner) return String(inner.description);
-  }
-  return String(err);
-}
-
-/** Razorpay answers a second refund of a fully refunded payment with an error. */
-function isAlreadyRefunded(err: unknown): boolean {
-  return /already\s+(been\s+)?(fully\s+)?refunded|fully\s+refunded/i.test(describeRazorpayError(err));
-}
-
 /**
  * Refund a payment that could not be applied to its booking, and record it.
  *
@@ -139,19 +126,8 @@ export async function refundRejectedPayment(
   const current = await prisma.booking.findUnique({ where: { id: booking.id } });
   if (current?.paymentStatus === 'refunded') return;
 
-  let refundId: string | null = null;
-  try {
-    const refund = await razorpay.payments.refund(paymentId, { amount: Math.round(booking.totalAmount * 100) });
-    refundId = refund?.id ?? null;
-  } catch (err: unknown) {
-    if (!isAlreadyRefunded(err)) {
-      console.error(
-        `[Payments] Refund FAILED for booking ${booking.id} (payment ${paymentId}); ` +
-        `booking left unconfirmed, needs a retry or a manual refund: ${describeRazorpayError(err)}`,
-      );
-      throw err;
-    }
-  }
+  // Throws after logging if Razorpay refuses; the booking is then left as it was.
+  const refundId = await issueRefund(razorpay, booking.id, paymentId, booking.totalAmount);
 
   await prisma.booking.updateMany({
     where: { id: booking.id, paymentStatus: { in: ['unpaid', 'failed'] } },
