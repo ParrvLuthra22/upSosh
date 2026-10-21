@@ -166,7 +166,9 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     if (booking.paymentStatus === 'paid') {
       return res.status(409).json({ message: 'This booking is already paid' });
     }
-    if (booking.paymentStatus !== 'unpaid') {
+    // An earlier attempt on the same order may have been recorded as 'failed';
+    // a later successful attempt must still confirm the booking.
+    if (booking.paymentStatus !== 'unpaid' && booking.paymentStatus !== 'failed') {
       return res.status(409).json({ message: `Cannot pay a booking in state "${booking.paymentStatus}"` });
     }
 
@@ -184,7 +186,7 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     // between the two can't leave a paid booking with no seats reserved.
     const marked = await prisma.$transaction(async (tx) => {
       const { count } = await tx.booking.updateMany({
-        where: { id: bookingId, paymentStatus: 'unpaid' },
+        where: { id: bookingId, paymentStatus: { in: ['unpaid', 'failed'] }, status: { not: 'cancelled' } },
         data: {
           paymentStatus: 'paid',
           paymentId: razorpay_payment_id,
@@ -204,6 +206,10 @@ router.post('/verify', requireAuth, async (req: AuthRequest, res: Response): Pro
     });
 
     if (!marked) {
+      const current = await prisma.booking.findUnique({ where: { id: bookingId } });
+      if (current?.status === 'cancelled' && current.paymentStatus !== 'paid') {
+        return res.status(409).json({ message: 'This booking was cancelled and cannot be confirmed' });
+      }
       return res.status(409).json({ message: 'This booking is already paid' });
     }
 
@@ -310,7 +316,7 @@ router.post('/webhook', async (req: Request, res: Response): Promise<Response> =
             const target = await tx.booking.findUnique({ where: { razorpayOrderId: orderId } });
             if (!target) return 0;
             const { count: marked } = await tx.booking.updateMany({
-              where: { razorpayOrderId: orderId, paymentStatus: 'unpaid' },
+              where: { razorpayOrderId: orderId, paymentStatus: { in: ['unpaid', 'failed'] }, status: { not: 'cancelled' } },
               data: { paymentStatus: 'paid', paymentId, status: 'confirmed', paymentMethod: 'razorpay', paidAt: new Date() },
             });
             if (marked > 0 && target.eventId) {
