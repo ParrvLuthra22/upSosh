@@ -86,26 +86,53 @@ router.post('/create-order', requireAuth, async (req: AuthRequest, res: Response
     }
 
     const razorpay = getRazorpayClient();
+    const respond = (order: { id: string; amount: number | string; currency: string }) =>
+      res.json({
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        key: process.env.RAZORPAY_KEY_ID,
+      });
 
-    const order = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: bookingId,
-    });
+    // The order id is what /verify and the webhook match a payment to, so it
+    // is only ever replaced by compare-and-set against the value just read.
+    // An open order for the same amount is reused (a repeated request must not
+    // orphan the checkout the customer already has open), and an order that
+    // has been paid is never replaced.
+    let currentOrderId = booking.razorpayOrderId;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (currentOrderId) {
+        const existing = await razorpay.orders.fetch(currentOrderId);
+        if (existing.status === 'paid') {
+          return res.status(409).json({ message: 'Payment for this booking was already received and is being confirmed' });
+        }
+        if (Number(existing.amount) === amountInPaise && existing.currency === 'INR') {
+          return respond(existing);
+        }
+      }
 
-    // Persist the order id before returning it. /verify uses this to prove the
-    // payment being verified belongs to this booking and no other.
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: { razorpayOrderId: order.id },
-    });
+      const order = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: bookingId,
+      });
 
-    return res.json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      key: process.env.RAZORPAY_KEY_ID,
-    });
+      const { count } = await prisma.booking.updateMany({
+        where: { id: bookingId, razorpayOrderId: currentOrderId },
+        data: { razorpayOrderId: order.id },
+      });
+      if (count === 1) return respond(order);
+
+      // A concurrent request stored its order first; re-read and reuse that one.
+      const latest = await prisma.booking.findUnique({ where: { id: bookingId } });
+      if (!latest) return res.status(404).json({ message: 'Booking not found' });
+      if (latest.paymentStatus === 'paid') {
+        return res.status(409).json({ message: 'This booking is already paid' });
+      }
+      currentOrderId = latest.razorpayOrderId;
+    }
+
+    return res.status(409).json({ message: 'Another payment request is in progress — please try again' });
   } catch (err: unknown) {
     const message = errorMessage(err);
     console.error('POST /payments/create-order error:', message);

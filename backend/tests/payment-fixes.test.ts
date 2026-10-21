@@ -117,3 +117,103 @@ describe('PAY-1: a successful payment confirms a booking an earlier attempt mark
     expect(await attendeesOf(event.id)).toBe(0);
   });
 });
+
+describe('PAY-2: create-order reuses an open order instead of replacing it', () => {
+  async function setup(opts: { razorpayOrderId?: string | null } = {}) {
+    const { user: host } = await createUser();
+    const { user } = await createUser();
+    const event = await createEvent({ userId: host.id, price: 500, capacity: 10 });
+    const booking = await createBooking({
+      userId: user.id, eventId: event.id, ticketPrice: 500, platformFee: 25,
+      razorpayOrderId: opts.razorpayOrderId ?? null,
+    });
+    return { user, event, booking };
+  }
+  const createOrder = (userId: string, bookingId: string) =>
+    request(app).post('/api/payments/create-order').set(authHeader(userId)).send({ bookingId });
+
+  it('returns the existing order when it is unpaid and its amount matches', async () => {
+    const { user, booking } = await setup({ razorpayOrderId: 'order_existing' });
+    ordersFetch.mockResolvedValue({ id: 'order_existing', amount: 52500, currency: 'INR', status: 'created' });
+
+    const res = await createOrder(user.id, booking.id);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ orderId: 'order_existing', amount: 52500, currency: 'INR' });
+    expect(ordersCreate).not.toHaveBeenCalled();
+    expect((await bookingOf(booking.id)).razorpayOrderId).toBe('order_existing');
+  });
+
+  it('also reuses an order that already has a payment attempt on it', async () => {
+    const { user, booking } = await setup({ razorpayOrderId: 'order_attempted' });
+    ordersFetch.mockResolvedValue({ id: 'order_attempted', amount: 52500, currency: 'INR', status: 'attempted' });
+
+    const res = await createOrder(user.id, booking.id);
+
+    expect(res.status).toBe(200);
+    expect(res.body.orderId).toBe('order_attempted');
+    expect(ordersCreate).not.toHaveBeenCalled();
+  });
+
+  it('never replaces the order id of an order that has been paid', async () => {
+    const { user, booking } = await setup({ razorpayOrderId: 'order_paid' });
+    ordersFetch.mockResolvedValue({ id: 'order_paid', amount: 52500, currency: 'INR', status: 'paid' });
+
+    const res = await createOrder(user.id, booking.id);
+
+    expect(res.status).toBe(409);
+    expect(ordersCreate).not.toHaveBeenCalled();
+    expect((await bookingOf(booking.id)).razorpayOrderId).toBe('order_paid');
+  });
+
+  it('creates a replacement only when the existing order is for a different amount', async () => {
+    const { user, booking } = await setup({ razorpayOrderId: 'order_stale' });
+    ordersFetch.mockResolvedValue({ id: 'order_stale', amount: 100, currency: 'INR', status: 'created' });
+    ordersCreate.mockResolvedValue({ id: 'order_fresh', amount: 52500, currency: 'INR' });
+
+    const res = await createOrder(user.id, booking.id);
+
+    expect(res.status).toBe(200);
+    expect(res.body.orderId).toBe('order_fresh');
+    expect((await bookingOf(booking.id)).razorpayOrderId).toBe('order_fresh');
+  });
+
+  it('does not touch the stored order when the existing one cannot be fetched', async () => {
+    const { user, booking } = await setup({ razorpayOrderId: 'order_unknown' });
+    ordersFetch.mockRejectedValue({ statusCode: 500, error: { description: 'upstream unavailable' } });
+
+    const res = await createOrder(user.id, booking.id);
+
+    expect(res.status).toBe(500);
+    expect(ordersCreate).not.toHaveBeenCalled();
+    expect((await bookingOf(booking.id)).razorpayOrderId).toBe('order_unknown');
+  });
+
+  it('simultaneous requests (double click, two tabs) all get the same order, and one payment confirms the booking once', async () => {
+    const { user, event, booking } = await setup();
+    let n = 0;
+    const created = new Map<string, { id: string; amount: number; currency: string; status: string }>();
+    ordersCreate.mockImplementation(async (args: { amount: number }) => {
+      await new Promise((r) => setTimeout(r, 25));
+      const order = { id: `order_${++n}`, amount: args.amount, currency: 'INR', status: 'created' };
+      created.set(order.id, order);
+      return order;
+    });
+    ordersFetch.mockImplementation(async (id: string) => created.get(id));
+
+    const results = await Promise.all([1, 2, 3, 4].map(() => createOrder(user.id, booking.id)));
+
+    expect(results.map((r) => r.status)).toEqual([200, 200, 200, 200]);
+    const ids = new Set(results.map((r) => r.body.orderId));
+    expect(ids.size).toBe(1);
+    const stored = await bookingOf(booking.id);
+    expect(stored.razorpayOrderId).toBe([...ids][0]);
+
+    // Paying that one order confirms the booking exactly once.
+    const orderId = [...ids][0] as string;
+    await verify(user.id, booking.id, orderId, 'pay_single');
+    await hook('payment.captured', orderId, 'pay_single');
+    expect(await bookingOf(booking.id)).toMatchObject({ paymentStatus: 'paid', status: 'confirmed' });
+    expect(await attendeesOf(event.id)).toBe(1);
+  });
+});
