@@ -212,6 +212,8 @@ router.post('/', requireAuth, validateBody(createEventSchema), async (req: AuthR
     // which is what every authorization check actually reads.
     // Unifying Host and User is tracked as P4-39.
     const data = req.body as z.infer<typeof createEventSchema>;
+    // isSuperhost is a badge only an admin can grant, whatever the client sent.
+    if (user.role !== 'admin') data.isSuperhost = false;
     const slug = buildSlug(data.title);
 
     const event = await prisma.event.create({
@@ -240,6 +242,9 @@ router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: Aut
     }
 
     const { tags, ...rest } = req.body as z.infer<typeof updateEventSchema>;
+    // Only an admin can grant or clear the superhost badge; for anyone else
+    // the field is dropped so the stored value is left as it is.
+    if (user.role !== 'admin') delete rest.isSuperhost;
     const updateData: Prisma.EventUpdateInput = { ...rest };
     if (tags !== undefined) {
       updateData.tags = Array.isArray(tags) ? JSON.stringify(tags) : tags;
