@@ -32,6 +32,7 @@ WHERE b."paymentMethod" = 'razorpay'
   AND b."totalAmount" > 0
   AND b."paymentStatus" = 'paid'
   AND b.status IN ('cancelled', 'expired', 'refunded')
+  AND b."refundId" IS DISTINCT FROM 'no-refund:after-cutoff'  -- cancelled after the refund cutoff on purpose
 ORDER BY b."updatedAt" DESC;
 
 -- 3. Failed refunds, grouped by event (what a host cancellation left behind).
@@ -42,6 +43,7 @@ WHERE b."paymentMethod" = 'razorpay'
   AND b."paymentId" IS NOT NULL
   AND b."paymentStatus" = 'paid'
   AND b.status = 'cancelled'
+  AND b."refundId" IS DISTINCT FROM 'no-refund:after-cutoff'
 GROUP BY b."eventId", e.title
 ORDER BY amount_owed DESC;
 
@@ -67,6 +69,13 @@ LEFT JOIN "Booking" b
 GROUP BY e.id, e.title, e.attendees
 HAVING e.attendees <> coalesce(sum(b."guestCount"), 0)
 ORDER BY abs(e.attendees - coalesce(sum(b."guestCount"), 0)) DESC;
+
+-- 6. Not a problem, for reference: cancelled by the customer on or after the
+--    event day, so by policy no refund is owed and the money is kept.
+SELECT b.id, b."eventId", b."paymentId", b."totalAmount", b."updatedAt"
+FROM "Booking" b
+WHERE b."refundId" = 'no-refund:after-cutoff'
+ORDER BY b."updatedAt" DESC;
 
 -- Not findable from this database: a payment Razorpay captured when neither
 -- /verify nor the webhook ever reached us leaves no payment id here. Compare

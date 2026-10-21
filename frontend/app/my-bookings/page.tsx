@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
+import { cancelRefund } from '@/lib/booking';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
 import { useEscapeKey } from '@/lib/a11y';
@@ -133,6 +134,23 @@ function TicketModal({ booking, onClose, onCancel }: {
   const dragControls = useDragControls();
 
   useEscapeKey(onClose, true);
+
+  /** What the customer will get back, shown before they confirm. Null when nothing was charged. */
+  function refundNotice(): string | null {
+    if (booking.paymentStatus !== 'paid' || booking.totalAmount <= 0) {
+      return 'Nothing was charged for this booking, so there is nothing to refund.';
+    }
+    if (!ev?.date) return null;
+    const amount = `₹${booking.totalAmount.toLocaleString('en-IN')}`;
+    switch (cancelRefund(new Date(ev.date))) {
+      case 'full':
+        return `You will get a full refund of ${amount} (ticket and service fee) to your original payment method.`;
+      case 'event_day':
+        return 'The event day has started, so cancelling now gives no refund. Your spot will be released.';
+      case 'event_ended':
+        return 'This event has already taken place, so cancelling gives no refund.';
+    }
+  }
 
   async function handleCancel() {
     if (!confirmCancel) { setConfirmCancel(true); return; }
@@ -305,6 +323,10 @@ function TicketModal({ booking, onClose, onCancel }: {
                 <div className="bg-lime/10 border border-lime/20 rounded-xl px-4 py-3 mb-5 text-center">
                   <span className="font-mono text-[12px] text-lime uppercase tracking-wider">Free event — no charge</span>
                 </div>
+              )}
+
+              {confirmCancel && refundNotice() && (
+                <p className="font-sans text-[13px] text-cream-dim text-center mb-3">{refundNotice()}</p>
               )}
 
               {/* Actions */}

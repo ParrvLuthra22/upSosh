@@ -75,6 +75,24 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
   try {
     const userId = req.user!.id;
 
+    // A host with an upcoming event that people have paid for cannot delete
+    // the account until that event is cancelled (which refunds the attendees).
+    // Past, cancelled and unpaid-only events do not count.
+    const blocking = await prisma.event.count({
+      where: {
+        userId,
+        status: { in: ['live', 'full'] },
+        date: { gte: new Date() },
+        bookings: { some: { status: { in: ['pending', 'confirmed'] }, paymentStatus: 'paid', totalAmount: { gt: 0 } } },
+      },
+    });
+    if (blocking > 0) {
+      return res.status(409).json({
+        message: `You host ${blocking} upcoming event${blocking === 1 ? '' : 's'} with paid bookings. ` +
+          'Cancel those events first, which refunds your attendees in full, and then delete your account.',
+      });
+    }
+
     // Refund and release every live booking first, one at a time and outside
     // any transaction. If one refund cannot be completed the account is left
     // as it is, so signing in and deleting again picks up what is left.
