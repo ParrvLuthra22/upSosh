@@ -82,7 +82,7 @@ export default function PrivacyPage() {
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Profile photo (optional)</li>
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Event interests or preferences</li>
                       <li className="flex items-start"><span className="mr-3 font-bold">•</span> Location (if you enable it)</li>
-                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> Host identity verification documents (KYC-type)</li>
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> Host identity documents (see below)</li>
                     </ul>
                   </div>
 
@@ -98,6 +98,17 @@ export default function PrivacyPage() {
                     <div className="mt-4 bg-lime/10 p-3 rounded-lg">
                       <p className="text-sm"><strong>Important:</strong> We do NOT store your card numbers or bank credentials — payment processors handle them.</p>
                     </div>
+                  </div>
+
+                  <div className="glass-card border-2 border-border">
+                    <h3 className="text-xl font-bold text-cream mb-4">Host identity documents</h3>
+                    <p className="text-sm mb-4">Only if you apply to become a host.</p>
+                    <ul className="space-y-2">
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> <span><strong>What:</strong> a photo of a government ID and a selfie.</span></li>
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> <span><strong>Why:</strong> so an upSosh admin can check who is applying to host.</span></li>
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> <span><strong>Who can see them:</strong> upSosh admins only. They are stored privately, not at a public link, and an admin opens them through a link that expires after a few minutes.</span></li>
+                      <li className="flex items-start"><span className="mr-3 font-bold">•</span> <span><strong>How long:</strong> we delete them 30 days after your application is approved or rejected, or when your account is deleted.</span></li>
+                    </ul>
                   </div>
                 </div>
 

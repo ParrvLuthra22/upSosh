@@ -10,6 +10,27 @@ import { useEscapeKey } from '@/lib/a11y';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * Opens one identity document. The link is requested on click and expires after
+ * a few minutes, so it is never stored in the page or the application list.
+ * The tab is opened first, synchronously, so the browser's popup blocker allows it.
+ */
+async function openDocument(applicationId: string, which: 'govIdUrl' | 'selfieUrl'): Promise<void> {
+  const tab = window.open('', '_blank');
+  try {
+    const docs = await api.get<{ govIdUrl: string | null; selfieUrl: string | null }>(
+      `/api/hosts/admin/applications/${applicationId}/documents`,
+    );
+    const url = docs[which];
+    if (!url || !tab) throw new Error('No document link');
+    tab.opener = null;
+    tab.location.href = url;
+  } catch {
+    tab?.close();
+    toast.error('Could not open the document. Please try again.');
+  }
+}
+
 interface ApplicationUser {
   id: string;
   name: string;
@@ -22,8 +43,9 @@ interface HostApplication {
   id: string;
   userId: string;
   user: ApplicationUser;
-  govIdUrl: string | null;
-  selfieUrl: string | null;
+  /** Whether a document was uploaded. Where it is stored is never sent to the browser; see openDocument. */
+  hasGovId: boolean;
+  hasSelfie: boolean;
   bio: string;
   experience: string;
   categories: string;
@@ -255,27 +277,25 @@ export default function AdminHostsClient() {
                       </td>
                       <td className="px-5 py-4 align-top" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col gap-1">
-                          {app.govIdUrl && (
-                            <a
-                              href={app.govIdUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                          {app.hasGovId && (
+                            <button
+                              type="button"
+                              onClick={() => openDocument(app.id, 'govIdUrl')}
                               className="inline-flex items-center gap-1 font-mono text-[11px] text-lime hover:underline"
                             >
                               ID <IconExternalLink size={11} />
-                            </a>
+                            </button>
                           )}
-                          {app.selfieUrl && (
-                            <a
-                              href={app.selfieUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                          {app.hasSelfie && (
+                            <button
+                              type="button"
+                              onClick={() => openDocument(app.id, 'selfieUrl')}
                               className="inline-flex items-center gap-1 font-mono text-[11px] text-lime hover:underline"
                             >
                               Selfie <IconExternalLink size={11} />
-                            </a>
+                            </button>
                           )}
-                          {!app.govIdUrl && !app.selfieUrl && (
+                          {!app.hasGovId && !app.hasSelfie && (
                             <span className="font-mono text-[11px] text-cream-faint">—</span>
                           )}
                         </div>
@@ -439,19 +459,19 @@ function DetailModal({
 
             <div className="grid grid-cols-2 gap-4">
               <Field label="Government ID">
-                {app.govIdUrl ? (
-                  <a href={app.govIdUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
+                {app.hasGovId ? (
+                  <button type="button" onClick={() => openDocument(app.id, 'govIdUrl')} className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
                     View document <IconExternalLink size={13} />
-                  </a>
+                  </button>
                 ) : (
                   <span className="font-sans text-sm text-cream-faint">Not provided</span>
                 )}
               </Field>
               <Field label="Selfie">
-                {app.selfieUrl ? (
-                  <a href={app.selfieUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
+                {app.hasSelfie ? (
+                  <button type="button" onClick={() => openDocument(app.id, 'selfieUrl')} className="inline-flex items-center gap-1 font-sans text-sm text-lime hover:underline">
                     View photo <IconExternalLink size={13} />
-                  </a>
+                  </button>
                 ) : (
                   <span className="font-sans text-sm text-cream-faint">Not provided</span>
                 )}
