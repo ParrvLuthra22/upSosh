@@ -243,6 +243,8 @@ After paying, check `/my-bookings` — the booking should show *confirmed* with 
 | `RESEND_API_KEY` | For email | Booking confirmations, password resets | [resend.com](https://resend.com) |
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | For uploads | Event images, host avatars | [cloudinary.com](https://cloudinary.com) |
 
+With `NODE_ENV=production` the API refuses to start unless `DATABASE_URL`, `JWT_SECRET` (at least 32 characters, not the `.env.example` value), `FRONTEND_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` are set and are not placeholders. The error names each offending variable and never prints a value. Development and tests are not checked.
+
 ### Frontend (`frontend/.env`)
 
 | Variable | Required | Purpose | Notes |

@@ -1,5 +1,15 @@
 import './lib/loadEnv';
 import { BOOKING_HOLD_MS } from './lib/booking';
+import { assertProductionEnv } from './lib/validateEnv';
+
+// Refuse to start in production with a missing or placeholder secret. The
+// message names the variable, never its value.
+try {
+  assertProductionEnv();
+} catch (err: unknown) {
+  console.error(`[Fatal] ${err instanceof Error ? err.message : String(err)}`);
+  process.exit(1);
+}
 
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import cors from 'cors';
