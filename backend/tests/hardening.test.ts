@@ -59,3 +59,15 @@ describe('AZ-1: isSuperhost is admin-only', () => {
     expect((await prisma.event.findUniqueOrThrow({ where: { id: created.body.id } })).isSuperhost).toBe(false);
   });
 });
+
+describe('AZ-2: a booking needs an event', () => {
+  it('POST /api/bookings without eventId is refused and creates nothing', async () => {
+    const { user } = await createUser();
+
+    const res = await request(app).post('/api/bookings').set(authHeader(user.id))
+      .send({ guestName: 'G', guestEmail: 'g@example.test', guestPhone: '123' });
+
+    expect(res.status).toBe(400);
+    expect(await prisma.booking.count()).toBe(0);
+  });
+});
