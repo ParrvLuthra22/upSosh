@@ -13,6 +13,7 @@
 import { create } from 'zustand';
 import { unitPrice } from '@/lib/utils';
 import type { BookingTotals } from '@/lib/booking';
+import { httpFetch } from '@/lib/http';
 
 /**
  * Requests authenticate with the backend's httpOnly `token` cookie, which every
@@ -208,7 +209,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       // to 'free' for a free event and leaves it null for a paid one (set
       // correctly to 'razorpay' by /verify once payment succeeds), so
       // omitting the field here is correct, not just a workaround.
-      const bookingRes = await fetch('/api/bookings', {
+      const bookingRes = await httpFetch('/api/bookings', {
         method:  'POST',
         headers: authHeaders(),
         credentials: 'include',
@@ -289,7 +290,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           }
 
           // 1. Create Razorpay order on backend
-          const orderRes = await fetch('/api/payments/create-order', {
+          const orderRes = await httpFetch('/api/payments/create-order', {
             method: 'POST',
             headers: authHeaders(),
             credentials: 'include',
@@ -345,7 +346,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           });
 
           // 4. Verify signature on backend
-          const verifyRes = await fetch('/api/payments/verify', {
+          const verifyRes = await httpFetch('/api/payments/verify', {
             method: 'POST',
             headers: authHeaders(),
             credentials: 'include',

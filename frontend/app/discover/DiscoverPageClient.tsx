@@ -18,6 +18,7 @@ import { duration, ease, useReducedMotion, staggerContainer, staggerItem } from 
 // ─── Lazy-import EventCard client component ───────────────────────────────────
 // (avoids a circular dep from the server component tree)
 import dynamic from 'next/dynamic';
+import { httpFetch } from '@/lib/http';
 const EventCard = dynamic(() => import('@/components/EventCard'), { ssr: false });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -489,7 +490,7 @@ export default function DiscoverPageClient() {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetch('/api/events?limit=50', { credentials: 'include' });
+      const res = await httpFetch('/api/events?limit=50', { credentials: 'include' });
       if (!res.ok) throw new Error(`Failed to load events (${res.status})`);
       const data = await res.json();
       const raw: any[] = data.events ?? data.data ?? [];

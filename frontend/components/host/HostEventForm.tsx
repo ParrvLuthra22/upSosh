@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { api, getApiUrl, Event } from '@/lib/api';
 import { validateImageUrl } from '@/lib/imageHosts';
 import { useAuth } from '@/store/authStore';
+import { httpFetch } from '@/lib/http';
 
 interface HostEventFormProps {
     eventToEdit?: Event | null;
@@ -74,10 +75,12 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         try {
             const body = new FormData();
             body.append('file', file);
-            const res = await fetch(`${getApiUrl()}/api/uploads`, {
+            const res = await httpFetch(`${getApiUrl()}/api/uploads`, {
                 method: 'POST',
                 credentials: 'include',
                 body,
+                timeoutMs: 60_000,
+                quiet: true,
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Upload failed');

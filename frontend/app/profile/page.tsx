@@ -42,10 +42,12 @@ function AvatarUpload({
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const res = await fetch('/api/users/me/avatar', {
+      const res = await httpFetch('/api/users/me/avatar', {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        timeoutMs: 60_000,
+        quiet: true,
       });
 
       if (res.ok) {
@@ -235,6 +237,7 @@ function SecurityForm() {
 type Tab = 'profile' | 'security';
 
 import { withAuth } from '@/components/ProtectedRoute';
+import { httpFetch } from '@/lib/http';
 function ProfilePage() {
   const { user: authUser, setUser } = useAuth();
   const [tab, setTab] = useState<Tab>('profile');

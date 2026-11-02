@@ -502,6 +502,7 @@ function statsToCards(stats: HostStats) {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 import { withAuth } from '@/components/ProtectedRoute';
+import { httpFetch } from '@/lib/http';
 function HostDashboard() {
   const [activeNav, setActiveNav] = useState('overview');
   const greeting = useGreeting();
@@ -515,7 +516,7 @@ function HostDashboard() {
     async function fetchHostEvents() {
       try {
         const apiUrl = getApiUrl();
-        const res = await fetch(`${apiUrl}/api/events/host/mine`, {
+        const res = await httpFetch(`${apiUrl}/api/events/host/mine`, {
           credentials: 'include',
         });
         if (res.ok) {
@@ -528,7 +529,7 @@ function HostDashboard() {
     async function fetchHostStats() {
       try {
         const apiUrl = getApiUrl();
-        const res = await fetch(`${apiUrl}/api/events/host/stats`, {
+        const res = await httpFetch(`${apiUrl}/api/events/host/stats`, {
           credentials: 'include',
         });
         if (res.ok) setHostStats(await res.json());

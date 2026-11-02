@@ -39,6 +39,7 @@ const DEFAULT: EventFormData = {
 
 import { withAuth } from '@/components/ProtectedRoute';
 import { validateImageUrl } from '@/lib/imageHosts';
+import { httpFetch } from '@/lib/http';
 function NewEventPage() {
   const { isAuth, user } = useAuth();
   const router = useRouter();
@@ -57,10 +58,12 @@ function NewEventPage() {
       const formData = new FormData();
       formData.append('file', file);
       const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/uploads`, {
+      const res = await httpFetch(`${apiUrl}/api/uploads`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
+        timeoutMs: 60_000,
+        quiet: true,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');

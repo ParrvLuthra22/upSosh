@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import MagneticButton from '@/components/ui/MagneticButton';
+import { httpFetch } from '@/lib/http';
 
 interface UploadZoneProps {
   label: string;
@@ -86,7 +87,7 @@ export default function IdentityPage() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: form });
+      const res = await httpFetch('/api/uploads', { method: 'POST', body: form, timeoutMs: 60_000, quiet: true });
       if (res.ok) {
         const { url } = await res.json();
         return url;

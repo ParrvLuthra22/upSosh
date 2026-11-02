@@ -12,6 +12,8 @@ import { useAuth } from '@/store/authStore';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { useEscapeKey } from '@/lib/a11y';
+import { canHost, mobileMenuLinks } from '@/lib/navLinks';
+import ModeSwitch from '@/components/layout/ModeSwitch';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,12 +202,21 @@ function AvatarDropdown({
             {/* Menu items */}
             <div className="py-1">
               <Link
-                href={username ? `/u/${username}` : '/profile'}
+                href="/profile"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
               >
                 My profile
               </Link>
+              {username && (
+                <Link
+                  href={`/u/${username}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 font-sans text-sm text-cream-dim hover:text-cream hover:bg-surface transition-colors"
+                >
+                  Public profile
+                </Link>
+              )}
               <Link
                 href="/my-bookings"
                 onClick={() => setOpen(false)}
@@ -348,18 +359,14 @@ function MobileMenu({
           </div>
 
           {/* Nav links — center-stacked, stagger in */}
-          <nav className="flex-1 flex flex-col items-center justify-center gap-2 px-8">
-            {(isAuth
-              ? [
-                  { name: 'Discover',  href: '/discover' },
-                  { name: 'Planner',   href: '/planner' },
-                  { name: 'About',     href: '/about' },
-                  ...(user?.hostStatus === 'verified'
-                    ? [{ name: 'Dashboard', href: '/host/dashboard' }]
-                    : []),
-                ]
-              : MOBILE_NAV
-            ).map((link, i) => (
+          {isAuth && canHost(user) && (
+            <div className="flex justify-center pt-5">
+              <ModeSwitch onNavigate={onClose} />
+            </div>
+          )}
+
+          <nav className="flex-1 overflow-y-auto flex flex-col items-center justify-start sm:justify-center gap-1 px-8 py-5">
+            {mobileMenuLinks(isAuth ? user : null).map((link, i) => (
               <motion.div
                 key={link.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -370,7 +377,7 @@ function MobileMenu({
                 <Link
                   href={link.href}
                   onClick={onClose}
-                  className={`block font-display text-[36px] leading-tight tracking-tight py-1 transition-colors ${
+                  className={`block font-display text-[28px] leading-tight tracking-tight py-1 transition-colors ${
                     pathname.startsWith(link.href) && link.href !== '/'
                       ? 'text-lime'
                       : 'text-cream hover:text-lime'
@@ -509,7 +516,7 @@ export default function GlobalHeader() {
                 </Link>
               );
             })}
-            {user?.hostStatus === 'verified' && (
+            {canHost(user) && (
               <Link
                 href="/host/dashboard"
                 className={`relative font-sans text-sm transition-colors duration-300 pb-0.5 ${
@@ -532,6 +539,7 @@ export default function GlobalHeader() {
           <div className="hidden md:flex items-center gap-3">
             {isAuth && user ? (
               <>
+                {canHost(user) && <ModeSwitch />}
                 {/* Notification Bell */}
                 <div className="relative" ref={notifRef}>
                   <button

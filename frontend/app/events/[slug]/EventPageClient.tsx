@@ -35,6 +35,7 @@ import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useReducedMotion, useCountTransition } from '@/lib/motion';
 import { estimateBookingTotals, MAX_GUESTS_PER_BOOKING } from '@/lib/booking';
+import { httpFetch } from '@/lib/http';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
@@ -520,7 +521,7 @@ export default function EventPageClient() {
     setEventNotFound(false);
     try {
       const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
+      const res = await httpFetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setEvent(apiEventToMock(data));

@@ -183,6 +183,40 @@ router.post(
   },
 );
 
+// GET /api/users/me/stats — the profile hub's summary numbers.
+//   attended: confirmed, paid bookings whose event has already happened
+//   upcoming: confirmed, paid bookings for events still ahead (not cancelled)
+//   totalSpent: everything paid minus everything refunded, in rupees
+router.get('/me/stats', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+  try {
+    const userId = req.user!.id;
+    const now = new Date();
+    const live = { userId, status: 'confirmed' as const, paymentStatus: 'paid' as const };
+
+    const [attended, upcoming, paidAgg, refundedAgg] = await Promise.all([
+      prisma.booking.count({ where: { ...live, event: { date: { lt: now } } } }),
+      prisma.booking.count({ where: { ...live, event: { date: { gte: now }, status: { not: 'cancelled' } } } }),
+      // A refunded booking keeps its amount but moves to paymentStatus 'refunded',
+      // so "paid" for the spend figure is paid + refunded, less the refunded part.
+      prisma.booking.aggregate({ where: { userId, paymentStatus: { in: ['paid', 'refunded'] } }, _sum: { totalAmount: true } }),
+      prisma.booking.aggregate({ where: { userId, paymentStatus: 'refunded' }, _sum: { totalAmount: true } }),
+    ]);
+
+    const totalPaid = paidAgg._sum.totalAmount ?? 0;
+    const totalRefunded = refundedAgg._sum.totalAmount ?? 0;
+    return res.json({
+      eventsAttended: attended,
+      upcomingCount: upcoming,
+      totalPaid,
+      totalRefunded,
+      totalSpent: Math.max(0, totalPaid - totalRefunded),
+    });
+  } catch (err: unknown) {
+    console.error('GET /users/me/stats error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // GET /api/users/:username — public profile, looked up by handle (the
 // /u/[username] page's only caller). Not an id lookup — no frontend code
 // ever had a bare user id to look up with here.

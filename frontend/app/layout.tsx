@@ -10,6 +10,7 @@ import ConditionalFooter from '@/components/layout/ConditionalFooter';
 import AuthProvider from '@/components/providers/AuthProvider';
 import BookingFlow from '@/components/BookingFlow';
 import IntroScreen from '@/components/IntroScreen';
+import ServerWakingBanner from '@/components/ui/ServerWakingBanner';
 import { Toaster } from 'sonner';
 
 const fraunces = Fraunces({
@@ -93,6 +94,7 @@ export default function RootLayout({
         </AuthProvider>
         {/* Global booking modal — controlled by useBookingStore */}
         <BookingFlow />
+        <ServerWakingBanner />
         <Toaster
           position="top-right"
           toastOptions={{

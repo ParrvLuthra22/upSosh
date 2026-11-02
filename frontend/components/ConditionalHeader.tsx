@@ -10,8 +10,6 @@ const HIDDEN_ROUTES = [
   '/forgot',
   '/reset',
   '/onboarding',
-  // host dashboard has its own sidebar + no global header needed
-  '/host/dashboard',
   // planner has its own TopBar component
   '/planner',
 ];

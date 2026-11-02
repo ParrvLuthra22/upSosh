@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { renderAiText } from './renderAiText';
+import { httpFetch } from '@/lib/http';
 
 const AIAssistant = () => {
     const [input, setInput] = useState({
@@ -19,7 +20,7 @@ const AIAssistant = () => {
             const token = localStorage.getItem('token');
             const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
-            const res = await fetch(`${apiUrl}/api/ai/plan`, {
+            const res = await httpFetch(`${apiUrl}/api/ai/plan`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -29,7 +30,8 @@ const AIAssistant = () => {
                     budget: input.budget,
                     guests: input.guests,
                     vibe: input.vibe
-                })
+                }),
+                timeoutMs: 90_000,
             });
 
             const data = await res.json();

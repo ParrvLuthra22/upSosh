@@ -59,3 +59,25 @@ export function requireHostStatus(status: string) {
     next();
   };
 }
+
+/**
+ * Who is calling, if anyone: the same token check as requireAuth, but a missing
+ * or bad token (or a deleted user) just means "anonymous" instead of a 401.
+ * For public routes that show a bit more to the owner or an admin.
+ */
+export async function getOptionalUser(req: Request): Promise<AuthRequest['user'] | null> {
+  try {
+    const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+    const secret = process.env.JWT_SECRET;
+    if (!token || !secret) return null;
+    const decoded = jwt.verify(token, secret) as { userId: string };
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, role: true, hostStatus: true, deletedAt: true },
+    });
+    if (!user || user.deletedAt) return null;
+    return { id: user.id, email: user.email, role: user.role, hostStatus: user.hostStatus };
+  } catch {
+    return null;
+  }
+}

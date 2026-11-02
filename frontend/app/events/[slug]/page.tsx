@@ -8,7 +8,11 @@ async function fetchEventForMetadata(slug: string): Promise<any | null> {
     // NEXT_PUBLIC_API_URL is deliberately empty for that proxy and would
     // make this throw. NEXT_PUBLIC_BACKEND_URL is the absolute origin.
     const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
-    const res = await fetch(`${apiUrl}/api/events/${slug}`, { next: { revalidate: 300 } });
+    const res = await fetch(`${apiUrl}/api/events/${slug}`, {
+      next: { revalidate: 300 },
+      // Metadata is a nicety: never hold the page for a slow or sleeping backend.
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) return null;
     return await res.json();
   } catch {

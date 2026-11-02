@@ -7,6 +7,7 @@ import { useOnboardingStore } from '@/store/onboardingStore';
 import { useAuthStore } from '@/store/authStore';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { toast } from 'sonner';
+import { httpFetch } from '@/lib/http';
 
 export default function OnboardingStep5() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function OnboardingStep5() {
     try {
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (token) (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-      await fetch('/api/users/me', {
+      await httpFetch('/api/users/me', {
         method: 'PATCH',
         headers,
         credentials: 'include',

@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import GlobalFooter from '@/components/layout/GlobalFooter';
 
 // Pages that explicitly hide the footer
-const HIDDEN_ROUTES = ['/signin', '/signup', '/forgot', '/reset', '/onboarding', '/host/dashboard', '/planner'];
+const HIDDEN_ROUTES = ['/signin', '/signup', '/forgot', '/reset', '/onboarding', '/planner'];
 
 export default function ConditionalFooter() {
   const pathname = usePathname();
