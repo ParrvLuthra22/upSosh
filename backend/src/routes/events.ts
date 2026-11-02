@@ -174,7 +174,8 @@ router.get('/host/stats', requireAuth, async (req: AuthRequest, res: Response): 
     });
 
     const now = new Date();
-    const upcomingEvents = events.filter((e) => (e.status === 'live' || e.status === 'draft') && e.date >= now).length;
+    // Published and still ahead. Drafts are not "upcoming" yet, and a cancelled event never is.
+    const upcomingEvents = events.filter((e) => (e.status === 'live' || e.status === 'full') && e.date >= now).length;
     const totalAttendees = events.reduce((sum, e) => sum + e.attendees, 0);
 
     const revenueAgg = await prisma.booking.aggregate({

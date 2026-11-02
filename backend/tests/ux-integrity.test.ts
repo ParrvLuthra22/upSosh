@@ -173,3 +173,18 @@ describe('GET /api/events/host/mine revenue', () => {
     expect(res.body.events.find((e: { id: string }) => e.id === idle.id).revenue).toBe(0);
   });
 });
+
+describe('GET /api/events/host/stats upcoming count', () => {
+  it('counts live and full events still ahead, not drafts, cancelled or past ones', async () => {
+    const { user: host } = await createUser({ role: 'host', hostStatus: 'verified' });
+    await createEvent({ userId: host.id, status: 'live' });
+    await createEvent({ userId: host.id, status: 'full' });
+    await createEvent({ userId: host.id, status: 'draft' });
+    await createEvent({ userId: host.id, status: 'cancelled' });
+    await createEvent({ userId: host.id, status: 'live', date: new Date(Date.now() - 2 * 864e5) });
+    const res = await request(app).get('/api/events/host/stats').set(authHeader(host.id));
+    expect(res.status).toBe(200);
+    expect(res.body.upcomingEvents).toBe(2);
+    expect(res.body.eventsHosted).toBe(5);
+  });
+});
