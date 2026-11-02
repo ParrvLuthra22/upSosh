@@ -4,9 +4,13 @@
  *
  *  - a timeout per attempt, so a hung request fails instead of spinning forever
  *  - a retry when the server looks asleep or unreachable: a timeout, a network
- *    error, or a 502/503/504 from the proxy. Only for safe methods (GET/HEAD)
- *    unless the caller opts in with `retry`, because replaying a POST that
- *    might have gone through could book or pay twice
+ *    error, or a 502/503/504 from the proxy. GET and HEAD ONLY. POST, PATCH,
+ *    PUT and DELETE are never retried here, whatever the options say: a write
+ *    that timed out may still have gone through, and replaying it could book
+ *    or pay twice (/api/bookings, /api/payments/*). The caller decides whether
+ *    to ask the user to try again.
+ *  - a longer timeout when the body is FormData (file uploads), which are
+ *    slow on a poor connection and are not worth a "waking" notice
  *  - after WAKING_AFTER_MS of waiting, flips the shared "Waking the server"
  *    notice on (see lib/stores/serverStatus.ts); it goes off when the request settles
  *
@@ -19,16 +23,17 @@ import { useServerStatus } from '@/lib/stores/serverStatus';
 export const WAKING_AFTER_MS = 4000;
 export const GET_TIMEOUT_MS = 20_000;
 export const WRITE_TIMEOUT_MS = 30_000;
+export const UPLOAD_TIMEOUT_MS = 90_000;
 const DEFAULT_RETRIES = 2;
 const RETRY_BACKOFF_MS = [800, 2000];
 const RETRY_STATUSES = new Set([502, 503, 504]);
 
 export interface HttpOptions {
-  /** Per-attempt timeout. Default 20 s for GET/HEAD, 30 s otherwise. */
+  /** Per-attempt timeout. Default 20 s for GET/HEAD, 30 s for other writes, 90 s for FormData uploads. */
   timeoutMs?: number;
-  /** Extra attempts after a timeout / network error / 502-504. Default 2 for GET/HEAD, 0 otherwise. */
+  /** Fewer retries than the default of 2 (GET/HEAD only; it is ignored for any other method). */
   retries?: number;
-  /** Don't show the "Waking the server" notice for this request (e.g. a big upload). */
+  /** Don't show the "Waking the server" notice for this request. On by default for FormData uploads. */
   quiet?: boolean;
 }
 
@@ -96,11 +101,14 @@ export async function httpFetch(
   const { timeoutMs, retries, quiet, ...fetchInit } = init;
   const method = (fetchInit.method ?? 'GET').toUpperCase();
   const safe = method === 'GET' || method === 'HEAD';
-  const perAttempt = timeoutMs ?? (safe ? GET_TIMEOUT_MS : WRITE_TIMEOUT_MS);
-  const maxRetries = retries ?? (safe ? DEFAULT_RETRIES : 0);
+  const isUpload = typeof FormData !== 'undefined' && fetchInit.body instanceof FormData;
+  const perAttempt = timeoutMs ?? (isUpload ? UPLOAD_TIMEOUT_MS : safe ? GET_TIMEOUT_MS : WRITE_TIMEOUT_MS);
+  // Only safe methods are ever replayed; `retries` can lower the count, never enable it for a write.
+  const maxRetries = safe ? Math.min(retries ?? DEFAULT_RETRIES, DEFAULT_RETRIES) : 0;
+  const hideWaking = quiet ?? isUpload;
 
   let slow = false;
-  const wakingTimer = quiet
+  const wakingTimer = hideWaking
     ? null
     : setTimeout(() => {
         slow = true;
@@ -117,7 +125,7 @@ export async function httpFetch(
         }
         return res;
       } catch (err) {
-        if (!(err instanceof FetchError) || n >= maxRetries) throw err;
+        if (!(err instanceof FetchError) || n >= maxRetries || fetchInit.signal?.aborted) throw err;
         await sleep(RETRY_BACKOFF_MS[Math.min(n, RETRY_BACKOFF_MS.length - 1)]);
       }
     }

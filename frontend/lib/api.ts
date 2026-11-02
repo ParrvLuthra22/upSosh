@@ -28,6 +28,7 @@
  */
 
 import { useAuthStore } from '@/lib/stores/auth';
+import { httpFetch } from '@/lib/http';
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 
@@ -129,7 +130,7 @@ async function apiFetch<T>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(url, {
+  const res = await httpFetch(url, {
     method,
     headers,
     body:

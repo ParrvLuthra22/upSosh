@@ -79,8 +79,6 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 method: 'POST',
                 credentials: 'include',
                 body,
-                timeoutMs: 60_000,
-                quiet: true,
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Upload failed');

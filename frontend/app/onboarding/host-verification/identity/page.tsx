@@ -87,7 +87,7 @@ export default function IdentityPage() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await httpFetch('/api/uploads', { method: 'POST', body: form, timeoutMs: 60_000, quiet: true });
+      const res = await httpFetch('/api/uploads', { method: 'POST', body: form });
       if (res.ok) {
         const { url } = await res.json();
         return url;

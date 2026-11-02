@@ -62,8 +62,6 @@ function NewEventPage() {
         method: 'POST',
         credentials: 'include',
         body: formData,
-        timeoutMs: 60_000,
-        quiet: true,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Upload failed');

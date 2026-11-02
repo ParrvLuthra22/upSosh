@@ -46,8 +46,6 @@ function AvatarUpload({
         method: 'POST',
         body: formData,
         credentials: 'include',
-        timeoutMs: 60_000,
-        quiet: true,
       });
 
       if (res.ok) {
