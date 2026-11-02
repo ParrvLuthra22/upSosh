@@ -81,6 +81,8 @@ jobs:
         working-directory: backend
         run: npx prisma migrate deploy
 
+      # Always through the package script, never a bare `npx jest`: the script
+      # runs the files one at a time (--runInBand), which the shared database needs.
       - name: Test
         run: npm run test --workspace=upsosh-backend
 
