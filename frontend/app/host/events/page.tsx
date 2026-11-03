@@ -10,8 +10,10 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useEscapeKey } from '@/lib/a11y';
 import { Button } from '@/components/ui/Button';
+import { hostGate } from '@/lib/navLinks';
+import { statusStyle } from '@/lib/hostEventTypes';
 
-type EventStatus = 'live' | 'draft' | 'past' | 'cancelled';
+type EventStatus = 'live' | 'full' | 'draft' | 'past' | 'cancelled';
 
 interface HostEvent {
   id: string;
@@ -25,12 +27,6 @@ interface HostEvent {
   image?: string;
 }
 
-const STATUS_STYLES: Record<EventStatus, { label: string; bg: string; text: string }> = {
-  live: { label: 'Live', bg: 'bg-verified/10', text: 'text-verified' },
-  draft: { label: 'Draft', bg: 'bg-border', text: 'text-cream-dim' },
-  past: { label: 'Past', bg: 'bg-border', text: 'text-cream-faint' },
-  cancelled: { label: 'Cancelled', bg: 'bg-red-50', text: 'text-red-500' },
-};
 
 type Tab = 'live' | 'draft' | 'past';
 
@@ -95,34 +91,38 @@ function ActionsMenu({ eventId, onDelete }: { eventId: string; onDelete: () => v
 }
 
 export default function HostEventsPage() {
-  const { user, isAuth, loading } = useAuth();
+  const { user, isAuth, loading, hydrated } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('live');
   const [events, setEvents] = useState<HostEvent[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const gate = hostGate({ hydrated, loading, user });
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    if (!loading && (!isAuth || user?.hostStatus !== 'verified')) {
-      router.push('/become-a-host');
-    }
-  }, [loading, isAuth, user, router]);
+    if (gate === 'signin') router.replace('/signin?from=/host/events');
+    else if (gate === 'become-a-host') router.replace('/become-a-host');
+  }, [gate, router]);
 
   useEffect(() => {
-    if (!isAuth) return;
-    const load = async () => {
-      setFetching(true);
-      try {
-        const data = await api.get<{ events: HostEvent[] }>('/api/events/host/mine');
-        setEvents(data.events ?? []);
-      } catch {
-        setEvents([]);
-      } finally {
-        setFetching(false);
-      }
-    };
+    if (gate !== 'allow') return;
     load();
-  }, [isAuth]);
+  }, [gate]);
+
+  async function load() {
+    setFetching(true);
+    setLoadError(null);
+    try {
+      const data = await api.get<{ events: HostEvent[] }>('/api/events/host/mine');
+      setEvents(data.events ?? []);
+    } catch (err: any) {
+      // An error is not an empty list: show it, with a retry.
+      setLoadError(err?.message ?? 'Could not load your events.');
+    } finally {
+      setFetching(false);
+    }
+  }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
@@ -137,6 +137,7 @@ export default function HostEventsPage() {
 
   const filtered = events.filter((e) => {
     if (tab === 'past') return e.status === 'past' || e.status === 'cancelled';
+    if (tab === 'live') return e.status === 'live' || e.status === 'full';
     return e.status === tab;
   });
 
@@ -145,6 +146,12 @@ export default function HostEventsPage() {
     { id: 'draft', label: 'Drafts' },
     { id: 'past', label: 'Past' },
   ];
+
+  // Until auth has settled (or while redirecting a non-host) render nothing
+  // host-specific; never flash the table or bounce a verified host.
+  if (gate !== 'allow') {
+    return <div className="min-h-screen bg-void" aria-busy="true" />;
+  }
 
   return (
     <div className="min-h-screen bg-void">
@@ -186,6 +193,12 @@ export default function HostEventsPage() {
           <div className="space-y-3">
             {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-surface rounded-xl animate-pulse" />)}
           </div>
+        ) : loadError ? (
+          <div role="alert" className="py-24 text-center">
+            <p className="font-display text-3xl text-cream mb-3">Couldn&apos;t load your events.</p>
+            <p className="font-sans text-base text-cream-dim mb-8">{loadError}</p>
+            <Button variant="primary" shape="pill" onClick={load}>Retry</Button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="py-24 text-center">
             <p className="font-display text-3xl text-cream mb-3">No {tab} events.</p>
@@ -198,13 +211,13 @@ export default function HostEventsPage() {
           <div className="border border-border rounded-2xl overflow-hidden">
             {/* Header row — desktop only; the mobile stack shows its own inline labels */}
             <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-surface border-b border-border">
-              {['Event', 'Date', 'Bookings', 'Revenue', ''].map((h) => (
+              {['Event', 'Date', 'Bookings', 'Ticket revenue', ''].map((h) => (
                 <p key={h} className="font-mono text-[10px] uppercase tracking-widest text-cream-dim">{h}</p>
               ))}
             </div>
 
             {filtered.map((event, i) => {
-              const s = STATUS_STYLES[event.status];
+              const s = statusStyle(event.status);
               const date = event.date ? new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
               return (
                 <motion.div
@@ -240,7 +253,7 @@ export default function HostEventsPage() {
                     {event.bookingsCount ?? 0}/{event.capacity ?? '∞'}
                   </p>
                   <p className="font-mono text-sm text-cream">
-                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Revenue</span>
+                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Ticket revenue</span>
                     {event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—'}
                   </p>
                   <div className="hidden md:block">

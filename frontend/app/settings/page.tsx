@@ -354,7 +354,7 @@ export default function SettingsPage() {
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-3">[ ACCOUNT ]</p>
         <h1 className="font-display text-4xl text-cream mb-10" style={{ letterSpacing: '-0.03em' }}>Settings.</h1>
 
-        <div className="flex gap-10">
+        <div className="flex flex-col md:flex-row md:gap-10">
           {/* Sidebar */}
           <aside className="hidden md:block w-56 flex-shrink-0">
             <nav className="sticky top-28 space-y-0.5">

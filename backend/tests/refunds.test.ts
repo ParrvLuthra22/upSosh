@@ -135,7 +135,12 @@ describe('Cancel: the booking is claimed before any refund', () => {
   it('a refund abandoned long ago (worker died) is picked up', async () => {
     const { user, event, booking } = await paidBooking({ guestCount: 2 });
     await prisma.event.update({ where: { id: event.id }, data: { attendees: { decrement: 2 } } }); // seats were released already
-    await prisma.$executeRaw`UPDATE "Booking" SET "status" = 'cancelled', "updatedAt" = now() - interval '10 minutes' WHERE "id" = ${booking.id}`;
+    // Set through Prisma with an explicit Date, not SQL `now() - interval` or a raw-SQL Date parameter: both are
+    // converted in the database session's timezone, while "updatedAt" (timestamp without time zone) is read back
+    // as UTC, so on any database not set to UTC "10 minutes ago" landed hours in the future and the lease never
+    // looked expired. Prisma uses an updatedAt you pass explicitly instead of stamping its own.
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    await prisma.booking.update({ where: { id: booking.id }, data: { status: 'cancelled', updatedAt: tenMinutesAgo } });
 
     const res = await cancel(user.id, booking.id);
 

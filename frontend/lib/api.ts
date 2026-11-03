@@ -28,6 +28,7 @@
  */
 
 import { useAuthStore } from '@/lib/stores/auth';
+import { httpFetch } from '@/lib/http';
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,8 @@ export interface Event {
   description: string;
   image: string;
   tags: string[];
+  /** Host-provided "what's included" lines (optional). */
+  included?: string[];
   isSuperhost: boolean;
 }
 
@@ -129,7 +132,7 @@ async function apiFetch<T>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(url, {
+  const res = await httpFetch(url, {
     method,
     headers,
     body:

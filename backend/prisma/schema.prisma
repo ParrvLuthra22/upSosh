@@ -150,6 +150,8 @@ model Event {
   description String
   image       String
   tags        String      @default("[]") // JSON array
+  // What the host says is included (JSON array of short strings). Empty means the host gave none, and the UI shows nothing.
+  included    String      @default("[]")
   capacity    Int         @default(30)
   attendees   Int         @default(0)
   status      EventStatus @default(draft)

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getApiUrl } from '@/lib/api';
+import { httpFetch } from '@/lib/http';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -19,7 +20,7 @@ export default function ForgotPasswordPage() {
     setError('');
     try {
       const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/auth/forgot-password`, {
+      const res = await httpFetch(`${apiUrl}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase() }),

@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getApiUrl } from '@/lib/api';
+import { httpFetch } from '@/lib/http';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,7 +48,7 @@ function ResetPasswordContent() {
 
         try {
             const apiUrl = getApiUrl();
-            const res = await fetch(`${apiUrl}/api/auth/reset-password`, {
+            const res = await httpFetch(`${apiUrl}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, password }),

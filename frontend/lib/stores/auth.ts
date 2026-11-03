@@ -30,6 +30,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types/index';
+import { httpFetch } from '@/lib/http';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ export const useAuthStore = create<AuthStore>()(
       login: async ({ email, password }) => {
         set({ isLoading: true });
         try {
-          const res = await fetch('/api/auth/login', {
+          const res = await httpFetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -180,7 +181,7 @@ export const useAuthStore = create<AuthStore>()(
           // account-creation route the backend has ever had. `role` isn't
           // sent: signup always creates a plain attendee account; hostStatus
           // only changes through the host-application approval flow.
-          const res = await fetch('/api/auth/signup', {
+          const res = await httpFetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password }),
@@ -204,7 +205,7 @@ export const useAuthStore = create<AuthStore>()(
       loginWithGoogle: async (credential) => {
         set({ isLoading: true });
         try {
-          const res = await fetch('/api/auth/google', {
+          const res = await httpFetch('/api/auth/google', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ credential }),
@@ -227,7 +228,7 @@ export const useAuthStore = create<AuthStore>()(
 
       logout: async () => {
         try {
-          await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+          await httpFetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
         } catch {
           // swallow — we clear state regardless
         }
@@ -246,14 +247,13 @@ export const useAuthStore = create<AuthStore>()(
         // visitor simply gets a 401 and we settle on user: null.
         set({ isLoading: true });
         try {
-          const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), 5000);
-
-          const res = await fetch('/api/auth/me', {
+          // Generous timeout: a sleeping backend takes a while to answer, and
+          // giving up early would look like being signed out. The shared
+          // fetch shows the "Waking the server" notice meanwhile.
+          const res = await httpFetch('/api/auth/me', {
             credentials: 'include',
-            signal: controller.signal,
+            timeoutMs: 20_000,
           });
-          clearTimeout(id);
 
           if (res.status === 401) {
             purgeLegacyCredentials();

@@ -159,7 +159,7 @@ describe('POST /api/bookings — pricing', () => {
     const paid = await book(user.id, paidEvent.id);
     await prisma.booking.update({ where: { id: paid.body.booking.id }, data: { paymentStatus: 'paid', status: 'confirmed' } });
     stats = await request(app).get('/api/events/host/stats').set(authHeader(host.id));
-    expect(stats.body.totalRevenue).toBe(200 + PLATFORM_FEE_FLAT);
+    expect(stats.body.totalRevenue).toBe(200); // ticket revenue only, platform fee excluded
   });
 
   it('paid event: creating the booking does not move attendees (seats are taken on payment)', async () => {

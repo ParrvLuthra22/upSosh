@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { normaliseApiEvent, toCardProps } from '@/lib/eventAdapters';
 import { useReducedMotion } from '@/lib/motion';
 import type { MockEvent } from '@/lib/eventTypes';
+import { httpFetch } from '@/lib/http';
 
 const EVENT_LIMIT = 6;
 
@@ -30,7 +31,7 @@ export default function FeaturedEvents() {
   const load = useCallback(async (signal?: AbortSignal) => {
     setStatus('loading');
     try {
-      const res = await fetch(`/api/events?limit=${EVENT_LIMIT}&sort=date`, {
+      const res = await httpFetch(`/api/events?limit=${EVENT_LIMIT}&sort=date`, {
         credentials: 'include',
         signal,
       });
@@ -156,7 +157,7 @@ export default function FeaturedEvents() {
             {events.map((ev) => (
               <li key={ev.id} className={`${SLIDE} flex [&>div]:w-full [&>div]:h-full`}>
                 {/* Link to the slug (the API resolves slug or id); fall back to id. */}
-                <EventCard {...toCardProps(ev)} id={ev.slug ?? ev.id} />
+                <EventCard {...toCardProps(ev)} />
               </li>
             ))}
           </ul>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
@@ -36,39 +36,48 @@ export default function HostEventDetailPage() {
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [announcementText, setAnnouncementText] = useState('');
   const [showAnnouncement, setShowAnnouncement] = useState(false);
 
   useEscapeKey(() => setShowAnnouncement(false), showAnnouncement);
   const [sending, setSending] = useState(false);
 
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [evData, attData] = await Promise.all([
+        // GET /api/events/:slug returns the event object directly, not
+        // wrapped in { event }.
+        api.get<EventDetails>(`/api/events/${id}`),
+        api.get<{ attendees: Attendee[] }>(`/api/events/${id}/attendees`),
+      ]);
+      setEvent(evData);
+      setAttendees(attData.attendees ?? []);
+    } catch (err) {
+      // A failed request is not "event not found": say so, and offer a retry.
+      setLoadError(err instanceof Error && err.message ? err.message : 'Failed to load event');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!isAuth || !id) return;
-    const load = async () => {
-      try {
-        const [evData, attData] = await Promise.all([
-          // GET /api/events/:slug returns the event object directly, not
-          // wrapped in { event }.
-          api.get<EventDetails>(`/api/events/${id}`),
-          api.get<{ attendees: Attendee[] }>(`/api/events/${id}/attendees`),
-        ]);
-        setEvent(evData);
-        setAttendees(attData.attendees ?? []);
-      } catch {
-        toast.error('Failed to load event');
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
-  }, [isAuth, id]);
+  }, [isAuth, id, load]);
 
   async function toggleCheckIn(attendeeId: string, current: boolean) {
+    setActionError(null);
     try {
       await api.patch(`/api/events/${id}/attendees/${attendeeId}/checkin`, { checkedIn: !current });
       setAttendees((prev) => prev.map((a) => a.id === attendeeId ? { ...a, checkedIn: !current } : a));
-    } catch {
-      toast.error('Check-in update failed');
+    } catch (err) {
+      const msg = `Check-in update failed${err instanceof Error && err.message ? `: ${err.message}` : ''}`;
+      setActionError(msg);
+      toast.error(msg);
     }
   }
 
@@ -106,6 +115,14 @@ export default function HostEventDetailPage() {
     </div>
   );
 
+  if (loadError) return (
+    <div role="alert" className="min-h-screen bg-void flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <p className="font-display text-2xl text-cream">Couldn&apos;t load this event.</p>
+      <p className="font-sans text-sm text-cream-dim">{loadError}</p>
+      <button onClick={load} className="px-5 py-2.5 bg-lime text-void rounded-full font-sans text-sm font-medium">Retry</button>
+    </div>
+  );
+
   if (!event) return (
     <div className="min-h-screen bg-void flex items-center justify-center">
       <p className="font-display text-2xl text-cream">Event not found.</p>
@@ -121,6 +138,8 @@ export default function HostEventDetailPage() {
   return (
     <div className="min-h-screen bg-void">
       <div className="max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-24">
+
+        {actionError && <p role="alert" className="font-sans text-sm text-coral mb-4">{actionError}</p>}
 
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
@@ -147,7 +166,7 @@ export default function HostEventDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {[
             { label: 'Bookings', value: `${event.bookingsCount ?? 0} / ${event.capacity ?? '∞'}` },
-            { label: 'Revenue', value: event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—' },
+            { label: 'Ticket revenue', value: event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—' },
             { label: 'Checked in', value: `${confirmedCount} / ${attendees.length}` },
           ].map((s) => (
             <div key={s.label} className="border border-border rounded-2xl p-5 bg-void">

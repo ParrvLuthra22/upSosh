@@ -13,6 +13,7 @@
 import { create } from 'zustand';
 import { unitPrice } from '@/lib/utils';
 import type { BookingTotals } from '@/lib/booking';
+import { httpFetch, isFetchError } from '@/lib/http';
 
 /**
  * Requests authenticate with the backend's httpOnly `token` cookie, which every
@@ -79,6 +80,12 @@ interface BookingStore {
   /** HTTP status of the failed step, and whether it failed after the customer had paid; for choosing the message to show. */
   errorStatus: number | null;
   errorAfterPayment: boolean;
+  /**
+   * The customer paid, but /api/payments/verify timed out or the network dropped
+   * before we saw a response. The payment may well have succeeded (the webhook
+   * confirms it independently), so this is NOT a failure and is never retried.
+   */
+  paymentUncertain: boolean;
 
   // ── Actions ──
   /** Open the booking modal for a given event */
@@ -128,6 +135,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
   errorMessage:  null,
   errorStatus:   null,
   errorAfterPayment: false,
+  paymentUncertain: false,
 
   // ── Open ──────────────────────────────────────────────────────────────────
 
@@ -147,6 +155,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       errorMessage:  null,
       errorStatus:   null,
       errorAfterPayment: false,
+      paymentUncertain: false,
     }),
 
   // ── Close ─────────────────────────────────────────────────────────────────
@@ -159,6 +168,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       errorMessage: null,
       errorStatus: null,
       errorAfterPayment: false,
+      paymentUncertain: false,
     }),
 
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -208,7 +218,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
       // to 'free' for a free event and leaves it null for a paid one (set
       // correctly to 'razorpay' by /verify once payment succeeds), so
       // omitting the field here is correct, not just a workaround.
-      const bookingRes = await fetch('/api/bookings', {
+      const bookingRes = await httpFetch('/api/bookings', {
         method:  'POST',
         headers: authHeaders(),
         credentials: 'include',
@@ -289,7 +299,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           }
 
           // 1. Create Razorpay order on backend
-          const orderRes = await fetch('/api/payments/create-order', {
+          const orderRes = await httpFetch('/api/payments/create-order', {
             method: 'POST',
             headers: authHeaders(),
             credentials: 'include',
@@ -345,17 +355,30 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
           });
 
           // 4. Verify signature on backend
-          const verifyRes = await fetch('/api/payments/verify', {
-            method: 'POST',
-            headers: authHeaders(),
-            credentials: 'include',
-            body: JSON.stringify({
-              bookingId: returnedBookingId,
-              razorpay_order_id:   paymentResult.razorpay_order_id,
-              razorpay_payment_id: paymentResult.razorpay_payment_id,
-              razorpay_signature:  paymentResult.razorpay_signature,
-            }),
-          });
+          let verifyRes: Response;
+          try {
+            verifyRes = await httpFetch('/api/payments/verify', {
+              method: 'POST',
+              headers: authHeaders(),
+              credentials: 'include',
+              body: JSON.stringify({
+                bookingId: returnedBookingId,
+                razorpay_order_id:   paymentResult.razorpay_order_id,
+                razorpay_payment_id: paymentResult.razorpay_payment_id,
+                razorpay_signature:  paymentResult.razorpay_signature,
+              }),
+            });
+          } catch (verifyErr) {
+            // Money has left the customer's account but we never saw the
+            // answer. Not a failure, and never retried (httpFetch does not
+            // retry writes; neither do we): the webhook confirms the booking
+            // independently. Tell them where to look.
+            if (isFetchError(verifyErr)) {
+              set({ isProcessing: false, errorMessage: null, errorStatus: null, errorAfterPayment: false, paymentUncertain: true });
+              return;
+            }
+            throw verifyErr;
+          }
 
           if (!verifyRes.ok) {
             const err = await verifyRes.json().catch(() => ({}));
@@ -371,7 +394,7 @@ export const useBookingStore = create<BookingStore>()((set, get) => ({
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong';
       const { status, afterPayment } = err as Partial<StepError>;
-      set({ isProcessing: false, errorMessage: msg, errorStatus: status ?? null, errorAfterPayment: afterPayment ?? false });
+      set({ isProcessing: false, errorMessage: msg, errorStatus: status ?? null, errorAfterPayment: afterPayment ?? false, paymentUncertain: false });
     }
   },
 }));

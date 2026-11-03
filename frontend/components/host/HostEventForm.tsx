@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { api, getApiUrl, Event } from '@/lib/api';
 import { validateImageUrl } from '@/lib/imageHosts';
 import { useAuth } from '@/store/authStore';
+import { httpFetch } from '@/lib/http';
+import { parseIncludedLines, normaliseIncluded } from '@/lib/eventContent';
 
 interface HostEventFormProps {
     eventToEdit?: Event | null;
@@ -20,6 +22,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         venue: '',
         price: 0,
         description: '',
+        includedText: '', // one "what's included" item per line
         image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', 
         menu: [] as string[],
     });
@@ -41,6 +44,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 venue: eventToEdit.venue,
                 price: eventToEdit.price,
                 description: eventToEdit.description,
+                includedText: normaliseIncluded(eventToEdit.included).join('\n'),
                 image: eventToEdit.image,
                 menu: [],
             });
@@ -74,7 +78,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
         try {
             const body = new FormData();
             body.append('file', file);
-            const res = await fetch(`${getApiUrl()}/api/uploads`, {
+            const res = await httpFetch(`${getApiUrl()}/api/uploads`, {
                 method: 'POST',
                 credentials: 'include',
                 body,
@@ -109,8 +113,10 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
             if (eventToEdit) {
                 
                 console.log('Updating event:', eventToEdit.id, formData);
+                const { includedText, ...rest } = formData;
                 const updateData = {
-                    ...formData,
+                    ...rest,
+                    included: parseIncludedLines(includedText),
                     tags: [formData.type, 'live', 'event'],
                 };
                 console.log('Update payload:', updateData);
@@ -127,8 +133,10 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
 
                 // The server sets ownership from the session; hostId and
                 // isSuperhost are not accepted from the client.
+                const { includedText, ...rest } = formData;
                 const eventData = {
-                    ...formData,
+                    ...rest,
+                    included: parseIncludedLines(includedText),
                     tags: [formData.type, 'live', 'event'],
                 };
 
@@ -146,6 +154,7 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                     venue: '',
                     price: 0,
                     description: '',
+                    includedText: '',
                     image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
                     menu: [] as string[],
                 });
@@ -264,6 +273,20 @@ const HostEventForm: React.FC<HostEventFormProps> = ({ eventToEdit, onEventSaved
                 </div>
 
                 
+                <div className="space-y-2">
+                    <label htmlFor="includedText" className="text-sm font-medium text-cream-dim">What&apos;s included (optional)</label>
+                    <textarea
+                        id="includedText"
+                        name="includedText"
+                        value={formData.includedText}
+                        onChange={handleChange}
+                        rows={3}
+                        className="w-full p-3 rounded-xl bg-white border-none text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-lime"
+                        placeholder={'One item per line, e.g.\nChai after the run\nDigital ticket'}
+                    />
+                    <p className="text-xs text-cream-dim">Leave empty and the event page won&apos;t show a &quot;What&apos;s included&quot; section.</p>
+                </div>
+
                 <div className="space-y-4">
                     <label className="text-sm font-medium text-cream-dim">Event Image</label>
                     <div className="flex flex-col gap-4">

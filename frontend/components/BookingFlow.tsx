@@ -316,6 +316,7 @@ function Step2Payment() {
     errorMessage,
     errorStatus,
     errorAfterPayment,
+    paymentUncertain,
     setPaymentMethod,
     back,
     submit,
@@ -401,6 +402,18 @@ function Step2Payment() {
           </span>
         </label>
 
+        {/* Verify timed out after payment: not a failure, do not pay again */}
+        {paymentUncertain && (
+          <div role="status" className="mt-4 rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="font-sans text-[14px] text-cream">Payment received, confirming your ticket</p>
+            <p className="font-sans text-[13px] text-cream-dim mt-1">
+              We haven&apos;t had confirmation back yet, so please don&apos;t pay again. Your ticket will appear in{' '}
+              <a href="/my-bookings" className="text-cream underline underline-offset-2 hover:text-lime transition-colors">My bookings</a>{' '}
+              shortly.
+            </p>
+          </div>
+        )}
+
         {/* Error */}
         <AnimatePresence>
           {errorMessage && (
@@ -425,7 +438,7 @@ function Step2Payment() {
       <div className="px-6 py-4 border-t border-border space-y-2">
         <button
           onClick={submit}
-          disabled={!canSubmit && !isFree}
+          disabled={paymentUncertain || (!canSubmit && !isFree)}
           className="relative w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 overflow-hidden transition-opacity disabled:opacity-40"
           style={{ backgroundColor: 'var(--lime)', color: 'var(--void)' }}
         >
