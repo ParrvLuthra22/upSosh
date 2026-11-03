@@ -57,7 +57,7 @@ router.post('/', requireAuth, validateBody(createBookingSchema), async (req: Aut
     // assigned.
     const bookingId = crypto.randomUUID();
 
-    const booking = await prisma.$transaction(async (tx) => {
+    const booking = await prisma.$transaction(async (tx: any) => {
       let ticketPrice = 0;
       let isFreeEvent = true;
 
