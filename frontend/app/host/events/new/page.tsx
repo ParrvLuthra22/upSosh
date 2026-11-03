@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 interface EventFormData {
   title: string;
   description: string;
+  included: string; // one item per line
   category: string;
   date: string;
   time: string;
@@ -27,6 +28,7 @@ const CATEGORIES = ['Run Club', 'Meetup', 'Workshop', 'Dinner Club', 'Book Club'
 const DEFAULT: EventFormData = {
   title: '',
   description: '',
+  included: '',
   category: 'Meetup',
   date: '',
   time: '',
@@ -40,6 +42,7 @@ const DEFAULT: EventFormData = {
 import { withAuth } from '@/components/ProtectedRoute';
 import { validateImageUrl } from '@/lib/imageHosts';
 import { httpFetch } from '@/lib/http';
+import { parseIncludedLines } from '@/lib/eventContent';
 function NewEventPage() {
   const { isAuth, user } = useAuth();
   const router = useRouter();
@@ -94,6 +97,7 @@ function NewEventPage() {
       const { location, ...rest } = form;
       const payload = {
         ...rest,
+        included: parseIncludedLines(form.included),
         type: form.category,
         venue: location,
         price: form.isFree ? 0 : Number(form.price) || 0,
@@ -177,6 +181,18 @@ function NewEventPage() {
                   placeholder="Describe what attendees can expect…"
                   className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block font-mono text-[11px] uppercase tracking-widest text-cream-dim mb-2">What&apos;s included (optional)</label>
+                <textarea
+                  value={form.included}
+                  onChange={(e) => update('included', e.target.value)}
+                  rows={3}
+                  placeholder={'One item per line, e.g.\nChai after the run\nDigital ticket'}
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-sans text-sm text-cream focus:outline-none focus:border-lime transition-colors resize-none"
+                />
+                <p className="mt-1 font-sans text-xs text-cream-dim">Leave empty and the event page won&apos;t show a &quot;What&apos;s included&quot; section.</p>
               </div>
 
               <div>
