@@ -32,6 +32,7 @@ interface PublicUser {
 
 interface Event {
   id: string;
+  slug?: string;
   title: string;
   image?: string;
   date?: string;
@@ -47,7 +48,7 @@ type Tab = typeof TABS[number];
 
 function EventCard({ event }: { event: Event }) {
   return (
-    <Link href={`/events/${event.id}`}>
+    <Link href={`/events/${event.slug ?? event.id}`}>
       <motion.div
         className={cn(cardVariants({ interactive: true, padding: 'none' }), 'overflow-hidden group')}
         whileHover={{ y: -2, transition: { duration: 0.2 } }}

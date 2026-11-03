@@ -9,6 +9,7 @@ import { EASE_VERCEL } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { StatsSummary, BookingsSection } from '@/components/profile/ProfileHub';
 
 // ─── Avatar Upload ───────────────────────────────────────────────────────────
 
@@ -232,7 +233,7 @@ function SecurityForm() {
 
 // ─── Main Profile Page ────────────────────────────────────────────────────────
 
-type Tab = 'profile' | 'security';
+type Tab = 'profile' | 'bookings' | 'security';
 
 import { withAuth } from '@/components/ProtectedRoute';
 import { httpFetch } from '@/lib/http';
@@ -267,6 +268,7 @@ function ProfilePage() {
 
   const TABS: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
+    { id: 'bookings', label: 'Bookings' },
     { id: 'security', label: 'Security' },
   ];
 
@@ -316,6 +318,11 @@ function ProfilePage() {
           </div>
         </div>
 
+        {/* Summary: events attended, upcoming, and total spent (paid minus refunds) */}
+        <div className="mb-10">
+          <StatsSummary />
+        </div>
+
         {/* Tab nav */}
         <div className="flex gap-0 border-b border-border mb-8">
           {TABS.map((t) => (
@@ -345,6 +352,7 @@ function ProfilePage() {
           >
             <div className="border border-border rounded-2xl p-6 bg-void">
               {tab === 'profile' && <ProfileForm user={user} onSaved={handleSaved} />}
+              {tab === 'bookings' && <BookingsSection />}
               {tab === 'security' && <SecurityForm />}
             </div>
           </motion.div>

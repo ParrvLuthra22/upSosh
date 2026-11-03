@@ -157,7 +157,7 @@ export default function FeaturedEvents() {
             {events.map((ev) => (
               <li key={ev.id} className={`${SLIDE} flex [&>div]:w-full [&>div]:h-full`}>
                 {/* Link to the slug (the API resolves slug or id); fall back to id. */}
-                <EventCard {...toCardProps(ev)} id={ev.slug ?? ev.id} />
+                <EventCard {...toCardProps(ev)} />
               </li>
             ))}
           </ul>
