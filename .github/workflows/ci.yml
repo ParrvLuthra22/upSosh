@@ -8,7 +8,6 @@ on:
 jobs:
   frontend:
     name: Frontend
-    # Pinned: ubuntu-latest is now 26.04, which Playwright 1.57 does not support.
     runs-on: ubuntu-24.04
     env:
       NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
@@ -92,6 +91,7 @@ jobs:
 
   e2e:
     name: E2E (Playwright)
+    # Pinned: ubuntu-latest is now 26.04, which Playwright 1.57 does not support.
     runs-on: ubuntu-24.04
     # A real payment through Razorpay's actual test-mode API, not a mock —
     # this is the one test that proves the whole stack (frontend, backend,
