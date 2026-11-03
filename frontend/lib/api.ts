@@ -82,6 +82,8 @@ export interface Event {
   description: string;
   image: string;
   tags: string[];
+  /** Host-provided "what's included" lines (optional). */
+  included?: string[];
   isSuperhost: boolean;
 }
 
