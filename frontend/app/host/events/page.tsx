@@ -211,7 +211,7 @@ export default function HostEventsPage() {
           <div className="border border-border rounded-2xl overflow-hidden">
             {/* Header row — desktop only; the mobile stack shows its own inline labels */}
             <div className="hidden md:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-surface border-b border-border">
-              {['Event', 'Date', 'Bookings', 'Revenue', ''].map((h) => (
+              {['Event', 'Date', 'Bookings', 'Ticket revenue', ''].map((h) => (
                 <p key={h} className="font-mono text-[10px] uppercase tracking-widest text-cream-dim">{h}</p>
               ))}
             </div>
@@ -253,7 +253,7 @@ export default function HostEventsPage() {
                     {event.bookingsCount ?? 0}/{event.capacity ?? '∞'}
                   </p>
                   <p className="font-mono text-sm text-cream">
-                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Revenue</span>
+                    <span className="md:hidden font-mono text-[10px] text-cream-faint uppercase tracking-widest mr-2">Ticket revenue</span>
                     {event.revenue ? `₹${event.revenue.toLocaleString('en-IN')}` : '—'}
                   </p>
                   <div className="hidden md:block">

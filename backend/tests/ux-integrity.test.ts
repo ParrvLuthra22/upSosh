@@ -157,18 +157,18 @@ describe('GET /api/users/me/stats', () => {
 });
 
 describe('GET /api/events/host/mine revenue', () => {
-  it('reports what paid bookings actually collected, not price x attendees', async () => {
+  it('reports ticket revenue (ticketPrice of paid bookings): excludes platform fee, refunds, unpaid', async () => {
     const { user: host } = await createUser({ role: 'host', hostStatus: 'verified' });
     const { user } = await createUser();
     const event = await createEvent({ userId: host.id, price: 500, attendees: 4 });
-    await createBooking({ userId: user.id, eventId: event.id, totalAmount: 525, status: 'confirmed', paymentStatus: 'paid', paymentMethod: 'razorpay' });
-    await createBooking({ userId: user.id, eventId: event.id, totalAmount: 525, status: 'cancelled', paymentStatus: 'refunded', paymentMethod: 'razorpay' });
-    await createBooking({ userId: user.id, eventId: event.id, totalAmount: 525, status: 'pending', paymentStatus: 'unpaid' });
+    await createBooking({ userId: user.id, eventId: event.id, ticketPrice: 500, platformFee: 25, totalAmount: 525, status: 'confirmed', paymentStatus: 'paid', paymentMethod: 'razorpay' });
+    await createBooking({ userId: user.id, eventId: event.id, ticketPrice: 500, platformFee: 25, totalAmount: 525, status: 'cancelled', paymentStatus: 'refunded', paymentMethod: 'razorpay' });
+    await createBooking({ userId: user.id, eventId: event.id, ticketPrice: 500, platformFee: 25, totalAmount: 525, status: 'pending', paymentStatus: 'unpaid' });
     const idle = await createEvent({ userId: host.id, price: 500, attendees: 0 });
 
     const res = await request(app).get('/api/events/host/mine').set(authHeader(host.id));
     const row = res.body.events.find((e: { id: string }) => e.id === event.id);
-    expect(row.revenue).toBe(525);
+    expect(row.revenue).toBe(500); // not 525: the platform fee is not the host's money
     expect(row.paidBookings).toBe(1);
     expect(res.body.events.find((e: { id: string }) => e.id === idle.id).revenue).toBe(0);
   });

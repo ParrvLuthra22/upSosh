@@ -294,7 +294,7 @@ function EventCard({ event, index }: { event: HostEvent; index: number }) {
       <div className="px-4 pb-4 flex items-center justify-between">
         {/* Collected so far: the server's total of this event's paid bookings. */}
         <span className="font-mono text-xs text-cream">
-          {event.isFree && event.revenue === 0 ? 'Free' : `₹${event.revenue.toLocaleString('en-IN')} collected`}
+          {event.isFree && event.revenue === 0 ? 'Free' : `₹${event.revenue.toLocaleString('en-IN')} ticket revenue`}
         </span>
         <Link href={`/host/events/${event.id}`} className="font-mono text-[10px] text-cream-dim hover:text-lime transition-colors">
           Manage →
@@ -383,7 +383,7 @@ interface HostStats {
 function statsToCards(stats: HostStats) {
   return [
     { label: 'Upcoming events', value: stats.upcomingEvents.toString(), rawValue: stats.upcomingEvents },
-    { label: 'Total revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, rawValue: stats.totalRevenue },
+    { label: 'Ticket revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, rawValue: stats.totalRevenue },
     { label: 'Total attendees', value: stats.totalAttendees.toString(), rawValue: stats.totalAttendees },
     { label: 'Events hosted', value: stats.eventsHosted.toString(), rawValue: stats.eventsHosted },
   ];

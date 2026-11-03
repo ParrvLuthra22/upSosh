@@ -142,7 +142,7 @@ router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): P
     const paid = await prisma.booking.groupBy({
       by: ['eventId'],
       where: { eventId: { in: events.map((e) => e.id) }, paymentStatus: 'paid' },
-      _sum: { totalAmount: true },
+      _sum: { ticketPrice: true },
       _count: { _all: true },
     });
     const byEvent = new Map(paid.map((p) => [p.eventId, p]));
@@ -150,7 +150,7 @@ router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): P
     return res.json({
       events: events.map((e) => ({
         ...formatEvent(e),
-        revenue: byEvent.get(e.id)?._sum.totalAmount ?? 0,
+        revenue: byEvent.get(e.id)?._sum.ticketPrice ?? 0,
         paidBookings: byEvent.get(e.id)?._count._all ?? 0,
       })),
     });
@@ -180,13 +180,13 @@ router.get('/host/stats', requireAuth, async (req: AuthRequest, res: Response): 
 
     const revenueAgg = await prisma.booking.aggregate({
       where: { eventId: { in: events.map((e) => e.id) }, paymentStatus: 'paid' },
-      _sum: { totalAmount: true },
+      _sum: { ticketPrice: true },
     });
 
     return res.json({
       upcomingEvents,
       totalAttendees,
-      totalRevenue: revenueAgg._sum.totalAmount ?? 0,
+      totalRevenue: revenueAgg._sum.ticketPrice ?? 0,
       eventsHosted: events.length,
     });
   } catch (err: unknown) {

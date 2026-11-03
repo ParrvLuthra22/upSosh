@@ -154,7 +154,7 @@ describe('<HostDashboard />', () => {
     mine([{ ...base, id: 'r1', slug: 'r', title: 'Paid', date: '2030-05-04T10:00:00Z', status: 'live', attendees: 40, revenue: 1050 }]);
     const { container } = await load();
     await screen.findByText('Paid');
-    expect(screen.getByText('₹1,050 collected')).toBeInTheDocument();
+    expect(screen.getByText('₹1,050 ticket revenue')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/vs last month/i);
     expect(container.textContent).not.toMatch(/\d+% vs/);
   });
@@ -183,9 +183,9 @@ describe('<HostDashboard />', () => {
     await load();
     expect(await screen.findByRole('alert')).toHaveTextContent('boom');
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
-    expect(screen.queryByText('Total revenue')).toBeNull();
+    expect(screen.queryByText('Ticket revenue')).toBeNull();
     mine([]);
     screen.getByRole('button', { name: 'Retry' }).click();
-    await waitFor(() => expect(screen.getByText('Total revenue')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Ticket revenue')).toBeInTheDocument());
   });
 });
