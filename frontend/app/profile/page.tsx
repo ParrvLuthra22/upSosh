@@ -51,7 +51,13 @@ function AvatarUpload({
 
       if (res.ok) {
         const data = await res.json();
-        const url = data.avatarUrl ?? data.photoUrl ?? objectUrl;
+        // Never fall back to the local blob: URL: it would be persisted as the avatar.
+        const url = data.avatarUrl ?? data.photoUrl;
+        if (!url) {
+          setPreview(currentUrl);
+          toast.error('Photo upload failed. Please try again.');
+          return;
+        }
         setPreview(url);
         onUpload(url);
         toast.success('Profile photo updated.');
@@ -253,12 +259,19 @@ function ProfilePage() {
     setUser(updatedUser);
   }
 
+  const [avatarSyncError, setAvatarSyncError] = useState<string | null>(null);
+
   function handleAvatarUpload(url: string) {
     const updated = { ...user, photoUrl: url, avatar: url };
     setLocalUser(updated);
     setUser(updated);
     // Persist to API (avatar upload already saved it; this is a safety sync)
-    api.patch('/api/users/me', { photoUrl: url }).catch(() => {});
+    setAvatarSyncError(null);
+    api.patch('/api/users/me', { photoUrl: url }).catch((err: unknown) => {
+      setAvatarSyncError(
+        `Your photo uploaded, but we couldn't save it to your profile${err instanceof Error && err.message ? ` (${err.message})` : ''}. It may disappear when you reload.`,
+      );
+    });
   }
 
   // withAuth guarantees user exists before rendering — this is a safety net only
@@ -281,6 +294,10 @@ function ProfilePage() {
 
         {/* Header */}
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-cream-dim mb-3">[ PROFILE ]</p>
+
+        {avatarSyncError && (
+          <p role="alert" className="font-sans text-sm text-coral mb-4">{avatarSyncError}</p>
+        )}
 
         {/* Avatar + info */}
         <div className="flex items-center gap-6 mb-10">
