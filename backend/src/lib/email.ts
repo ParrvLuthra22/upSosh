@@ -30,6 +30,11 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+// A subject is a mail header: strip line breaks so a value can't add headers.
+function singleLine(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').trim();
+}
+
 export interface BookingEmailData {
   guestName: string;
   guestEmail: string;
@@ -49,9 +54,10 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
     return;
   }
 
+  const title = singleLine(data.eventTitle);
   const subject = data.isFree
-    ? `You're in! ${data.eventTitle}`
-    : `Booking confirmed — ${data.eventTitle}`;
+    ? `You're in! ${title}`
+    : `Booking confirmed — ${title}`;
 
   const html = `
 <!DOCTYPE html>
@@ -59,7 +65,7 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${subject}</title>
+  <title>${escapeHtml(subject)}</title>
 </head>
 <body style="margin:0;padding:0;background:#0A0A0B;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0B;padding:40px 20px;">
@@ -80,8 +86,8 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
               <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#D4FF3F;letter-spacing:2px;text-transform:uppercase;">
                 ${data.isFree ? "You're going!" : 'Booking confirmed'}
               </p>
-              <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#F4F1EA;line-height:1.2;">${data.eventTitle}</h1>
-              <p style="margin:0;font-size:15px;color:#8B8B9E;">Hi ${data.guestName}, your spot is locked in.</p>
+              <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#F4F1EA;line-height:1.2;">${escapeHtml(data.eventTitle)}</h1>
+              <p style="margin:0;font-size:15px;color:#8B8B9E;">Hi ${escapeHtml(data.guestName)}, your spot is locked in.</p>
             </td>
           </tr>
 
@@ -92,19 +98,19 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
                 <tr>
                   <td style="padding:20px 24px;border-bottom:1px solid #2A2A38;">
                     <p style="margin:0 0 4px;font-size:11px;color:#8B8B9E;letter-spacing:1px;text-transform:uppercase;">Date & Time</p>
-                    <p style="margin:0;font-size:15px;color:#F4F1EA;">${data.eventDate} · ${data.eventTime}</p>
+                    <p style="margin:0;font-size:15px;color:#F4F1EA;">${escapeHtml(data.eventDate)} · ${escapeHtml(data.eventTime)}</p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:20px 24px;border-bottom:1px solid #2A2A38;">
                     <p style="margin:0 0 4px;font-size:11px;color:#8B8B9E;letter-spacing:1px;text-transform:uppercase;">Venue</p>
-                    <p style="margin:0;font-size:15px;color:#F4F1EA;">${data.eventVenue}</p>
+                    <p style="margin:0;font-size:15px;color:#F4F1EA;">${escapeHtml(data.eventVenue)}</p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:20px 24px;border-bottom:1px solid #2A2A38;">
                     <p style="margin:0 0 4px;font-size:11px;color:#8B8B9E;letter-spacing:1px;text-transform:uppercase;">Booking ID</p>
-                    <p style="margin:0;font-size:13px;font-family:monospace;color:#D4FF3F;">${data.bookingId}</p>
+                    <p style="margin:0;font-size:13px;font-family:monospace;color:#D4FF3F;">${escapeHtml(data.bookingId)}</p>
                   </td>
                 </tr>
                 <tr>
@@ -124,7 +130,7 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
             <td style="padding:0 40px 32px;">
               <p style="margin:0 0 16px;font-size:14px;color:#8B8B9E;line-height:1.6;">
                 Show your booking ID at the entrance. Your host will check you in.
-                Your QR code: <span style="font-family:monospace;color:#D4FF3F;">${data.qrCode}</span>
+                Your QR code: <span style="font-family:monospace;color:#D4FF3F;">${escapeHtml(data.qrCode)}</span>
               </p>
               <a href="https://upsosh.app/my-bookings"
                  style="display:inline-block;padding:12px 24px;background:#D4FF3F;color:#0A0A0B;border-radius:9999px;font-size:14px;font-weight:600;text-decoration:none;">
@@ -181,7 +187,7 @@ export async function sendEventAnnouncement(data: EventAnnouncementData): Promis
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Update: ${data.eventTitle}</title>
+  <title>Update: ${escapeHtml(singleLine(data.eventTitle))}</title>
 </head>
 <body style="margin:0;padding:0;background:#0A0A0B;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0B;padding:40px 20px;">
@@ -219,7 +225,7 @@ export async function sendEventAnnouncement(data: EventAnnouncementData): Promis
     await getResendClient().emails.send({
       from: FROM,
       to: data.guestEmail,
-      subject: `Update: ${data.eventTitle}`,
+      subject: `Update: ${singleLine(data.eventTitle)}`,
       html,
     });
   } catch (err: unknown) {

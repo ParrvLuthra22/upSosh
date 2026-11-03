@@ -19,7 +19,7 @@ This project uses environment variables to configure URLs for different environm
 
 ## Backend URLs
 - **Development**: http://localhost:4000
-- **Production**: https://upsosh-production.up.railway.app
+- **Production**: your Render service URL, e.g. `https://<your-service>.onrender.com`
 
 ## Frontend Environment Files
 
@@ -33,7 +33,7 @@ NEXT_PUBLIC_FRONTEND_URL=http://localhost:3000
 ### `.env.production` (Production Build)
 Used automatically when running `npm run build`
 ```bash
-NEXT_PUBLIC_BACKEND_URL=https://upsosh-production.up.railway.app
+NEXT_PUBLIC_BACKEND_URL=https://<your-service>.onrender.com
 NEXT_PUBLIC_FRONTEND_URL=https://www.upsosh.app
 ```
 
@@ -54,12 +54,15 @@ NODE_ENV=production  # or development
 
 ## Deployment
 
-### Railway (Backend)
-Set these environment variables in your Railway dashboard:
+### Render (Backend)
+A Render Web Service. Start command `cd backend && npm run start`, health check path `/health`.
+Set these environment variables in the Render dashboard (the full list is in [README.md](./README.md#deployment)):
 - `DATABASE_URL`: Your PostgreSQL connection string
-- `JWT_SECRET`: A secure random string
+- `JWT_SECRET`: A long random string (32+ characters)
 - `FRONTEND_URL`: https://www.upsosh.app
 - `NODE_ENV`: production
+- `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`: Razorpay API keys
+- `RAZORPAY_WEBHOOK_SECRET`: required, or the payment webhook returns 500
 
 ### Vercel/Netlify (Frontend)
 Environment variables are automatically loaded from `.env.production` during build.

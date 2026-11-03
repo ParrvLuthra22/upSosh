@@ -35,55 +35,13 @@ import { notFound } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useReducedMotion, useCountTransition } from '@/lib/motion';
 import { estimateBookingTotals, MAX_GUESTS_PER_BOOKING } from '@/lib/booking';
+import { httpFetch } from '@/lib/http';
+import { descriptionParagraphs, normaliseIncluded } from '@/lib/eventContent';
 
 // ─── Constants & types ────────────────────────────────────────────────────────
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const SPRING = { type: 'spring', stiffness: 340, damping: 30 } as const;
-
-interface ExtendedData {
-  description: string;
-  included: string[];
-}
-
-// ─── Extended mock data ───────────────────────────────────────────────────────
-
-const DEFAULT_EXTENDED: ExtendedData = {
-  description: `This is a curated, intimate experience designed for people who value real connections over large crowds. Every detail — from the venue to the guest list — is hand-picked to create something worth showing up for.\n\nWhether you're coming alone or with a friend, you'll leave with new perspectives, a few good conversations, and hopefully, people you'll actually stay in touch with.`,
-  included: [
-    'Chai and refreshments after the session',
-    'Host-led welcome and introductions',
-    'Digital entry ticket sent instantly',
-    'Access to the post-event community group',
-    'Personalised pace matching for run events',
-  ],
-};
-
-const EXTENDED_OVERRIDES: Partial<Record<string, Partial<ExtendedData>>> = {
-  'evt-001': {
-    description: `Lodhi Garden at dawn is something else. The light filters through the Mughal domes while the city is still waking up — and you're moving through it with a group of people who chose to be somewhere beautiful instead of in bed.\n\nThis run club is for all paces. We keep together as a group, no one gets left behind, and we finish at our favourite chai spot nearby.`,
-    included: [
-      'Warm-up led by the host',
-      'Group run with front and back pacers',
-      'Chai and snacks at the end',
-      'Digital run certificate',
-      'Access to the Delhi Runners WhatsApp group',
-    ],
-  },
-  'evt-004': {
-    description: `The Bombay Canteen is one of those rare spaces that earns its reputation quietly. We've reserved the private dining room for a gathering of 12 — founders, operators, and a few interesting wildcards.\n\nThis is not a networking dinner. There's no agenda, no pitches, no slide decks. Just good food, sharp conversation, and the kind of candour you only get at a small table.`,
-    included: [
-      '5-course curated menu by Chef Thomas Zacharias',
-      'Wine and cocktail pairings',
-      'Private dining room (no other guests)',
-      'Curated guest list — vetted by the host',
-    ],
-  },
-};
-
-function getExtended(id: string): ExtendedData {
-  return { ...DEFAULT_EXTENDED, ...(EXTENDED_OVERRIDES[id] ?? {}) };
-}
 
 function apiEventToMock(raw: any): MockEvent {
   const d = raw.date ? new Date(raw.date) : null;
@@ -110,6 +68,8 @@ function apiEventToMock(raw: any): MockEvent {
     going:     raw.attendees ?? 0,
     image:     raw.image ?? 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80&fit=crop',
     tags:      Array.isArray(raw.tags) ? raw.tags : [],
+    description: typeof raw.description === 'string' ? raw.description : '',
+    included:  normaliseIncluded(raw.included),
     featured:  false,
   };
 }
@@ -540,7 +500,7 @@ export default function EventPageClient() {
     setEventNotFound(false);
     try {
       const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
+      const res = await httpFetch(`${apiUrl}/api/events/${slug}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setEvent(apiEventToMock(data));
@@ -559,7 +519,6 @@ export default function EventPageClient() {
 
   useEffect(() => { fetchEvent(); }, [fetchEvent]);
 
-  const ext = getExtended(event?.id ?? slug);
   const openBooking = useBookingStore((s) => s.open);
 
   function handleBook(guests: number) {
@@ -641,33 +600,30 @@ export default function EventPageClient() {
                 What you're signing up for
               </h3>
               <div className="space-y-4">
-                {(event.tags?.length ? event.tags.join('. ') + '.' : ext.description).split('\n\n').map((para, i) => (
-                  <p
-                    key={i}
-                    className="text-cream-dim max-w-2xl"
-                    style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}
-                  >
-                    {para}
+                {descriptionParagraphs(event.description).length > 0 ? (
+                  descriptionParagraphs(event.description).map((para, i) => (
+                    <p
+                      key={i}
+                      className="text-cream-dim max-w-2xl"
+                      style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}
+                    >
+                      {para}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-cream-dim max-w-2xl" style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}>
+                    The host hasn&apos;t added a description yet.
                   </p>
-                ))}
-                {/* Always show ext.description for the full experience text */}
-                {ext.description.split('\n\n').map((para, i) => (
-                  <p
-                    key={`ext-${i}`}
-                    className="text-cream-dim max-w-2xl"
-                    style={{ fontFamily: 'var(--font-geist, sans-serif)', fontSize: 17, lineHeight: 1.8 }}
-                  >
-                    {para}
-                  </p>
-                ))}
+                )}
               </div>
             </FadeUp>
 
             {/* 5 — What's included */}
+            {(event.included?.length ?? 0) > 0 && (
             <FadeUp className="mt-16" delay={0.05}>
               <Label>02 — included</Label>
               <ul className="mt-4 space-y-3">
-                {ext.included.map((item, i) => (
+                {(event.included ?? []).map((item, i) => (
                   <motion.li
                     key={i}
                     className="flex items-start gap-3"
@@ -687,6 +643,7 @@ export default function EventPageClient() {
                 ))}
               </ul>
             </FadeUp>
+            )}
 
             {/* 6 — Where */}
             <FadeUp className="mt-16">

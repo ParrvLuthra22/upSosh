@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { EASE_VERCEL, useReducedMotion } from '@/lib/motion';
 import { useAuth } from '@/store/authStore';
 import { api } from '@/lib/api';
+import { describeError } from '@/lib/http';
+import {
+  amountLabel, bookingStatusKey, bookingTab, buildIcs, icsFilename, noQrNotice, showQr, type BookingStatusKey,
+} from '@/lib/bookingDisplay';
+import { cancelRefund } from '@/lib/booking';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
 import { useEscapeKey } from '@/lib/a11y';
@@ -17,8 +22,9 @@ type TabType = 'upcoming' | 'past' | 'cancelled';
 
 interface Booking {
   id: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: string;
   paymentStatus: string;
+  guestCount?: number;
   totalAmount: number;
   ticketPrice: number;
   platformFee: number;
@@ -44,12 +50,14 @@ interface Booking {
 
 // ─── Status styles ────────────────────────────────────────────────────────────
 
-const STATUS = {
+const STATUS: Record<BookingStatusKey, { label: string; bg: string; text: string; dot: string }> = {
   confirmed:   { label: 'Confirmed',   bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-400' },
   pending:     { label: 'Pending',     bg: 'bg-lime/10',        text: 'text-lime',        dot: 'bg-lime' },
   cancelled:   { label: 'Cancelled',   bg: 'bg-cream/8',        text: 'text-cream-dim',   dot: 'bg-cream-faint' },
+  expired:     { label: 'Expired',     bg: 'bg-coral/10',       text: 'text-coral',       dot: 'bg-coral' },
+  refunded:    { label: 'Refunded',    bg: 'bg-cream/8',        text: 'text-cream-dim',   dot: 'bg-cream-faint' },
   unavailable: { label: 'Unavailable', bg: 'bg-cream/8',        text: 'text-cream-dim',   dot: 'bg-cream-faint' },
-} as const;
+};
 
 // ─── Booking row ──────────────────────────────────────────────────────────────
 
@@ -57,7 +65,8 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
   const ev = booking.event;
   const title = ev?.title ?? 'Event unavailable';
   const date = ev?.date ? new Date(ev.date) : null;
-  const s = !ev ? STATUS.unavailable : (STATUS[booking.status] ?? STATUS.pending);
+  const s = STATUS[bookingStatusKey(booking)];
+  const amount = amountLabel(booking);
 
   return (
     <motion.button
@@ -95,14 +104,10 @@ function BookingRow({ booking, onClick }: { booking: Booking; onClick: () => voi
           {ev?.time ? ` · ${ev.time}` : ''}
           {ev?.venue ? ` · ${ev.venue}` : ''}
         </p>
-        {booking.totalAmount > 0 && (
-          <p className="font-mono text-[11px] text-cream-dim mt-0.5">
-            ₹{booking.totalAmount.toLocaleString('en-IN')} paid
-          </p>
-        )}
-        {booking.totalAmount === 0 && (
-          <p className="font-mono text-[11px] text-lime mt-0.5">Free</p>
-        )}
+        <p className={`font-mono text-[11px] mt-0.5 ${amount.tone === 'free' ? 'text-lime' : 'text-cream-dim'}`}>
+          {amount.text}
+          {(booking.guestCount ?? 1) > 1 ? ` · ${booking.guestCount} guests` : ''}
+        </p>
       </div>
 
       {/* Status chip */}
@@ -126,6 +131,8 @@ function TicketModal({ booking, onClose, onCancel }: {
   const title = ev?.title ?? 'Event unavailable';
   const date = ev?.date ? new Date(ev.date) : null;
   const qrValue = booking.qrCode ?? `UPSOSH-${booking.id}`;
+  const statusKey = bookingStatusKey(booking);
+  const guests = booking.guestCount ?? 1;
   const bookingRef = `UPSOSH-${booking.id}`;
   const [cancelling, setCancelling] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -133,6 +140,23 @@ function TicketModal({ booking, onClose, onCancel }: {
   const dragControls = useDragControls();
 
   useEscapeKey(onClose, true);
+
+  /** What the customer will get back, shown before they confirm. Null when nothing was charged. */
+  function refundNotice(): string | null {
+    if (booking.paymentStatus !== 'paid' || booking.totalAmount <= 0) {
+      return 'Nothing was charged for this booking, so there is nothing to refund.';
+    }
+    if (!ev?.date) return null;
+    const amount = `₹${booking.totalAmount.toLocaleString('en-IN')}`;
+    switch (cancelRefund(new Date(ev.date))) {
+      case 'full':
+        return `You will get a full refund of ${amount} (ticket and service fee) to your original payment method.`;
+      case 'event_day':
+        return 'The event day has started, so cancelling now gives no refund. Your spot will be released.';
+      case 'event_ended':
+        return 'This event has already taken place, so cancelling gives no refund.';
+    }
+  }
 
   async function handleCancel() {
     if (!confirmCancel) { setConfirmCancel(true); return; }
@@ -150,27 +174,20 @@ function TicketModal({ booking, onClose, onCancel }: {
   }
 
   function addToCalendar() {
-    const start = date
-      ? date.toISOString().replace(/[-:]/g, '').slice(0, 15) + '00Z'
-      : '';
-    const ics = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'BEGIN:VEVENT',
-      `SUMMARY:${title}`,
-      `DTSTART:${start}`,
-      `LOCATION:${ev?.venue ?? ''}`,
-      `UID:${booking.id}@upsosh.app`,
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ].join('\n');
-    const blob = new Blob([ics], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title.replace(/\s+/g, '-')}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!ev) return;
+    try {
+      const blob = new Blob([buildIcs(booking)], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = icsFilename(title);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      toast.error("Couldn't create the calendar file. Please try again.");
+    }
   }
 
   return (
@@ -268,8 +285,13 @@ function TicketModal({ booking, onClose, onCancel }: {
                 </p>
               )}
 
-              {/* QR code (only when there's a real event to check into) */}
-              {ev ? (
+              {/* Guests */}
+              <p className="font-mono text-[12px] text-cream mb-5" data-testid="guest-count-line">
+                {guests} {guests === 1 ? 'guest' : 'guests'}
+              </p>
+
+              {/* QR code: only for a confirmed, paid booking. Anything else gets the reason instead. */}
+              {showQr(booking) ? (
                 <>
                   <div className="bg-white rounded-2xl p-4 flex items-center justify-center mb-5">
                     <QRCode value={qrValue} size={160} level="M" />
@@ -280,6 +302,7 @@ function TicketModal({ booking, onClose, onCancel }: {
                 </>
               ) : (
                 <div className="bg-surface-2 rounded-xl px-4 py-3 mb-5 text-center">
+                  {ev && <p className="font-sans text-[13px] text-cream-dim leading-relaxed mb-2">{noQrNotice(booking)}</p>}
                   <p className="font-mono text-[10px] text-cream-dim uppercase tracking-wider mb-1">Booking reference</p>
                   <p className="font-mono text-[13px] text-cream tracking-widest">{bookingRef}</p>
                 </div>
@@ -289,7 +312,7 @@ function TicketModal({ booking, onClose, onCancel }: {
               {booking.totalAmount > 0 ? (
                 <div className="bg-surface-2 rounded-xl p-4 mb-5 space-y-1.5">
                   <div className="flex justify-between font-sans text-[13px] text-cream-dim">
-                    <span>Ticket</span>
+                    <span>Ticket{guests > 1 ? ` (${guests} guests)` : ''}</span>
                     <span>₹{booking.ticketPrice.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between font-sans text-[13px] text-cream-dim">
@@ -297,7 +320,7 @@ function TicketModal({ booking, onClose, onCancel }: {
                     <span>₹{booking.platformFee.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between font-sans text-[14px] text-cream font-medium border-t border-border pt-1.5 mt-1.5">
-                    <span>Total paid</span>
+                    <span>{booking.paymentStatus === 'paid' ? 'Total paid' : booking.paymentStatus === 'refunded' ? 'Total (refunded)' : 'Total'}</span>
                     <span>₹{booking.totalAmount.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
@@ -305,6 +328,10 @@ function TicketModal({ booking, onClose, onCancel }: {
                 <div className="bg-lime/10 border border-lime/20 rounded-xl px-4 py-3 mb-5 text-center">
                   <span className="font-mono text-[12px] text-lime uppercase tracking-wider">Free event — no charge</span>
                 </div>
+              )}
+
+              {confirmCancel && refundNotice() && (
+                <p className="font-sans text-[13px] text-cream-dim text-center mb-3">{refundNotice()}</p>
               )}
 
               {/* Actions */}
@@ -317,7 +344,7 @@ function TicketModal({ booking, onClose, onCancel }: {
                     Add to calendar
                   </button>
                 )}
-                {booking.status === 'confirmed' && (
+                {statusKey === 'confirmed' && (
                   <button
                     onClick={handleCancel}
                     disabled={cancelling}
@@ -355,6 +382,7 @@ export default function MyBookingsPage() {
   const [tab, setTab] = useState<TabType>('upcoming');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Booking | null>(null);
   const reduced = useReducedMotion();
 
@@ -367,14 +395,20 @@ export default function MyBookingsPage() {
     if (!isAuth) router.push('/signin?from=/my-bookings');
   }, [hydrated, loading, isAuth, router]);
 
-  useEffect(() => {
-    if (!hydrated || loading || !isAuth) return;
+  const loadBookings = useCallback(() => {
     setFetching(true);
+    setLoadError(null);
     api.get<{ bookings: Booking[] }>('/api/bookings')
       .then((d) => setBookings(d.bookings ?? []))
-      .catch(() => setBookings([]))
+      // An error is shown as an error, with a way to retry; an empty list would say "no bookings".
+      .catch((err) => setLoadError(describeError(err, "We couldn't load your bookings.")))
       .finally(() => setFetching(false));
-  }, [hydrated, loading, isAuth]);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || loading || !isAuth) return;
+    loadBookings();
+  }, [hydrated, loading, isAuth, loadBookings]);
 
   function handleCancel(id: string) {
     setBookings((prev) =>
@@ -383,17 +417,11 @@ export default function MyBookingsPage() {
   }
 
   const now = new Date();
-  const filtered = bookings.filter((b) => {
-    const d = b.event?.date ? new Date(b.event.date) : null;
-    if (tab === 'cancelled') return b.status === 'cancelled';
-    if (tab === 'past')      return b.status !== 'cancelled' && (!d || d < now);
-    return b.status !== 'cancelled' && (!d || d >= now);
-  });
-
-  const counts = {
-    upcoming:  bookings.filter((b) => b.status !== 'cancelled' && (!b.event?.date || new Date(b.event.date) >= now)).length,
-    past:      bookings.filter((b) => b.status !== 'cancelled' && b.event?.date && new Date(b.event.date) < now).length,
-    cancelled: bookings.filter((b) => b.status === 'cancelled').length,
+  const filtered = bookings.filter((b) => bookingTab(b, now) === tab);
+  const counts: Record<TabType, number> = {
+    upcoming:  bookings.filter((b) => bookingTab(b, now) === 'upcoming').length,
+    past:      bookings.filter((b) => bookingTab(b, now) === 'past').length,
+    cancelled: bookings.filter((b) => bookingTab(b, now) === 'cancelled').length,
   };
 
   const TABS: { id: TabType; label: string }[] = [
@@ -448,6 +476,17 @@ export default function MyBookingsPage() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-20 bg-surface border border-border rounded-2xl animate-pulse" />
             ))}
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="rounded-2xl border border-coral/40 bg-coral/5 px-5 py-6 text-center">
+            <p className="font-sans text-[15px] text-cream mb-1">We couldn&apos;t load your bookings.</p>
+            <p className="font-sans text-[13px] text-cream-dim mb-4">{loadError}</p>
+            <button
+              onClick={loadBookings}
+              className="font-mono text-xs uppercase tracking-wider text-lime border border-lime/40 rounded-full px-5 py-2 hover:bg-lime/10 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         ) : (
           <AnimatePresence mode="wait">

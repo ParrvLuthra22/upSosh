@@ -42,7 +42,9 @@ export function toCardProps(ev: MockEvent): EventCardProps {
   // Try to build an ISO-ish date string from dateShort, e.g. "Sun 24 Nov"
   const dateStr = ev.dateShort || ev.date;
   return {
-    id:            ev.id,
+    // The card only uses this to build its /events/<id> link, so hand it the slug (falls back to the id,
+    // which the event page also accepts).
+    id:            ev.slug ?? ev.id,
     title:         ev.title,
     host:          ev.host.name,
     hostAvatar:    undefined,

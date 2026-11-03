@@ -39,5 +39,9 @@ export interface MockEvent {
   going: number;
   image: string;
   tags: string[];
+  /** Host-written description (may be empty). */
+  description?: string;
+  /** Host-provided "what's included" lines; empty means the section is hidden. */
+  included?: string[];
   featured?: boolean;
 }

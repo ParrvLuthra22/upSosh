@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { renderAiText } from './renderAiText';
+import { httpFetch } from '@/lib/http';
 
 const AIAssistant = () => {
     const [input, setInput] = useState({
@@ -18,7 +20,7 @@ const AIAssistant = () => {
             const token = localStorage.getItem('token');
             const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
-            const res = await fetch(`${apiUrl}/api/ai/plan`, {
+            const res = await httpFetch(`${apiUrl}/api/ai/plan`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -28,7 +30,8 @@ const AIAssistant = () => {
                     budget: input.budget,
                     guests: input.guests,
                     vibe: input.vibe
-                })
+                }),
+                timeoutMs: 90_000,
             });
 
             const data = await res.json();
@@ -111,7 +114,7 @@ Failed to connect to the AI planner. Please try again later.
             {response && (
                 <div className="mt-8 p-6 bg-surface-2/50 rounded-2xl border border-white/10 animate-fade-in">
                     <div className="prose prose-invert max-w-none">
-                        <div dangerouslySetInnerHTML={{ __html: response.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/### (.*)/g, '<h3 class="text-lg font-bold text-secondary mb-2">$1</h3>') }} />
+                        <div>{renderAiText(response)}</div>
                     </div>
                 </div>
             )}

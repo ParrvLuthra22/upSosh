@@ -8,6 +8,8 @@ import { validateBody } from '../middleware/validate';
 import { updateProfileSchema } from '../lib/schemas';
 import { sanitizeUser } from '../lib/sanitizeUser';
 import { imageUpload, isCloudinaryConfigured, uploadBufferToCloudinary } from '../lib/cloudinary';
+import { cancelBooking } from '../lib/refunds';
+import { getRazorpayClient } from './payments';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -73,30 +75,53 @@ router.delete('/me', requireAuth, async (req: AuthRequest, res: Response): Promi
   try {
     const userId = req.user!.id;
 
-    const activeBookings = await prisma.booking.findMany({
-      where: { userId, status: { in: ['pending', 'confirmed'] } },
+    // A host with an upcoming event that people have paid for cannot delete
+    // the account until that event is cancelled (which refunds the attendees).
+    // Past, cancelled and unpaid-only events do not count.
+    const blocking = await prisma.event.count({
+      where: {
+        userId,
+        status: { in: ['live', 'full'] },
+        date: { gte: new Date() },
+        bookings: { some: { status: { in: ['pending', 'confirmed'] }, paymentStatus: 'paid', totalAmount: { gt: 0 } } },
+      },
     });
+    if (blocking > 0) {
+      return res.status(409).json({
+        message: `You host ${blocking} upcoming event${blocking === 1 ? '' : 's'} with paid bookings. ` +
+          'Cancel those events first, which refunds your attendees in full, and then delete your account.',
+      });
+    }
+
+    // Refund and release every live booking first, one at a time and outside
+    // any transaction. If one refund cannot be completed the account is left
+    // as it is, so signing in and deleting again picks up what is left.
+    const activeBookings = await prisma.booking.findMany({
+      where: {
+        userId,
+        OR: [
+          { status: { in: ['pending', 'confirmed'] } },
+          { status: 'cancelled', paymentStatus: 'paid', paymentMethod: 'razorpay', paymentId: { not: null } },
+        ],
+      },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    let unfinished = 0;
+    for (const b of activeBookings) {
+      const result = await cancelBooking(getRazorpayClient, b.id);
+      if (result.outcome === 'in_progress' || (result.outcome === 'cancelled' && result.refund === 'failed')) unfinished += 1;
+    }
+    if (unfinished > 0) {
+      return res.status(502).json({
+        message: 'We could not refund all of your bookings yet, so your account has not been deleted. Please try again in a few minutes or contact support.',
+      });
+    }
 
     const anonEmail = `deleted-${userId}@deleted.upsosh.app`;
     const unusablePassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
 
     await prisma.$transaction(async (tx) => {
-      for (const b of activeBookings) {
-        // Claim the booking first: if a concurrent cancel already moved it to
-        // 'cancelled', count is 0 and its seats are not released a second
-        // time. Only a paid booking ever held seats (an unpaid one's hold is
-        // derived and lapses by itself), and it held guestCount of them.
-        const { count } = await tx.booking.updateMany({
-          where: { id: b.id, status: { in: ['pending', 'confirmed'] } },
-          data: { status: 'cancelled' },
-        });
-        if (count > 0 && b.eventId && b.paymentStatus === 'paid') {
-          await tx.event.update({
-            where: { id: b.eventId },
-            data: { attendees: { decrement: b.guestCount } },
-          });
-        }
-      }
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -157,6 +182,40 @@ router.post(
     }
   },
 );
+
+// GET /api/users/me/stats — the profile hub's summary numbers.
+//   attended: confirmed, paid bookings whose event has already happened
+//   upcoming: confirmed, paid bookings for events still ahead (not cancelled)
+//   totalSpent: everything paid minus everything refunded, in rupees
+router.get('/me/stats', requireAuth, async (req: AuthRequest, res: Response): Promise<Response> => {
+  try {
+    const userId = req.user!.id;
+    const now = new Date();
+    const live = { userId, status: 'confirmed' as const, paymentStatus: 'paid' as const };
+
+    const [attended, upcoming, paidAgg, refundedAgg] = await Promise.all([
+      prisma.booking.count({ where: { ...live, event: { date: { lt: now } } } }),
+      prisma.booking.count({ where: { ...live, event: { date: { gte: now }, status: { not: 'cancelled' } } } }),
+      // A refunded booking keeps its amount but moves to paymentStatus 'refunded',
+      // so "paid" for the spend figure is paid + refunded, less the refunded part.
+      prisma.booking.aggregate({ where: { userId, paymentStatus: { in: ['paid', 'refunded'] } }, _sum: { totalAmount: true } }),
+      prisma.booking.aggregate({ where: { userId, paymentStatus: 'refunded' }, _sum: { totalAmount: true } }),
+    ]);
+
+    const totalPaid = paidAgg._sum.totalAmount ?? 0;
+    const totalRefunded = refundedAgg._sum.totalAmount ?? 0;
+    return res.json({
+      eventsAttended: attended,
+      upcomingCount: upcoming,
+      totalPaid,
+      totalRefunded,
+      totalSpent: Math.max(0, totalPaid - totalRefunded),
+    });
+  } catch (err: unknown) {
+    console.error('GET /users/me/stats error:', errorMessage(err));
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // GET /api/users/:username — public profile, looked up by handle (the
 // /u/[username] page's only caller). Not an id lookup — no frontend code

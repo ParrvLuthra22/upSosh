@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
 import { toast } from 'sonner';
+import { httpFetch } from '@/lib/http';
 
 interface StoredData {
   idPreview: string;
@@ -99,7 +100,7 @@ export default function ReviewPage() {
       // validation with a 400 that was never checked, so this page always
       // navigated to /host/pending regardless — no HostApplication row was
       // ever created, and the user had no way to know.
-      const res = await fetch('/api/hosts/apply', {
+      const res = await httpFetch('/api/hosts/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -278,6 +278,32 @@ function Step1Review() {
   );
 }
 
+/**
+ * What to tell the customer when a booking step fails. Only the wording
+ * depends on the HTTP status; whether a payment happened is the store's call.
+ *  - after payment: the money may have left their account, so say so plainly
+ *    (a 409 carries the server's own "refunded" wording, which we keep)
+ *  - 400: the request was refused, usually with a specific reason
+ *  - 409: the booking changed under them
+ *  - 502: our payment provider failed before they paid
+ */
+function bookingErrorText(message: string, status: number | null, afterPayment: boolean): string {
+  if (afterPayment && status !== 409) {
+    return 'Your payment was received but we could not confirm your booking. If you were charged you will be refunded automatically.';
+  }
+  if (status === 400) return message || 'Please check your details and try again.';
+  if (status === 409) return message || 'This booking changed while you were paying. Please try again.';
+  if (status === 502) {
+    return 'Our payment provider could not be reached. You have not been charged. Please try again in a moment.';
+  }
+  return message;
+}
+
+/** The cases where the customer may need a person to look at their payment. */
+function showContactLink(status: number | null, afterPayment: boolean): boolean {
+  return afterPayment || status === 502;
+}
+
 // ─── Step 2 — Payment ─────────────────────────────────────────────────────────
 
 function Step2Payment() {
@@ -288,6 +314,9 @@ function Step2Payment() {
     paymentMethod,
     isProcessing,
     errorMessage,
+    errorStatus,
+    errorAfterPayment,
+    paymentUncertain,
     setPaymentMethod,
     back,
     submit,
@@ -373,6 +402,18 @@ function Step2Payment() {
           </span>
         </label>
 
+        {/* Verify timed out after payment: not a failure, do not pay again */}
+        {paymentUncertain && (
+          <div role="status" className="mt-4 rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="font-sans text-[14px] text-cream">Payment received, confirming your ticket</p>
+            <p className="font-sans text-[13px] text-cream-dim mt-1">
+              We haven&apos;t had confirmation back yet, so please don&apos;t pay again. Your ticket will appear in{' '}
+              <a href="/my-bookings" className="text-cream underline underline-offset-2 hover:text-lime transition-colors">My bookings</a>{' '}
+              shortly.
+            </p>
+          </div>
+        )}
+
         {/* Error */}
         <AnimatePresence>
           {errorMessage && (
@@ -382,7 +423,13 @@ function Step2Payment() {
               exit={{ opacity: 0 }}
               className="font-mono text-[12px] text-coral mt-4"
             >
-              {errorMessage}
+              {bookingErrorText(errorMessage, errorStatus, errorAfterPayment)}
+              {showContactLink(errorStatus, errorAfterPayment) && (
+                <>
+                  {' '}
+                  <a href="/contact" className="underline">Contact us</a>
+                </>
+              )}
             </motion.p>
           )}
         </AnimatePresence>
@@ -391,7 +438,7 @@ function Step2Payment() {
       <div className="px-6 py-4 border-t border-border space-y-2">
         <button
           onClick={submit}
-          disabled={!canSubmit && !isFree}
+          disabled={paymentUncertain || (!canSubmit && !isFree)}
           className="relative w-full h-12 rounded-full font-sans font-semibold text-[15px] flex items-center justify-center gap-2 overflow-hidden transition-opacity disabled:opacity-40"
           style={{ backgroundColor: 'var(--lime)', color: 'var(--void)' }}
         >

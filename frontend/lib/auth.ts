@@ -1,6 +1,8 @@
 // Auth helpers — all fetch calls go to /api/auth/*
 // Store JWT in zustand + httpOnly cookie set by backend
 
+import { httpFetch } from '@/lib/http';
+
 export interface User {
   id: string;
   email: string;
@@ -19,7 +21,7 @@ export async function signIn(
   email: string,
   password: string
 ): Promise<{ token: string; user: User }> {
-  const res = await fetch('/api/auth/signin', {
+  const res = await httpFetch('/api/auth/signin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -34,7 +36,7 @@ export async function signUp(
   password: string,
   name: string
 ): Promise<{ token: string; user: User }> {
-  const res = await fetch('/api/auth/signup', {
+  const res = await httpFetch('/api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, name }),
@@ -45,11 +47,11 @@ export async function signUp(
 }
 
 export async function signOut(): Promise<void> {
-  await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+  await httpFetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  const res = await fetch('/api/auth/forgot-password', {
+  const res = await httpFetch('/api/auth/forgot-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -58,7 +60,7 @@ export async function forgotPassword(email: string): Promise<void> {
 }
 
 export async function resetPassword(token: string, password: string): Promise<void> {
-  const res = await fetch('/api/auth/reset-password', {
+  const res = await httpFetch('/api/auth/reset-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, password }),

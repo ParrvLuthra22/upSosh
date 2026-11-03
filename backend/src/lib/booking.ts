@@ -20,3 +20,16 @@ export const MAX_GUESTS_PER_BOOKING = 10;
  * counts only unexpired ones, so the two always agree on what is "held".
  */
 export const BOOKING_HOLD_MS = 15 * 60 * 1000;
+
+/**
+ * Why an event cannot take bookings or payments, or null if it can. Open means
+ * status live or full (full is left to the capacity check, which words the
+ * "no spots" answer) and a date that has not passed — the same test the public
+ * event list uses to decide what to show.
+ */
+export function eventClosedReason(event: { status: string; date: Date }, now: Date = new Date()): string | null {
+  if (event.status === 'cancelled') return 'This event has been cancelled';
+  if (event.status !== 'live' && event.status !== 'full') return 'This event is not open for booking';
+  if (event.date.getTime() < now.getTime()) return 'This event has already taken place';
+  return null;
+}

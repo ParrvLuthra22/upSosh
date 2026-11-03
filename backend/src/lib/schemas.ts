@@ -50,6 +50,12 @@ const futureDate = z.coerce.date().refine((d) => d > new Date(), {
   message: 'Date must be a valid future date',
 });
 
+/** "What's included": up to 12 short lines the host wrote; blank lines are dropped. */
+const includedField = z
+  .array(z.string().trim().max(120, 'Each included item must be 120 characters or fewer'))
+  .max(12, 'List at most 12 included items')
+  .transform((items) => items.filter((i) => i.length > 0));
+
 export const createEventSchema = z.object({
   title: z.string().trim().min(5, 'Title must be at least 5 characters'),
   type: z.string().min(1, 'Event type is required'),
@@ -63,6 +69,7 @@ export const createEventSchema = z.object({
   description: z.string().trim().min(1, 'Description is required'),
   image: z.string().default('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80'),
   tags: z.union([z.array(z.string()), z.string()]).default('[]'),
+  included: includedField.default([]),
   capacity: z.coerce.number().int().min(2, 'Capacity must be between 2 and 500').max(500, 'Capacity must be between 2 and 500').default(30),
   status: z.enum(['draft', 'live', 'full', 'past', 'cancelled']).default('live'),
   isSuperhost: z.boolean().default(false),
@@ -71,6 +78,7 @@ export const createEventSchema = z.object({
   category: data.category || data.type,
   isFree: data.isFree || data.price === 0,
   tags: Array.isArray(data.tags) ? JSON.stringify(data.tags) : data.tags,
+  included: JSON.stringify(data.included),
 }));
 
 export const updateEventSchema = z.object({
@@ -86,6 +94,7 @@ export const updateEventSchema = z.object({
   description: z.string().trim().min(1).optional(),
   image: z.string().optional(),
   tags: z.union([z.array(z.string()), z.string()]).optional(),
+  included: includedField.optional(),
   capacity: z.coerce.number().int().min(2).max(500).optional(),
   status: z.enum(['draft', 'live', 'full', 'past', 'cancelled']).optional(),
   isSuperhost: z.boolean().optional(),
@@ -94,7 +103,9 @@ export const updateEventSchema = z.object({
 // ─── bookings.ts ──────────────────────────────────────────────────────────────
 
 export const createBookingSchema = z.object({
-  eventId: z.string().trim().min(1).optional(),
+  // Required: a booking with no event was priced as a bare platform fee and
+  // is not a real booking.
+  eventId: z.string().trim().min(1, 'eventId is required'),
   guestName: z.string().trim().min(1, 'guestName, guestEmail, and guestPhone are required'),
   guestEmail: z.string().trim().toLowerCase().email('guestEmail must be a valid email'),
   guestPhone: z.string().trim().min(1, 'guestName, guestEmail, and guestPhone are required'),

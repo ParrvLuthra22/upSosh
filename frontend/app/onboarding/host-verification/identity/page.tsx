@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import MagneticButton from '@/components/ui/MagneticButton';
+import { httpFetch } from '@/lib/http';
 
 interface UploadZoneProps {
   label: string;
@@ -81,33 +82,33 @@ export default function IdentityPage() {
 
   const canContinue = idUrl !== '' && selfieUrl !== '';
 
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // A failed upload is an error, not a silent fallback to a local blob: URL
+  // (which would be submitted as the "document" and can never be reviewed).
   async function uploadFile(file: File): Promise<string> {
-    const objectUrl = URL.createObjectURL(file);
+    const form = new FormData();
+    form.append('file', file);
+    const res = await httpFetch('/api/uploads', { method: 'POST', body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) throw new Error(data.message ?? `Upload failed (${res.status})`);
+    return data.url as string;
+  }
+
+  async function handleFile(file: File, which: 'id' | 'selfie') {
+    const [setPreview, setUrl] = which === 'id' ? [setIdPreview, setIdUrl] : [setSelfiePreview, setSelfieUrl];
+    setUploadError(null);
+    setPreview(URL.createObjectURL(file));
+    setUrl('');
     try {
-      const form = new FormData();
-      form.append('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body: form });
-      if (res.ok) {
-        const { url } = await res.json();
-        return url;
-      }
-    } catch {}
-    return objectUrl;
+      setUrl(await uploadFile(file));
+    } catch (err) {
+      setPreview('');
+      setUploadError(`Couldn't upload your ${which === 'id' ? 'ID' : 'selfie'}: ${err instanceof Error ? err.message : 'please try again'}.`);
+    }
   }
-
-  async function handleIdFile(file: File) {
-    const preview = URL.createObjectURL(file);
-    setIdPreview(preview);
-    const url = await uploadFile(file);
-    setIdUrl(url);
-  }
-
-  async function handleSelfieFile(file: File) {
-    const preview = URL.createObjectURL(file);
-    setSelfiePreview(preview);
-    const url = await uploadFile(file);
-    setSelfieUrl(url);
-  }
+  const handleIdFile = (file: File) => handleFile(file, 'id');
+  const handleSelfieFile = (file: File) => handleFile(file, 'selfie');
 
   function handleContinue() {
     // Store URLs in sessionStorage for the review page
@@ -159,6 +160,8 @@ export default function IdentityPage() {
           }
         />
       </div>
+
+      {uploadError && <p role="alert" className="font-sans text-sm text-coral">{uploadError}</p>}
 
       {/* Privacy note */}
       <p className="font-mono text-[10px] text-cream-faint">

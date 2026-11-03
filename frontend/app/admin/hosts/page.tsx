@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import AdminHostsClient from './AdminHostsClient';
+import { httpFetch } from '@/lib/http';
 
 /**
  * Server component — the actual admin-role check.
@@ -22,7 +23,7 @@ async function getSessionRole(): Promise<string | null> {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
   try {
-    const res = await fetch(`${backendUrl}/api/auth/me`, {
+    const res = await httpFetch(`${backendUrl}/api/auth/me`, {
       headers: { Cookie: `token=${token}` },
       cache: 'no-store',
     });

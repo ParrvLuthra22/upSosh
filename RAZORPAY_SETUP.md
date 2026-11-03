@@ -17,7 +17,7 @@
 
 ### 3. Configure Backend
 
-Add to your Railway environment variables:
+Add to your Render service's environment variables:
 
 ```
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
@@ -81,7 +81,7 @@ For production, set up webhooks to handle:
 - Payment failure
 - Refund processing
 
-Webhook URL: `https://your-backend.railway.app/api/payments/webhook`
+Webhook URL: `https://<your-service>.onrender.com/api/payments/webhook`
 
 ### 9. Security Features
 

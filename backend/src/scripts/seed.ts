@@ -23,6 +23,43 @@ import '../lib/loadEnv';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
+// ─── Safety guard ─────────────────────────────────────────────────────────────
+// This script creates an admin account with a password that is public (it is in
+// this file). It must never run against a real database by accident — backend/.env
+// can point at one, and loadEnv() above reads it.
+function assertSafeToSeed(): void {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[Seed] Refusing to run: NODE_ENV=production. This script creates a known-password admin account.');
+    process.exit(1);
+  }
+
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    console.error('[Seed] Refusing to run: DATABASE_URL is not set.');
+    process.exit(1);
+  }
+
+  let host: string;
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    console.error('[Seed] Refusing to run: DATABASE_URL could not be parsed.');
+    process.exit(1);
+  }
+
+  const isLocal = host === 'localhost' || host === '127.0.0.1';
+  if (!isLocal && process.env.SEED_ALLOW_REMOTE !== 'true') {
+    // Host only — never print the credentials.
+    console.error(
+      `[Seed] Refusing to run: database host "${host}" is not localhost/127.0.0.1.\n` +
+      '       Seeding creates a known-password admin account. If you really mean it\n' +
+      '       (e.g. a disposable staging database), set SEED_ALLOW_REMOTE=true.',
+    );
+    process.exit(1);
+  }
+}
+assertSafeToSeed();
+
 // A dedicated client rather than lib/prisma — that one enables full query logging
 // when NODE_ENV=development, which buries the credentials this script prints.
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
@@ -100,6 +137,13 @@ function daysFromNow(days: number, hour: number, minute = 0): Date {
   return d;
 }
 
+/** Like daysFromNow, but moves forward to the next `weekday` (0 = Sunday ... 6 = Saturday). */
+function nextWeekday(minDays: number, weekday: number, hour: number, minute = 0): Date {
+  const d = daysFromNow(minDays, hour, minute);
+  d.setDate(d.getDate() + ((weekday - d.getDay() + 7) % 7));
+  return d;
+}
+
 function displayTime(hour: number, minute = 0): string {
   const suffix = hour >= 12 ? 'PM' : 'AM';
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
@@ -112,6 +156,8 @@ interface SeedEvent {
   type: string;
   category: string;
   inDays: number;
+  /** If set (0 = Sunday), the event lands on the next such weekday at least `inDays` out, so a title like "Sunday Run Club" is never on a Monday. */
+  weekday?: number;
   hour: number;
   minute?: number;
   venue: string;
@@ -120,8 +166,9 @@ interface SeedEvent {
   description: string;
   image: string;
   tags: string[];
+  /** What the host says is included. Optional: an event without it shows no "What's included" section. */
+  included?: string[];
   capacity: number;
-  attendees: number;
   isSuperhost: boolean;
   hostId: string;
 }
@@ -133,6 +180,7 @@ const EVENTS: SeedEvent[] = [
     type: 'informal',
     category: 'Run Club',
     inDays: 2,
+    weekday: 0,
     hour: 6,
     minute: 30,
     venue: 'Lodhi Garden, Gate 2',
@@ -142,8 +190,8 @@ const EVENTS: SeedEvent[] = [
       'A 5K social run through Lodhi Garden, followed by chai and idli at the gate. All paces welcome — we regroup at every kilometre. Bring water; we handle the rest.',
     image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=1200',
     tags: ['running', 'morning', 'fitness', 'free'],
+    included: ['Chai and idli at the gate after the run', 'A pacer for every group'],
     capacity: 30,
-    attendees: 11,
     isSuperhost: true,
     hostId: 'seed-host-1',
   },
@@ -162,7 +210,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=1200',
     tags: ['dinner', 'intimate', 'kashmiri', 'supperclub'],
     capacity: 6,
-    attendees: 4,
     isSuperhost: true,
     hostId: 'seed-host-2',
   },
@@ -181,7 +228,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=1200',
     tags: ['pottery', 'craft', 'hands-on', 'beginners'],
     capacity: 10,
-    attendees: 6,
     isSuperhost: false,
     hostId: 'seed-host-3',
   },
@@ -200,7 +246,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=1200',
     tags: ['books', 'discussion', 'literature', 'free'],
     capacity: 20,
-    attendees: 9,
     isSuperhost: false,
     hostId: 'seed-host-1',
   },
@@ -220,7 +265,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=1200',
     tags: ['creators', 'networking', 'content', 'growth'],
     capacity: 80,
-    attendees: 41,
     isSuperhost: true,
     hostId: 'seed-host-2',
   },
@@ -239,7 +283,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=1200',
     tags: ['yoga', 'sunrise', 'wellness', 'rooftop'],
     capacity: 18,
-    attendees: 7,
     isSuperhost: false,
     hostId: 'seed-host-3',
   },
@@ -259,7 +302,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&q=80&w=1200',
     tags: ['photography', 'old-delhi', 'night', 'walking'],
     capacity: 12,
-    attendees: 8,
     isSuperhost: false,
     hostId: 'seed-host-1',
   },
@@ -279,7 +321,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&q=80&w=1200',
     tags: ['trail', 'running', 'gurugram', 'free'],
     capacity: 25,
-    attendees: 13,
     isSuperhost: true,
     hostId: 'seed-host-1',
   },
@@ -298,7 +339,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1503694978374-8a2fa686963a?auto=format&fit=crop&q=80&w=1200',
     tags: ['letterpress', 'print', 'craft', 'design'],
     capacity: 8,
-    attendees: 3,
     isSuperhost: false,
     hostId: 'seed-host-3',
   },
@@ -318,7 +358,6 @@ const EVENTS: SeedEvent[] = [
     image: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?auto=format&fit=crop&q=80&w=1200',
     tags: ['jazz', 'listening', 'music', 'evening'],
     capacity: 24,
-    attendees: 15,
     isSuperhost: true,
     hostId: 'seed-host-2',
   },
@@ -357,18 +396,27 @@ async function main() {
   const hostUser = await prisma.user.findUniqueOrThrow({ where: { email: 'host@upsosh.test' } });
 
   for (const e of EVENTS) {
-    const { inDays, hour, minute = 0, tags, ...rest } = e;
-    const date = daysFromNow(inDays, hour, minute);
+    const { inDays, weekday, hour, minute = 0, tags, included = [], ...rest } = e;
+    const date = weekday === undefined ? daysFromNow(inDays, hour, minute) : nextWeekday(inDays, weekday, hour, minute);
+
+    // Attendance is never made up: it is whatever confirmed bookings say it is
+    // (zero on a fresh database), so re-seeding also corrects old invented counts.
+    const booked = await prisma.event.findUnique({ where: { slug: e.slug }, select: { id: true } });
+    const seats = booked
+      ? await prisma.booking.aggregate({ where: { eventId: booked.id, status: 'confirmed', paymentStatus: 'paid' }, _sum: { guestCount: true } })
+      : null;
 
     await prisma.event.upsert({
       where: { slug: e.slug },
-      update: { date, status: 'live' },
+      update: { date, status: 'live', included: JSON.stringify(included), attendees: seats?._sum.guestCount ?? 0 },
       create: {
         ...rest,
+        attendees: 0,
         date,
         time: displayTime(hour, minute),
         isFree: e.price === 0,
         tags: JSON.stringify(tags),
+        included: JSON.stringify(included),
         status: 'live',
         userId: hostUser.id,
       },

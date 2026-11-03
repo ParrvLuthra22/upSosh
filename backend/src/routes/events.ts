@@ -2,10 +2,12 @@ import { Router, Request, Response } from 'express';
 import { Prisma, Event } from '@prisma/client';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, getOptionalUser, AuthRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { createEventSchema, updateEventSchema, announceSchema, checkinSchema } from '../lib/schemas';
 import { sendEventAnnouncement } from '../lib/email';
+import { cancelEventBookings } from '../lib/refunds';
+import { getRazorpayClient } from './payments';
 
 const router = Router();
 
@@ -21,6 +23,7 @@ function formatEvent(event: Event) {
   return {
     ...event,
     tags: parseTagsField(event.tags),
+    included: parseTagsField(event.included),
   };
 }
 
@@ -134,7 +137,23 @@ router.get('/host/mine', requireAuth, async (req: AuthRequest, res: Response): P
       orderBy: { createdAt: 'desc' },
     });
 
-    return res.json({ events: events.map(formatEvent) });
+    // What each event has actually collected: its paid bookings' totals, not
+    // price x attendees (which ignores the platform fee, refunds and free seats).
+    const paid = await prisma.booking.groupBy({
+      by: ['eventId'],
+      where: { eventId: { in: events.map((e) => e.id) }, paymentStatus: 'paid' },
+      _sum: { ticketPrice: true },
+      _count: { _all: true },
+    });
+    const byEvent = new Map(paid.map((p) => [p.eventId, p]));
+
+    return res.json({
+      events: events.map((e) => ({
+        ...formatEvent(e),
+        revenue: byEvent.get(e.id)?._sum.ticketPrice ?? 0,
+        paidBookings: byEvent.get(e.id)?._count._all ?? 0,
+      })),
+    });
   } catch (err: unknown) {
     console.error('GET /events/host/mine error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
@@ -155,18 +174,19 @@ router.get('/host/stats', requireAuth, async (req: AuthRequest, res: Response): 
     });
 
     const now = new Date();
-    const upcomingEvents = events.filter((e) => (e.status === 'live' || e.status === 'draft') && e.date >= now).length;
+    // Published and still ahead. Drafts are not "upcoming" yet, and a cancelled event never is.
+    const upcomingEvents = events.filter((e) => (e.status === 'live' || e.status === 'full') && e.date >= now).length;
     const totalAttendees = events.reduce((sum, e) => sum + e.attendees, 0);
 
     const revenueAgg = await prisma.booking.aggregate({
       where: { eventId: { in: events.map((e) => e.id) }, paymentStatus: 'paid' },
-      _sum: { totalAmount: true },
+      _sum: { ticketPrice: true },
     });
 
     return res.json({
       upcomingEvents,
       totalAttendees,
-      totalRevenue: revenueAgg._sum.totalAmount ?? 0,
+      totalRevenue: revenueAgg._sum.ticketPrice ?? 0,
       eventsHosted: events.length,
     });
   } catch (err: unknown) {
@@ -188,6 +208,14 @@ router.get('/:slug', async (req: Request, res: Response): Promise<Response> => {
     });
 
     if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    // Drafts and cancelled events are not public: only the owner or an admin
+    // can open them. Everyone else gets the same 404 as a slug that does not exist.
+    if (event.status === 'draft' || event.status === 'cancelled') {
+      const viewer = await getOptionalUser(req);
+      const allowed = viewer && (viewer.role === 'admin' || viewer.id === event.userId);
+      if (!allowed) return res.status(404).json({ message: 'Event not found' });
+    }
 
     return res.json(formatEvent(event));
   } catch (err: unknown) {
@@ -212,6 +240,8 @@ router.post('/', requireAuth, validateBody(createEventSchema), async (req: AuthR
     // which is what every authorization check actually reads.
     // Unifying Host and User is tracked as P4-39.
     const data = req.body as z.infer<typeof createEventSchema>;
+    // isSuperhost is a badge only an admin can grant, whatever the client sent.
+    if (user.role !== 'admin') data.isSuperhost = false;
     const slug = buildSlug(data.title);
 
     const event = await prisma.event.create({
@@ -239,17 +269,29 @@ router.put('/:id', requireAuth, validateBody(updateEventSchema), async (req: Aut
       return res.status(403).json({ message: 'You do not have permission to update this event' });
     }
 
-    const { tags, ...rest } = req.body as z.infer<typeof updateEventSchema>;
+    const { tags, included, ...rest } = req.body as z.infer<typeof updateEventSchema>;
+    // Only an admin can grant or clear the superhost badge; for anyone else
+    // the field is dropped so the stored value is left as it is.
+    if (user.role !== 'admin') delete rest.isSuperhost;
     const updateData: Prisma.EventUpdateInput = { ...rest };
     if (tags !== undefined) {
       updateData.tags = Array.isArray(tags) ? JSON.stringify(tags) : tags;
     }
+    if (included !== undefined) updateData.included = JSON.stringify(included);
 
     const event = await prisma.event.update({
       where: { id },
       data: updateData,
       include: { host: true },
     });
+
+    // Cancelling through an edit refunds the attendees just like DELETE does.
+    // Failures are logged and left for a re-run; the response is unchanged.
+    if (event.status === 'cancelled') {
+      await cancelEventBookings(getRazorpayClient, id).catch((err: unknown) => {
+        console.error(`PUT /events/:id refunds for event ${id} failed: ${errorMessage(err)}`);
+      });
+    }
 
     return res.json(formatEvent(event));
   } catch (err: unknown) {
@@ -271,12 +313,20 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response): Prom
       return res.status(403).json({ message: 'You do not have permission to delete this event' });
     }
 
+    // Close the event first so nothing new can be booked or paid, then refund
+    // and release every booking. Running DELETE again resumes what is left.
     await prisma.event.update({
       where: { id },
       data: { status: 'cancelled' },
     });
+    const refunds = await cancelEventBookings(getRazorpayClient, id);
 
-    return res.json({ message: 'Event cancelled successfully' });
+    return res.json({
+      message: refunds.remaining === 0
+        ? 'Event cancelled successfully'
+        : 'Event cancelled, but some refunds are still outstanding — run the cancellation again to finish them',
+      refunds,
+    });
   } catch (err: unknown) {
     console.error('DELETE /events/:id error:', errorMessage(err));
     return res.status(500).json({ message: 'Internal server error' });
