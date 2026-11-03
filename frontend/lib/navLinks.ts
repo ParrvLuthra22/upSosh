@@ -60,3 +60,17 @@ export const MODE_LINKS = {
 export function currentMode(pathname: string): 'attending' | 'hosting' {
   return pathname.startsWith('/host') ? 'hosting' : 'attending';
 }
+
+export type HostGate = 'wait' | 'allow' | 'signin' | 'become-a-host';
+
+/**
+ * Decide what a host-only page should do. On a hard load the persisted auth
+ * store has not rehydrated (and the session check may still be running), so
+ * `user` is briefly null even for a verified host; redirecting then bounced
+ * hosts to /become-a-host. Only decide once auth has settled.
+ */
+export function hostGate(s: { hydrated: boolean; loading: boolean; user: NavUser | null | undefined }): HostGate {
+  if (!s.hydrated || s.loading) return 'wait';
+  if (!s.user) return 'signin';
+  return canHost(s.user) ? 'allow' : 'become-a-host';
+}
