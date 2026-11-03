@@ -66,7 +66,7 @@ const EVENT_TZ = 'Asia/Kolkata';
 
 /** RFC 5545 TEXT escaping: backslash, semicolon, comma and newlines. */
 export function escapeIcsText(s: string): string {
-  return s.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
+  return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 }
 
 /** Fold a content line to 75 octets per RFC 5545 (continuation lines start with one space). */

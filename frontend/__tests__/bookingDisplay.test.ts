@@ -115,10 +115,17 @@ describe('.ics export', () => {
     expect(l).toContain('DTEND;VALUE=DATE:20300311');
   });
   it('escapes commas, semicolons, backslashes and newlines in text', () => {
-    expect(escapeIcsText('A, B; C\\D\nE')).toBe('A\\, B\; C\\\\D\\nE');
-    const text = buildIcs(b({ event: { ...ev, title: 'Rock, Paper; Scissors', venue: 'Hall\nB' } }), now);
-    expect(text).toContain('SUMMARY:Rock\\, Paper\; Scissors');
-    expect(text).toContain('LOCATION:Hall\\nB\\, Delhi');
+    // RFC 5545: ; -> \; (backslash + semicolon), , -> \, , \ -> \\ , newline -> \n
+    expect(escapeIcsText('A, B; C\\D\nE')).toBe('A\\, B\\; C\\\\D\\nE');
+    expect(escapeIcsText(';')).toHaveLength(2);
+    expect(escapeIcsText(';')).toBe(String.fromCharCode(92, 59));
+    const text = buildIcs(b({ event: { ...ev, title: 'Rock, Paper; Scissors\\Fun', venue: 'Hall;\nB' } }), now);
+    expect(text).toContain('SUMMARY:Rock\\, Paper\\; Scissors\\\\Fun');
+    expect(text).toContain('LOCATION:Hall\\;\\nB\\, Delhi');
+    // no bare (unescaped) semicolon survives in any text value
+    for (const line of text.split('\r\n').filter((l) => /^(SUMMARY|LOCATION):/.test(l))) {
+      expect(line.slice(line.indexOf(':') + 1)).not.toMatch(/(^|[^\\])(\\\\)*;/);
+    }
   });
   it('mentions the guest count and the event URL', () => {
     expect(ics).toContain('for 3 guests');
