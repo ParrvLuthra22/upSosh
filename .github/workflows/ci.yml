@@ -8,7 +8,8 @@ on:
 jobs:
   frontend:
     name: Frontend
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now 26.04, which Playwright 1.57 does not support.
+    runs-on: ubuntu-24.04
     env:
       NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
       NEXT_PUBLIC_FRONTEND_URL: http://localhost:3000
@@ -40,7 +41,7 @@ jobs:
 
   backend:
     name: Backend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Only the "Test" step below opens a real connection — jest's
     # tests/env.setup.js needs an actual reachable Postgres to create and
     # tear down rows against for each of the 16 integration tests
@@ -91,7 +92,7 @@ jobs:
 
   e2e:
     name: E2E (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # A real payment through Razorpay's actual test-mode API, not a mock —
     # this is the one test that proves the whole stack (frontend, backend,
     # Postgres, and Razorpay's real checkout) works together end to end.
