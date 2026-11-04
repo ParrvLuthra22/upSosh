@@ -88,7 +88,7 @@ export function Modal({ open, title, onClose, onDone, doneLabel = 'Done', childr
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="relative w-full max-w-md rounded-2xl border border-border-strong bg-surface p-6 shadow-2xl"
+            className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-border-strong bg-surface p-6 shadow-2xl"
             initial={{ opacity: 0, scale: reduced ? 1 : 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: reduced ? 1 : 0.97 }}
@@ -100,7 +100,7 @@ export function Modal({ open, title, onClose, onDone, doneLabel = 'Done', childr
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="-mr-2 w-11 h-11 flex items-center justify-center rounded-full text-cream-dim hover:text-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
+                className="-mr-2 w-11 h-11 flex items-center justify-center rounded-full text-cream-dim hover:text-cream touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
               >
                 <IconX size={20} aria-hidden="true" />
               </button>

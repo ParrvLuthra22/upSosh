@@ -71,7 +71,7 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
     <div ref={wrapRef} className="relative">
       <div className="relative aspect-video lg:aspect-square w-full overflow-hidden rounded-2xl border border-border bg-surface">
         {value ? (
-          <Image src={value} alt="Event cover" fill unoptimized sizes="(min-width: 1024px) 380px, 100vw" className="object-cover" />
+          <Image src={value} alt="Event cover" fill priority unoptimized sizes="(min-width: 1024px) 380px, 100vw" className="object-cover" />
         ) : (
           <div
             data-testid="cover-placeholder"
@@ -92,7 +92,6 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
       <button
         type="button"
         onClick={() => (open ? close() : setOpen(true))}
-        aria-haspopup="menu"
         aria-expanded={open}
         className="absolute bottom-3 right-3 min-h-[44px] inline-flex items-center gap-2 rounded-full bg-void/90 border border-border-strong px-4 font-sans text-sm text-cream hover:bg-void focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
       >
@@ -102,7 +101,7 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
 
       {open && (
         <div
-          role="menu"
+          role="group"
           aria-label="Change image"
           className="absolute bottom-[64px] right-3 z-20 w-64 rounded-xl border border-border-strong bg-surface p-2 shadow-2xl"
         >
@@ -110,7 +109,6 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
             <>
               <button
                 type="button"
-                role="menuitem"
                 onClick={() => fileRef.current?.click()}
                 className="w-full min-h-[44px] flex items-center gap-3 rounded-lg px-3 text-left font-sans text-sm text-cream hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
               >
@@ -118,7 +116,6 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
               </button>
               <button
                 type="button"
-                role="menuitem"
                 onClick={() => setMode('url')}
                 className="w-full min-h-[44px] flex items-center gap-3 rounded-lg px-3 text-left font-sans text-sm text-cream hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-lime"
               >
@@ -130,6 +127,9 @@ export function CoverImage({ value, onChange }: CoverImageProps) {
               <label htmlFor="cover-url" className="block font-sans text-xs text-cream-dim mb-2">Image URL</label>
               <input
                 id="cover-url"
+                name="image-url"
+                autoComplete="off"
+                spellCheck={false}
                 type="url"
                 autoFocus
                 value={urlDraft}

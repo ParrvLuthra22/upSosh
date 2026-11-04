@@ -217,7 +217,7 @@ describe('cover image', () => {
   it('paste URL: an unsupported host is an inline error, a Cloudinary/Unsplash URL becomes the cover', () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: /add image/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /paste image url/i }));
+    fireEvent.click(screen.getByRole('button', { name: /paste image url/i }));
     fireEvent.change(screen.getByLabelText('Image URL'), { target: { value: 'https://evil.example/x.png' } });
     fireEvent.click(screen.getByRole('button', { name: 'Use this image' }));
     expect(screen.getByRole('alert')).toHaveTextContent(/aren't supported/);

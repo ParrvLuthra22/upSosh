@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import { IconPencil, IconMapPin, IconAlignLeft, IconCheck } from '@tabler/icons-react';
 import { CoverImage } from './CoverImage';
 import { Modal } from './Modal';
@@ -21,22 +21,25 @@ interface Props {
 
 type ModalKey = 'location' | 'description' | 'category' | 'tickets' | 'capacity' | 'included' | null;
 
+const INR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const RING = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-lime';
 const FIELD = `w-full min-h-[44px] rounded-xl bg-void border border-border-strong px-4 font-sans text-sm text-cream placeholder:text-cream-dim ${RING}`;
 
-function Row({ icon, label, sub, value, onClick, testId }: {
-  icon?: React.ReactNode; label: string; sub?: string; value?: string; onClick: () => void; testId?: string;
-}) {
+const Row = forwardRef<HTMLButtonElement, {
+  icon?: React.ReactNode; label: string; sub?: string; value?: string; onClick: () => void; testId?: string; describedBy?: string;
+}>(function Row({ icon, label, sub, value, onClick, testId, describedBy }, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className={`w-full min-h-[56px] flex items-center gap-3 px-4 py-2 text-left hover:bg-surface-2 transition-colors ${RING} focus-visible:ring-inset`}
+      aria-describedby={describedBy}
+      className={`w-full min-h-[56px] flex items-center gap-3 px-4 py-2 text-left hover:bg-surface-2 transition-colors touch-manipulation ${RING} focus-visible:ring-inset`}
     >
       {icon && <span className="text-cream-dim" aria-hidden="true">{icon}</span>}
       <span className="flex-1 min-w-0">
-        <span className="block font-sans text-sm text-cream">{label}</span>
+        <span className="block font-sans text-sm text-cream truncate">{label}</span>
         {(value || sub) && (
           <span className="block font-sans text-sm text-cream-dim truncate">{value || sub}</span>
         )}
@@ -44,22 +47,29 @@ function Row({ icon, label, sub, value, onClick, testId }: {
       <IconPencil size={16} className="text-cream-dim flex-shrink-0" aria-hidden="true" />
     </button>
   );
-}
+});
 
 function OptionRow({ label, value, onClick }: { label: string; value: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full min-h-[48px] flex items-center justify-between gap-4 px-4 text-left hover:bg-surface-2 transition-colors ${RING} focus-visible:ring-inset`}
+      className={`w-full min-h-[48px] flex items-center justify-between gap-4 px-4 text-left hover:bg-surface-2 transition-colors touch-manipulation ${RING} focus-visible:ring-inset`}
     >
       <span className="font-sans text-sm text-cream">{label}</span>
       <span className="flex items-center gap-2 min-w-0 font-sans text-sm text-cream-dim">
-        <span className="truncate">{value}</span>
+        <span className="truncate tabular-nums">{value}</span>
         <IconPencil size={16} className="flex-shrink-0" aria-hidden="true" />
       </span>
     </button>
   );
+}
+
+/** Run `reset` each time a modal opens, so its local draft starts from the saved value. */
+function useResetOnOpen(open: boolean, reset: () => void) {
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open && !wasOpen) { setWasOpen(true); reset(); }
+  if (!open && wasOpen) setWasOpen(false);
 }
 
 /** Let the one-line title wrap and grow instead of clipping. */
@@ -80,7 +90,14 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
   const locationRowRef = useRef<HTMLButtonElement>(null);
   const missingId = useId();
 
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((p) => ({ ...p, [k]: v }));
+  const dirty = useRef(false);
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => { if (dirty.current) e.preventDefault(); };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, []);
+
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => { dirty.current = true; setForm((p) => ({ ...p, [k]: v })); }
   const missing = missingFields(form);
   const isMissing = (f: RequiredField) => attempted && missing.includes(f);
   const close = () => setModal(null);
@@ -97,6 +114,7 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
     setSaving(draft ? 'draft' : 'live');
     try {
       await onSubmit(buildPayload(form, draft), draft);
+      dirty.current = false;
     } catch (err) {
       setSubmitError(err instanceof Error && err.message ? err.message : 'Failed to create event');
     } finally {
@@ -105,11 +123,12 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
   }
 
   const busy = saving !== null;
-  const ticketValue = form.isFree ? 'Free' : `₹${Number(form.price) || 0}`;
+  const ticketValue = form.isFree ? 'Free' : INR.format(Number(form.price) || 0);
 
   return (
     <div className="min-h-screen bg-void">
       <div className="max-w-[960px] mx-auto px-5 md:px-8 pt-24 pb-40 lg:pt-28 lg:pb-16">
+        <h1 className="sr-only">Create event</h1>
         <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-8 lg:gap-12">
           {/* Left: the cover is the live preview */}
           <div className="lg:sticky lg:top-28 self-start">
@@ -128,6 +147,8 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
                 onChange={(e) => { set('title', e.target.value.replace(/\n/g, ' ')); fitTitle(e.target); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
                 placeholder="Event name"
+                name="title"
+                autoComplete="off"
                 aria-invalid={isMissing('title') ? true : undefined}
                 aria-describedby={isMissing('title') ? 'title-error' : undefined}
                 className={`block w-full resize-none overflow-hidden bg-transparent border-0 border-b border-transparent px-0 py-2 font-display text-[40px] leading-tight text-cream placeholder:text-cream-dim ${RING} focus-visible:ring-0 focus-visible:border-lime`}
@@ -142,6 +163,8 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
                 <label htmlFor="event-date" className="font-sans text-sm text-cream">Date</label>
                 <input
                   id="event-date"
+                  name="date"
+                  autoComplete="off"
                   ref={dateRef}
                   type="date"
                   value={form.date}
@@ -156,6 +179,8 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
                 <div className="flex items-center gap-2">
                   <input
                     id="event-time"
+                    name="time"
+                    autoComplete="off"
                     type="time"
                     value={form.time}
                     onChange={(e) => set('time', e.target.value)}
@@ -170,23 +195,15 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
 
             {/* Location & description */}
             <div className="rounded-2xl border border-border bg-surface divide-y divide-border overflow-hidden">
-              <div>
-                <button
-                  ref={locationRowRef}
-                  type="button"
-                  onClick={() => setModal('location')}
-                  data-testid="row-location"
-                  aria-describedby={isMissing('location') ? 'location-error' : undefined}
-                  className={`w-full min-h-[56px] flex items-center gap-3 px-4 py-2 text-left hover:bg-surface-2 transition-colors ${RING} focus-visible:ring-inset`}
-                >
-                  <IconMapPin size={20} className="text-cream-dim" aria-hidden="true" />
-                  <span className="flex-1 min-w-0">
-                    <span className="block font-sans text-sm text-cream">{form.location || 'Add location'}</span>
-                    {!form.location && <span className="block font-sans text-sm text-cream-dim">Venue or area</span>}
-                  </span>
-                  <IconPencil size={16} className="text-cream-dim flex-shrink-0" aria-hidden="true" />
-                </button>
-              </div>
+              <Row
+                ref={locationRowRef}
+                icon={<IconMapPin size={20} />}
+                label={form.location || 'Add location'}
+                sub={form.location ? undefined : 'Venue or area'}
+                onClick={() => setModal('location')}
+                testId="row-location"
+                describedBy={isMissing('location') ? 'location-error' : undefined}
+              />
               <Row
                 icon={<IconAlignLeft size={20} />}
                 label={form.description ? 'Description' : 'Add description'}
@@ -228,7 +245,7 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
             )}
 
             {/* Actions: sticky bar on mobile */}
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-void/95 px-5 pt-3 pb-4 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-void/95 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
               <div className="mx-auto max-w-[960px]">
                 {attempted && missing.length > 0 && (
                   <p id={missingId} role="alert" className="mb-2 text-center font-sans text-sm text-coral">{missingSummary(missing)}</p>
@@ -281,17 +298,15 @@ export default function CreateEventForm({ onSubmit, now }: Props) {
 
 function LocationModal({ open, value, onSave, onClose }: { open: boolean; value: string; onSave: (v: string) => void; onClose: () => void }) {
   const [draft, setDraft] = useState(value);
-  const [wasOpen, setWasOpen] = useState(false);
-  if (open && !wasOpen) { setWasOpen(true); setDraft(value); }
-  if (!open && wasOpen) setWasOpen(false);
+  useResetOnOpen(open, () => setDraft(value));
   const save = () => onSave(draft.trim());
   return (
     <Modal open={open} title="Location" onClose={onClose} onDone={save}>
       <label htmlFor="loc-input" className="block mb-2 font-sans text-sm text-cream-dim">Venue or area</label>
       <input
-        id="loc-input" type="text" value={draft} onChange={(e) => setDraft(e.target.value)}
+        id="loc-input" name="location" autoComplete="off" type="text" value={draft} onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); save(); onClose(); } }}
-        placeholder="Lodhi Garden, Gate 2, New Delhi" className={FIELD}
+        placeholder="Lodhi Garden, Gate 2, New Delhi…" className={FIELD}
       />
     </Modal>
   );
@@ -302,15 +317,13 @@ function TextModal({ open, title, label, rows, placeholder, hint, value, onSave,
   value: string; onSave: (v: string) => void; onClose: () => void;
 }) {
   const [draft, setDraft] = useState(value);
-  const [wasOpen, setWasOpen] = useState(false);
-  if (open && !wasOpen) { setWasOpen(true); setDraft(value); }
-  if (!open && wasOpen) setWasOpen(false);
+  useResetOnOpen(open, () => setDraft(value));
   const id = useId();
   return (
     <Modal open={open} title={title} onClose={onClose} onDone={() => onSave(draft)}>
       <label htmlFor={id} className="block mb-2 font-sans text-sm text-cream-dim">{label}</label>
       <textarea
-        id={id} rows={rows} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder}
+        id={id} name={title.toLowerCase().replace(/\W+/g, '-')} autoComplete="off" rows={rows} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={placeholder}
         className={`${FIELD} py-3 resize-none`}
       />
       {hint && <p className="mt-2 font-sans text-xs text-cream-dim">{hint}</p>}
@@ -325,7 +338,7 @@ function CategoryModal({ open, value, onPick, onClose }: { open: boolean; value:
         {CATEGORIES.map((c) => (
           <button
             key={c} type="button" role="radio" aria-checked={c === value} onClick={() => onPick(c)}
-            className={`min-h-[44px] flex items-center justify-between gap-2 rounded-xl border px-3 font-sans text-sm text-left ${RING} ${c === value ? 'border-lime bg-lime/10 text-cream' : 'border-border-strong text-cream-dim hover:text-cream'}`}
+            className={`min-h-[44px] flex items-center justify-between gap-2 rounded-xl border touch-manipulation px-3 font-sans text-sm text-left ${RING} ${c === value ? 'border-lime bg-lime/10 text-cream' : 'border-border-strong text-cream-dim hover:text-cream'}`}
           >
             {c}{c === value && <IconCheck size={16} aria-hidden="true" />}
           </button>
@@ -341,9 +354,7 @@ function TicketsModal({ open, isFree, price, onSave, onClose }: {
   const [free, setFree] = useState(isFree);
   const [amount, setAmount] = useState<string>(price === '' ? '' : String(price));
   const [error, setError] = useState<string | null>(null);
-  const [wasOpen, setWasOpen] = useState(false);
-  if (open && !wasOpen) { setWasOpen(true); setFree(isFree); setAmount(price === '' ? '' : String(price)); setError(null); }
-  if (!open && wasOpen) setWasOpen(false);
+  useResetOnOpen(open, () => { setFree(isFree); setAmount(price === '' ? '' : String(price)); setError(null); });
 
   function save(): boolean {
     if (free) { onSave(true, ''); return true; }
@@ -369,7 +380,7 @@ function TicketsModal({ open, isFree, price, onSave, onClose }: {
         <div className="mt-4">
           <label htmlFor="ticket-price" className="block mb-2 font-sans text-sm text-cream-dim">Ticket price (₹)</label>
           <input
-            id="ticket-price" type="number" inputMode="numeric" min={1} value={amount}
+            id="ticket-price" name="price" autoComplete="off" type="number" inputMode="numeric" min={1} value={amount}
             onChange={(e) => { setAmount(e.target.value); setError(null); }} placeholder="500"
             aria-invalid={error ? true : undefined} aria-describedby={error ? 'ticket-error' : undefined} className={FIELD}
           />
@@ -384,9 +395,7 @@ function TicketsModal({ open, isFree, price, onSave, onClose }: {
 function CapacityModal({ open, value, onSave, onClose }: { open: boolean; value: number; onSave: (n: number) => void; onClose: () => void }) {
   const [draft, setDraft] = useState(String(value));
   const [error, setError] = useState<string | null>(null);
-  const [wasOpen, setWasOpen] = useState(false);
-  if (open && !wasOpen) { setWasOpen(true); setDraft(String(value)); setError(null); }
-  if (!open && wasOpen) setWasOpen(false);
+  useResetOnOpen(open, () => { setDraft(String(value)); setError(null); });
 
   function save(): boolean {
     const n = Number(draft);
@@ -398,7 +407,7 @@ function CapacityModal({ open, value, onSave, onClose }: { open: boolean; value:
     <Modal open={open} title="Capacity" onClose={onClose} onDone={save}>
       <label htmlFor="capacity-input" className="block mb-2 font-sans text-sm text-cream-dim">Maximum guests</label>
       <input
-        id="capacity-input" type="number" inputMode="numeric" min={2} max={500} value={draft}
+        id="capacity-input" name="capacity" autoComplete="off" type="number" inputMode="numeric" min={2} max={500} value={draft}
         onChange={(e) => { setDraft(e.target.value); setError(null); }}
         aria-invalid={error ? true : undefined} aria-describedby={error ? 'capacity-error' : undefined} className={FIELD}
       />
