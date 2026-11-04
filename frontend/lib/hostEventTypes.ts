@@ -64,7 +64,7 @@ export function apiEventToHostEvent(ev: any): HostEvent {
     slug: ev.slug ?? ev.id,
     title: ev.title,
     category: ev.category ?? 'Event',
-    image: ev.image ?? FALLBACK_IMAGE,
+    image: ev.image || FALLBACK_IMAGE, // a host may save an event with no cover ("")
     status: ev.status ?? 'draft',
     attendees: ev.attendees ?? 0,
     capacity: ev.capacity ?? 30,

@@ -66,7 +66,7 @@ function apiEventToMock(raw: any): MockEvent {
     spots:     raw.capacity ?? 30,
     spotsLeft: Math.max(0, spotsLeft),
     going:     raw.attendees ?? 0,
-    image:     raw.image ?? 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80&fit=crop',
+    image:     raw.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80&fit=crop',
     tags:      Array.isArray(raw.tags) ? raw.tags : [],
     description: typeof raw.description === 'string' ? raw.description : '',
     included:  normaliseIncluded(raw.included),

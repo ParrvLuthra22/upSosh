@@ -189,3 +189,11 @@ describe('<HostDashboard />', () => {
     await waitFor(() => expect(screen.getByText('Ticket revenue')).toBeInTheDocument());
   });
 });
+
+describe('events saved without a cover image', () => {
+  it('fall back to the default image instead of an empty src', () => {
+    const { apiEventToHostEvent } = require('@/lib/hostEventTypes');
+    expect(apiEventToHostEvent({ id: 'e', title: 'T', status: 'draft', image: '' }).image).toMatch(/^https:\/\//);
+    expect(apiEventToHostEvent({ id: 'e', title: 'T', status: 'draft', image: 'https://res.cloudinary.com/x.png' }).image).toBe('https://res.cloudinary.com/x.png');
+  });
+});
