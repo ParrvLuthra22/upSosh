@@ -137,7 +137,7 @@ export default function HostEventDetailPage() {
 
   return (
     <div className="min-h-screen bg-void">
-      <div className="max-w-5xl mx-auto px-6 md:px-12 pt-10 pb-24">
+      <div className="max-w-5xl mx-auto px-6 md:px-12 pt-28 pb-24">
 
         {actionError && <p role="alert" className="font-sans text-sm text-coral mb-4">{actionError}</p>}
 

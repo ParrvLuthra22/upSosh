@@ -32,7 +32,7 @@ export function normaliseApiEvent(raw: any): MockEvent {
     spots:     raw.capacity ?? 30,
     spotsLeft: raw.spotsLeft ?? (raw.capacity ?? 30) - (raw.bookingsCount ?? 0),
     going:     raw.bookingsCount ?? 0,
-    image:     raw.image ?? raw.coverImage ?? 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=560&fit=crop&q=80',
+    image:     raw.image || raw.coverImage || 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=560&fit=crop&q=80',
     tags:      raw.tags ?? [],
     featured:  raw.featured ?? false,
   };
