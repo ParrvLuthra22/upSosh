@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE_VERCEL } from '@/lib/motion';
@@ -21,17 +21,8 @@ function getStep(pathname: string): number {
 
 export default function HostVerificationLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const currentStep = getStep(pathname);
   const progress = (currentStep / TOTAL) * 100;
-
-  function handleBack() {
-    if (currentStep > 1) {
-      router.push(STEPS[currentStep - 2]);
-    } else {
-      router.push('/onboarding/step-5');
-    }
-  }
 
   return (
     <div className="min-h-screen bg-void flex flex-col">
@@ -72,17 +63,6 @@ export default function HostVerificationLayout({ children }: { children: React.R
             {children}
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-void/95 backdrop-blur border-t border-border px-6 py-4 flex justify-between items-center">
-        <button
-          onClick={handleBack}
-          className="font-mono text-sm text-cream-dim hover:text-cream transition-colors"
-        >
-          ← Back
-        </button>
-        <div id="host-verify-continue-portal" />
       </div>
     </div>
   );

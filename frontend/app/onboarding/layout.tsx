@@ -38,6 +38,13 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     }
   }
 
+  // Host verification is its own flow with its own header, progress bar and
+  // Back/Continue bar (host-verification/layout.tsx). Nesting it in this chrome
+  // stacked two headers and two fixed bars, which hid its Continue button.
+  if (pathname.startsWith('/onboarding/host-verification')) {
+    return <AuthGuard>{children}</AuthGuard>;
+  }
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-void flex flex-col">
