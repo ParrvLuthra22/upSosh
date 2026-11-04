@@ -192,7 +192,7 @@ export default function SampleEventPage() {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-transparent font-sans text-sm text-cream outline-none"
+                  className="flex-1 bg-transparent font-sans text-sm text-cream outline-none [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function SampleEventPage() {
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full bg-transparent font-sans text-sm text-cream outline-none"
+                  className="w-full bg-transparent font-sans text-sm text-cream outline-none [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -364,6 +364,11 @@ export default function SampleEventPage() {
         >
           ← Back
         </button>
+        {!canContinue && (
+          <p className="ml-auto mr-4 font-sans text-xs text-cream-dim text-right">
+            Add {!title.trim() && !date ? 'a title and date' : !title.trim() ? 'a title' : 'a date'} to continue
+          </p>
+        )}
         <MagneticButton>
           <button
             onClick={handleContinue}
